@@ -195,7 +195,7 @@ TUNING.ARCUEID_PROBABILITY =
 	DROP_MOONROCK = .4,
 	--基础影怪致残
 	COMMON_NIGHTMARE_DISABILITY = .6,
-	
+
 }
 
 
@@ -281,7 +281,7 @@ end
 
 --调整护符位
 local amulets = { "amulet", "blueamulet", "purpleamulet", "orangeamulet", "greenamulet", "yellowamulet", --standard
-	"blackamulet", "pinkamulet", "whiteamulet", "endiaamulet", "grayamulet", "broken_frosthammer", } 
+	"blackamulet", "pinkamulet", "whiteamulet", "endiaamulet", "grayamulet", "broken_frosthammer", }
 if GetModConfigData("amuletstype") == 2 then
 	for i, v in ipairs(amulets) do
 		print("YesConfig")
@@ -305,15 +305,46 @@ AddClassPostConstruct("widgets/statusdisplays", function(self)
 		self.hud_vigour = self:AddChild(vigour_b(self, self.owner))
 
 		--UI位置
-		self.hud_vigour:SetHAnchor(0)
-		self.hud_vigour:SetVAnchor(0)
-		self.hud_vigour:SetPosition(750, 220)
+		-- self.hud_vigour:SetHAnchor(0)
+		-- self.hud_vigour:SetVAnchor(0)
+		-- self.hud_vigour:SetPosition(750, 220)
+
+
+		local x1, y1, z1 = self.stomach:GetPosition():Get()
+		local x2, y2, z2 = self.brain:GetPosition():Get()
+		local x3, y3, z3 = self.heart:GetPosition():Get()
+		------------
+		if KnownModIndex:IsModEnabled("workshop-574636989") then
+			self.hud_vigour:SetPosition(self.stomach:GetPosition() + GLOBAL.Vector3(x1 - x3 - 15, 15, 0))
+		else
+			--self.hud_vigour:SetPosition(self.stomach:GetPosition() + GLOBAL.Vector3(x1 - x2 - 40, 0, 0))
+			self.hud_vigour:SetPosition(self.stomach:GetPosition() + GLOBAL.Vector3(x1 - x3, 0, 0))
+		end
+
+		-- if y2 == y1 or y2 == y3 then
+
+		-- 	self.boatmeter:SetPosition(self.moisturemeter:GetPosition() + GLOBAL.Vector3(x1 - x2, 0, 0))
+		-- else
+		-- 	self.hud_vigour:SetPosition(self.stomach:GetPosition() + GLOBAL.Vector3(x1 - x3, 0, 0))
+		-- end
+
+		-- local s1 = self.stomach:GetScale().x
+		-- local s2 = self.boatmeter:GetScale().x
+		-- local s3 = self.hud_vigour:GetScale().x
+		-- if s1 ~= s2 then
+		-- 	self.boatmeter:SetScale(s1 / s2, s1 / s2, s1 / s2)
+		-- end
+		-- if s1 ~= s3 then
+		-- 	self.hud_vigour:SetScale(s1 / s3, s1 / s3, s1 / s3)
+		-- end
+
 		self.owner:ListenForEvent("vigour_change", function()
 			self.hud_vigour:SetPercent(self.owner.components.vigour:GetPercent(), TUNING.ARCUEID_MAXVIGOUR)
 		end, GetWorld())
 		self.owner.components.vigour:DoDelta(0, self.owner, "loadupdate")
 	end
 end)
+
 
 --冰滤镜/盲滤镜
 AddClassPostConstruct("widgets/controls", function(self, owner)

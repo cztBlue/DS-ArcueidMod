@@ -149,107 +149,110 @@ function Stewer:StartCooking()
 				self.inst.components.container:Close()
 				for k = 1, 9 do
 					local item = self.inst.components.container:GetItemInSlot(k)
-					if item ~= nil and not(item:HasTag("foodtool")) then
+					if item ~= nil and not (item:HasTag("foodtool")) then
 						item:Remove()
 					end
 				end
 				self.inst.components.container.canbeopened = false
-			else --一般锅的逻辑
-				if not self.done and not self.cooking then
-					if self.inst.components.container then
-						self.done = nil
-						self.cooking = true
-
-						if self.onstartcooking then
-							self.onstartcooking(self.inst)
-						end
-
-						local spoilage_total = 0
-						local spoilage_n = 0
-						local ings = {}
-						for k, v in pairs(self.inst.components.container.slots) do
-							table.insert(ings, v.prefab)
-							if v.components.perishable then
-								spoilage_n = spoilage_n + 1
-								spoilage_total = spoilage_total + v.components.perishable:GetPercent()
-							end
-						end
-						self.product_spoilage = 1
-						if spoilage_total > 0 then
-							self.product_spoilage = spoilage_total / spoilage_n
-							self.product_spoilage = 1 - (1 - self.product_spoilage) * .5
-						end
-
-						local foundthespecial = false
-						local cooktime = 1
-						if self.specialcookername then
-							-- check special first
-							if cooking.ValidRecipe(self.specialcookername, ings) then
-								self.product, cooktime = cooking.CalculateRecipe(self.specialcookername, ings)
-								self.productcooker = self.specialcookername
-								foundthespecial = true
-							end
-						end
-
-						if not foundthespecial then
-							-- fallback to regular cooking
-							local cooker = self.cookername or self.inst.prefab
-							self.product, cooktime = cooking.CalculateRecipe(cooker, ings)
-							self.productcooker = cooker
-						end
-
-						--改动了
-						local player = GetPlayer()
-						local num    = math.random(100)
-						if num > 70 and player.prefab == "arcueid" then
-							local oldfood = self.product
-							self.product = "wetgoop"
-							if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
-								and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_seasoningbottle" then
-								self.product = oldfood
-							end
-						end
-
-
-						local grow_time = TUNING.BASE_COOK_TIME * cooktime
-						self.targettime = GetTime() + grow_time
-						self.task = self.inst:DoTaskInTime(grow_time, dostew, "stew")
-
-						self.inst.components.container:Close()
-						self.inst.components.container:DestroyContents()
-						self.inst.components.container.canbeopened = false
+			end
+		end
+	else --一般锅的逻辑
+		if not self.done and not self.cooking then
+			if self.inst.components.container then
+				self.done = nil
+				self.cooking = true
+	
+				if self.onstartcooking then
+					self.onstartcooking(self.inst)
+				end
+	
+				local spoilage_total = 0
+				local spoilage_n = 0
+				local ings = {}
+				for k, v in pairs(self.inst.components.container.slots) do
+					table.insert(ings, v.prefab)
+					if v.components.perishable then
+						spoilage_n = spoilage_n + 1
+						spoilage_total = spoilage_total + v.components.perishable:GetPercent()
 					end
 				end
+				self.product_spoilage = 1
+				if spoilage_total > 0 then
+					self.product_spoilage = spoilage_total / spoilage_n
+					self.product_spoilage = 1 - (1 - self.product_spoilage) * .5
+				end
+	
+				local foundthespecial = false
+				local cooktime = 1
+				if self.specialcookername then
+					-- check special first
+					if cooking.ValidRecipe(self.specialcookername, ings) then
+						self.product, cooktime = cooking.CalculateRecipe(self.specialcookername, ings)
+						self.productcooker = self.specialcookername
+						foundthespecial = true
+					end
+				end
+	
+				if not foundthespecial then
+					-- fallback to regular cooking
+					local cooker = self.cookername or self.inst.prefab
+					self.product, cooktime = cooking.CalculateRecipe(cooker, ings)
+					self.productcooker = cooker
+				end
+	
+				--改动了
+				local player = GetPlayer()
+				local num    = math.random(100)
+				if num > 70 and player.prefab == "arcueid" then
+					local oldfood = self.product
+					self.product = "wetgoop"
+					if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
+						and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_seasoningbottle" then
+						self.product = oldfood
+					end
+				end
+	
+	
+				local grow_time = TUNING.BASE_COOK_TIME * cooktime
+				self.targettime = GetTime() + grow_time
+				self.task = self.inst:DoTaskInTime(grow_time, dostew, "stew")
+	
+				self.inst.components.container:Close()
+				self.inst.components.container:DestroyContents()
+				self.inst.components.container.canbeopened = false
 			end
 		end
 	end
-end
-
-function Stewer:OnSave()
-	local time = GetTime()
-	if self.cooking then
-		local data = {}
-		data.cooking = true
-		data.product = self.product
-		data.productcooker = self.productcooker
-		data.product_spoilage = self.product_spoilage
-		if self.targettime and self.targettime > time then
-			data.time = self.targettime - time
+	
+	
+	
+	function Stewer:OnSave()
+		local time = GetTime()
+		if self.cooking then
+			local data = {}
+			data.cooking = true
+			data.product = self.product
+			data.productcooker = self.productcooker
+			data.product_spoilage = self.product_spoilage
+			if self.targettime and self.targettime > time then
+				data.time = self.targettime - time
+			end
+			return data
+		elseif self.done then
+			local data = {}
+			data.product = self.product
+			data.productcooker = self.productcooker
+			data.product_spoilage = self.product_spoilage
+			if self.spoiltargettime and self.spoiltargettime > time then
+				data.spoiltime = self.spoiltargettime - time
+			end
+			data.timesincefinish = -(GetTime() - (self.targettime or 0))
+			data.done = true
+			return data
 		end
-		return data
-	elseif self.done then
-		local data = {}
-		data.product = self.product
-		data.productcooker = self.productcooker
-		data.product_spoilage = self.product_spoilage
-		if self.spoiltargettime and self.spoiltargettime > time then
-			data.spoiltime = self.spoiltargettime - time
-		end
-		data.timesincefinish = -(GetTime() - (self.targettime or 0))
-		data.done = true
-		return data
 	end
 end
+
 
 function Stewer:OnLoad(data)
 	--self.produce = data.produce

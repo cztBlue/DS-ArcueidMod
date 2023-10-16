@@ -10,7 +10,8 @@ local VigourBadge = Class(Badge, function(self, owner)
     self.fill = self:AddChild(Image("images/replace_res/vigourbadge/vigour_level-20.xml", "vigour_level-20.tex"))
     self.status = self:AddChild(Image("images/replace_res/vigourbadge/vigourstatus-2.xml", "vigourstatus-2.tex"))
     self.frame = self:AddChild(Image("images/replace_res/vigourbadge/frame_circle-0.xml", "frame_circle-0.tex"))	
-	
+	self.frame:SetScale(.87,.87,.87)
+
 	self.fill:SetScale(0.95, 0.95, 0.95)
 	self.fill:SetPosition(-1.5, -4, 0)
 
@@ -57,9 +58,9 @@ function VigourBadge:SetPercent(percent, maximum_1)
         local fillImageNumber = math.floor(math.clamp((1-pct)*21,0,21))
 		self.fill:SetTexture("images/replace_res/vigourbadge/vigour_level-"..fillImageNumber..".xml", "vigour_level-"..fillImageNumber..".tex")
         self.fill:SetPosition(-1.5, -24*(1-pct)-1.5, 0)
-		self.fill:SetScale(1.05,1.05,1.05)
+		self.fill:SetScale(1,1,1)
 		--local scalestatus = 1
-		self.bg:SetScale(1.13,1.13,1.13)
+		self.bg:SetScale(1,1,1)
 
 		if pct > 0.7 then
 			self.status:SetTexture("images/replace_res/vigourbadge/vigourstatus-0.xml", "vigourstatus-0.tex")
@@ -71,12 +72,12 @@ function VigourBadge:SetPercent(percent, maximum_1)
 			self.status:SetPosition(0, 0, 0)
 		elseif pct>0.25 then
 			self.status:SetTexture("images/replace_res/vigourbadge/vigourstatus-2.xml", "vigourstatus-2.tex")
-			self.status:SetScale(0.8,0.8,0.8)
+			self.status:SetScale(.8,.8,.8)
 			self.status:SetPosition(0, 0, 0)
 
 		else
 			self.status:SetTexture("images/replace_res/vigourbadge/vigourstatus-3.xml", "vigourstatus-3.tex")
-			self.status:SetScale(0.8,0.8,0)
+			self.status:SetScale(.8,.8,0)
 			self.status:SetPosition(0, 0, 0)
 		end
 
