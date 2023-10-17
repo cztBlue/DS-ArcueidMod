@@ -14,6 +14,8 @@ local assets =
 	Asset("ANIM", "anim/building_Infinitas.zip"),
 	Asset("ANIM", "anim/building_recycleform.zip"),
 	Asset("ANIM", "anim/building_rottenform.zip"),
+	Asset("ANIM", "anim/building_trinketworkshop.zip"),
+
 
 	Asset("ANIM", "anim/ui_chest_3x3.zip"),
 	Asset("ANIM", "anim/ui_chester_shadow_3x4.zip"),
@@ -1065,19 +1067,98 @@ local function rottenform(Sim)
 	return inst
 end
 
+--饰品作坊
+local function trinketworkshop(Sim)
+	local inst = commonfn("trinketworkshop")
+	MakeObstaclePhysics(inst, .3)
+
+	local widgetbuttoninfo = {
+		text = "制作",
+		position = Vector3(0, -165, 0),
+		fn = function(inst)
+			for k1, v1 in pairs(TUNING.ARCUEID_TRINKETRECIPES) do
+				print(k1)
+				for k2 = 1, 9 do
+					if inst.components.container.slots[k2] then
+						print(inst.components.container.slots[k2])
+						if TUNING.ARCUEID_TRINKETRECIPES[k1][k2] ~= inst.components.container.slots[k2].prefab then
+							break
+						end
+					end
+
+					if k2 == 9 then
+						for k = 1, 9 do
+							local item = inst.components.container:GetItemInSlot(k)
+							if item ~= nil then
+								item:Remove()
+							end
+						end
+						inst.components.container:GiveItem(SpawnPrefab(k1), 5)
+						return
+					end
+				end
+			end
+
+		end
+
+		-- validfn = function(inst)
+		-- 	--return inst.components.stewer:CanCook()
+		-- end,
+	}
+
+	--容器特性
+
+	inst:AddComponent("container")
+	inst.components.container:SetNumSlots(#slotpos_miraclecookpot)
+	inst.components.container.widgetslotpos = slotpos_miraclecookpot
+	inst.components.container.widgetanimbank = "ui_chest_3x3"
+	inst.components.container.widgetanimbuild = "ui_chest_3x3"
+	inst.components.container.widgetpos = Vector3(0, 200, 0)
+	inst.components.container.side_align_tip = 100
+	inst.components.container.widgetbuttoninfo = widgetbuttoninfo
+	inst.components.container.acceptsstacks = false
+	--inst.components.container.type = "cooker"
+	inst.components.container.onopenfn = function(inst)
+		GetPlayer():PushEvent("OpenCraftRecipesFood")
+	end
+	inst.components.container.onclosefn = function(inst)
+		GetPlayer():PushEvent("CloseCraftRecipesFood")
+	end
+
+	--后注入覆盖
+	--onhammered
+	inst.components.workable:SetOnFinishCallback(function(inst, worker)
+		inst.SoundEmitter:PlaySound("dontstarve/common/destroy_wood")
+		inst:Remove()
+	end)
+
+	--onhit
+	inst.components.workable:SetOnWorkCallback(function(inst, worker)
+	end)
+
+	inst.OnSave = function(inst, data)
+	end
+
+	inst.OnLoad = function(inst, data)
+	end
+
+	return inst
+end
+
 return
-	CreateMoonCircleForm(TUNING.PROTOTYPER_TREES.MOONMAGIC_ONE),                    --第一具现原理
+	CreateMoonCircleForm(TUNING.PROTOTYPER_TREES.MOONMAGIC_ONE),                      --第一具现原理
 	Prefab("common/objects/building_gemicebox", gemicebox, assets, prefabs_gemicebox), --魔术宝石冰箱
-	Prefab("common/objects/building_travellerbox", travellerbox, assets, prefabs),  --旅行者时空箱
-	Prefab("common/objects/travellerbox_inv", travellerbox_inv, assets, prefabs),   --旅行者时空箱_物品
-	Prefab("common/objects/building_immortallight", immortallight, assets, prefabs), --永恒魔术灯
-	Prefab("common/objects/building_gemgenerator", gemgenerator, assets, prefabs),  --宝石发生器
-	Prefab("common/objects/building_spatialanchor", spatialanchor, assets, prefabs), --空间锚定仪
+	Prefab("common/objects/building_travellerbox", travellerbox, assets, prefabs),    --旅行者时空箱
+	Prefab("common/objects/travellerbox_inv", travellerbox_inv, assets, prefabs),     --旅行者时空箱_物品
+	Prefab("common/objects/building_immortallight", immortallight, assets, prefabs),  --永恒魔术灯
+	Prefab("common/objects/building_gemgenerator", gemgenerator, assets, prefabs),    --宝石发生器
+	Prefab("common/objects/building_spatialanchor", spatialanchor, assets, prefabs),  --空间锚定仪
 	Prefab("common/objects/building_miraclecookpot", miraclecookpot, assets, prefabs), --奇迹煮锅
-	Prefab("common/objects/building_guard", guard, assets, prefabs),                --魔术炮塔
-	Prefab("common/objects/building_infinitas", infinitas, assets, prefabs),        --Infinitas箱
-	Prefab("common/objects/building_recycleform", recycleform, assets, prefabs),    --第二分解术式
-	Prefab("common/objects/building_rottenform", rottenform, assets, prefabs),      --腐败滋生术式
+	Prefab("common/objects/building_guard", guard, assets, prefabs),                  --魔术炮塔
+	Prefab("common/objects/building_infinitas", infinitas, assets, prefabs),          --Infinitas箱
+	Prefab("common/objects/building_recycleform", recycleform, assets, prefabs),      --第二分解术式
+	Prefab("common/objects/building_rottenform", rottenform, assets, prefabs),        --腐败滋生术式
+	Prefab("common/objects/building_trinketworkshop", trinketworkshop, assets, prefabs), --饰品作坊
 	MakePlacer("common/building_mooncirleform_placer", "building_mooncirleform", "building_mooncirleform", "idle"),
 	MakePlacer("common/building_gemicebox_placer", "building_gemicebox", "building_gemicebox", "closed"),
 	MakePlacer("common/building_travellerbox_placer", "building_travellerbox", "building_travellerbox", "closed"),
@@ -1088,4 +1169,5 @@ return
 	MakePlacer("common/building_guard_placer", "building_guard", "building_guard", "idle_on_loop"),
 	MakePlacer("common/building_infinitas_placer", "building_infinitas", "building_infinitas", "closed"),
 	MakePlacer("common/building_rottenform_placer", "building_rottenform", "building_rottenform", "idle"),
-	MakePlacer("common/building_recycleform_placer", "building_recycleform", "building_recycleform", "idle")
+	MakePlacer("common/building_recycleform_placer", "building_recycleform", "building_recycleform", "idle"),
+	MakePlacer("common/building_trinketworkshop_placer", "building_trinketworkshop", "building_trinketworkshop", "idle")
