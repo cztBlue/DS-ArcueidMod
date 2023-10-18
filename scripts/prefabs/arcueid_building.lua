@@ -1119,10 +1119,10 @@ local function trinketworkshop(Sim)
 	inst.components.container.acceptsstacks = false
 	--inst.components.container.type = "cooker"
 	inst.components.container.onopenfn = function(inst)
-		GetPlayer():PushEvent("OpenCraftRecipesFood")
+		GetPlayer():PushEvent("OpenCraftRecipesTrinket")
 	end
 	inst.components.container.onclosefn = function(inst)
-		GetPlayer():PushEvent("CloseCraftRecipesFood")
+		GetPlayer():PushEvent("CloseCraftRecipesTrinket")
 	end
 
 	--后注入覆盖

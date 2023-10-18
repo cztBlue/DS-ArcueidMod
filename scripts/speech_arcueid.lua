@@ -101,6 +101,12 @@ return
             ARCUEID_FOOD_TOFUSOUP = "回复四维\n(7,7,7,14)\nbuff:无",
             ARCUEID_FOOD_OMELETTERICE = "回复四维\n(22,22,22,46)\nbuff:画饼",
         },
+
+        --饰品效果
+        TRINKET_EFFECT = 
+        {
+            TRINKET_SEASONINGBOTTLE = "做饭用",
+        },
         
 
         -------------
