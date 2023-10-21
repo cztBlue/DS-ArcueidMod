@@ -67,7 +67,7 @@ ACTIONS.COOK.fn = function(act)
 
 		local product = act.target.components.cooker:CookItem(ingredient, act.doer)
 		if product then
-			if math.random() < .3 then
+			if math.random() < .3 and GetPlayer().prefab == "arcueid" then
 				local oldfood = product
 				product = SpawnPrefab("wetgoop")
 				if GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
