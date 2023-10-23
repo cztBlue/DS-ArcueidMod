@@ -418,14 +418,14 @@ local function propheteye()
     inst.components.equippable:SetOnEquip(function(inst, owner)
         if owner.prefab == "arcueid" then
             owner.components.vigour.trinketfactor = -TUNING.ARCUEID_VIGOURBUFF_D
-            inst.components.builder.ingredientmod = 1
+            owner.components.builder.ingredientmod = 1
         end
     end)
 
     inst.components.equippable:SetOnUnequip(function(inst, owner)
         if owner.prefab == "arcueid" then
             owner.components.vigour.trinketfactor = 0
-            inst.components.builder.ingredientmod = 1.5
+            owner.components.builder.ingredientmod = 1.5
         end
     end)
 
