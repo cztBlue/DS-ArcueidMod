@@ -88,13 +88,20 @@ function Stewer:CalMirRecipeAndTime()
 					if TUNING.ARCUEID_FOODRECIPES[k1][k2] ~= self.inst.components.container.slots[k2].prefab then
 						break
 					end
+
+					if k2 == 9 then
+						return true, k1, 1.2
+					end
 				end
 
-				if k2 == 9 then
-					return true, k1, 1.2
-				end
+				-- if self.inst.components.container.slots[k2] and k2 == 9 then
+				-- 	print("Yesk9")
+				-- 	print(TUNING.ARCUEID_FOODRECIPES[k1][k2])
+				-- 	return true, k1, 1.2
+				-- end
 			end
 		end
+		return false
 	else
 		return false
 	end
@@ -106,8 +113,8 @@ function Stewer:CanCook()
 	if self.inst.prefab == "building_miraclecookpot" then
 		local can = false
 		can = self:CalMirRecipeAndTime()
-		--print("YesCantri")
-		--print(can)
+		print("YesCantri")
+		print(can)
 		return can
 	else
 		for k, v in pairs(self.inst.components.container.slots) do

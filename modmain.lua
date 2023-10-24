@@ -222,7 +222,8 @@ TUNING.ARCUEID_TRINKETRECIPES =
 {
 	--调料瓶
 	["trinket_seasoningbottle"] =
-	{ "base_moonrock_nugget", "base_moonrock_nugget", "base_moonrock_nugget", "base_moonrock_nugget", nil, "base_moonrock_nugget",
+	{ "base_moonrock_nugget", "base_moonrock_nugget", "base_moonrock_nugget", "base_moonrock_nugget", nil,
+		"base_moonrock_nugget",
 		"base_moonrock_nugget", "base_moonrock_nugget", "base_moonrock_nugget" },
 }
 
@@ -263,7 +264,6 @@ modimport("scripts/modmain/arcueid_lootdropper.lua")
 
 table.insert(GLOBAL.CHARACTER_GENDERS.FEMALE, "arcueid")
 AddModCharacter("arcueid")
-
 
 -- DLC检测
 GLOBAL.IsROG = false
@@ -331,23 +331,6 @@ AddClassPostConstruct("widgets/statusdisplays", function(self)
 			self.hud_vigour:SetPosition(self.stomach:GetPosition() + GLOBAL.Vector3(x1 - x3, 0, 0))
 		end
 
-		-- if y2 == y1 or y2 == y3 then
-
-		-- 	self.boatmeter:SetPosition(self.moisturemeter:GetPosition() + GLOBAL.Vector3(x1 - x2, 0, 0))
-		-- else
-		-- 	self.hud_vigour:SetPosition(self.stomach:GetPosition() + GLOBAL.Vector3(x1 - x3, 0, 0))
-		-- end
-
-		-- local s1 = self.stomach:GetScale().x
-		-- local s2 = self.boatmeter:GetScale().x
-		-- local s3 = self.hud_vigour:GetScale().x
-		-- if s1 ~= s2 then
-		-- 	self.boatmeter:SetScale(s1 / s2, s1 / s2, s1 / s2)
-		-- end
-		-- if s1 ~= s3 then
-		-- 	self.hud_vigour:SetScale(s1 / s3, s1 / s3, s1 / s3)
-		-- end
-
 		self.owner:ListenForEvent("vigour_change", function()
 			self.hud_vigour:SetPercent(self.owner.components.vigour:GetPercent(), TUNING.ARCUEID_MAXVIGOUR)
 		end, GetWorld())
@@ -367,6 +350,40 @@ AddClassPostConstruct("widgets/controls", function(self, owner)
 
 	self.Icescreen:Show()
 	self.Blindscreen:Show()
+end)
+
+--修正制作倍率
+AddPrefabPostInit("greenamulet", function(inst)
+	local player = GetPlayer();
+	if player.prefab == "arcueid" then
+		inst.components.equippable:SetOnEquip(function(inst, owner)
+			owner.AnimState:OverrideSymbol("swap_body", "torso_amulets", "greenamulet")
+			--倍率矫正
+			if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
+				and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye" then
+				owner.components.builder.ingredientmod = 0.5
+			else
+				owner.components.builder.ingredientmod = 1
+			end
+
+			inst.onitembuild = function()
+				inst.components.finiteuses:Use(1)
+			end
+			inst:ListenForEvent("consumeingredients", inst.onitembuild, owner)
+		end)
+
+		inst.components.equippable:SetOnUnequip(function(inst, owner)
+			owner.AnimState:ClearOverrideSymbol("swap_body")
+			--倍率矫正
+			if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
+				and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye" then
+				owner.components.builder.ingredientmod = 1
+			else
+				owner.components.builder.ingredientmod = 1.5
+			end
+			inst:RemoveEventCallback("consumeingredients", inst.onitembuild, owner)
+		end)
+	end
 end)
 
 --注入旅行箱组件

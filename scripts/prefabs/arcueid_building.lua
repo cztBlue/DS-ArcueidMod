@@ -949,7 +949,13 @@ local function recycleform(Sim)
 				if recycletable[item.prefab] ~= nil then
 					local replacement = recycletable[item.prefab]
 					-- replacement foramt such as {5(consume once),{xx,1},{aa,2}}
-					if replacement and item.components.stackable.stacksize > replacement[1] then
+
+					if replacement and item.components.stackable and item.components.stackable.stacksize > replacement[1] then
+						inst.components.container:ConsumeByName(item.prefab, replacement[1])
+						heapup(inst, replacement)
+					end
+
+					if item.components.stackable==nil  then --分解饰品
 						inst.components.container:ConsumeByName(item.prefab, replacement[1])
 						heapup(inst, replacement)
 					end
