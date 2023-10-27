@@ -261,9 +261,9 @@ modimport("scripts/modmain/name_list.lua")
 modimport("scripts/modmain/foodscript.lua")
 modimport("scripts/modmain/talkchain.lua")
 modimport("scripts/modmain/arcueid_lootdropper.lua")
-
-table.insert(GLOBAL.CHARACTER_GENDERS.FEMALE, "arcueid")
 AddModCharacter("arcueid")
+table.insert(GLOBAL.CHARACTER_GENDERS.FEMALE, "arcueid")
+
 
 -- DLC检测
 GLOBAL.IsROG = false
@@ -302,23 +302,21 @@ if GetModConfigData("amuletstype") == 2 then
 	end
 end
 
---活力值badge显示
 local vigour_b = GLOBAL.require "widgets/vigourbadge"
 local icescreen = GLOBAL.require "widgets/icescreen"
 local blindscreen = GLOBAL.require "widgets/blindscreen"
 local foodrecipes = GLOBAL.require "widgets/arcueid_craftrecipes_food"
 local trinketrecipes = GLOBAL.require "widgets/arcueid_craftrecipes_trinket"
 
---活力值
+-- --活力值
 AddClassPostConstruct("widgets/statusdisplays", function(self)
 	if self.owner.prefab == "arcueid" then
-		self.hud_vigour = self:AddChild(vigour_b(self, self.owner))
+		self.hud_vigour = self:AddChild(vigour_b(self.owner))
 
 		--UI位置
 		-- self.hud_vigour:SetHAnchor(0)
 		-- self.hud_vigour:SetVAnchor(0)
 		-- self.hud_vigour:SetPosition(750, 220)
-
 
 		local x1, y1, z1 = self.stomach:GetPosition():Get()
 		local x2, y2, z2 = self.brain:GetPosition():Get()
@@ -351,6 +349,8 @@ AddClassPostConstruct("widgets/controls", function(self, owner)
 	self.Icescreen:Show()
 	self.Blindscreen:Show()
 end)
+
+
 
 --修正制作倍率
 AddPrefabPostInit("greenamulet", function(inst)
@@ -789,3 +789,9 @@ AddComponentPostInit("combat", function(Combat)
 		end
 	end
 end)
+
+
+
+
+
+--------------测试

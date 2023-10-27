@@ -6,7 +6,7 @@ STRINGS.NAMES.FLOATBALL = "浮球"
 STRINGS.RECIPE_DESC.FLOATBALL = "实际上没\n什么用处的球"
 -- 示例武器，利爪
 STRINGS.NAMES.SHARPCLAW = "利爪"
-
+STRINGS.NAMES.ARCUEID = "爱尔奎特·布伦史塔德";
 
 --配方描述
 --魔术宝石冰箱

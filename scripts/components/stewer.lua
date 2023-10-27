@@ -82,10 +82,21 @@ function Stewer:CalMirRecipeAndTime()
 			for k2 = 1, 9 do
 				-- print("--------------")
 				-- print(TUNING.ARCUEID_FOODRECIPES[k1][k2])
-				-- print(self.inst.components.container.slots[k2].prefab)
+				-- if self.inst.components.container.slots[k2]~=nil then
+				-- 	print(self.inst.components.container.slots[k2].prefab)
+				-- end
 				-- print("--------------")
 				if self.inst.components.container.slots[k2] then
 					if TUNING.ARCUEID_FOODRECIPES[k1][k2] ~= self.inst.components.container.slots[k2].prefab then
+						break
+					end
+					if k2 == 9 then
+						return true, k1, 1.2
+					end
+				end
+
+				if self.inst.components.container.slots[k2] == nil  then
+					if TUNING.ARCUEID_FOODRECIPES[k1][k2] ~= nil then
 						break
 					end
 
@@ -94,17 +105,12 @@ function Stewer:CalMirRecipeAndTime()
 					end
 				end
 
-				-- if self.inst.components.container.slots[k2] and k2 == 9 then
-				-- 	print("Yesk9")
-				-- 	print(TUNING.ARCUEID_FOODRECIPES[k1][k2])
-				-- 	return true, k1, 1.2
-				-- end
 			end
 		end
-		return false
 	else
 		return false
 	end
+	return false
 end
 
 --改动了:注入九格煮锅逻辑
@@ -113,8 +119,8 @@ function Stewer:CanCook()
 	if self.inst.prefab == "building_miraclecookpot" then
 		local can = false
 		can = self:CalMirRecipeAndTime()
-		print("YesCantri")
-		print(can)
+		-- print("YesCantri")
+		-- print(can)
 		return can
 	else
 		for k, v in pairs(self.inst.components.container.slots) do
