@@ -6,6 +6,8 @@ local assets={
 	Asset("ANIM", "anim/base_puregem.zip"),
 	Asset("ANIM", "anim/base_moonempyreality.zip"),
 	Asset("ANIM", "anim/base_gemblock.zip"),
+	Asset("ANIM", "anim/base_polishgem.zip"),
+	Asset("ANIM", "anim/base_puremoonempyreality.zip"),
 	
 	Asset("ATLAS", "images/inventoryimages/moonglass.xml"),
 	Asset("ATLAS", "images/inventoryimages/gemfragment.xml"),
@@ -14,6 +16,8 @@ local assets={
 	Asset("ATLAS", "images/inventoryimages/puregem.xml"),
 	Asset("ATLAS", "images/inventoryimages/moonempyreality.xml"),
 	Asset("ATLAS", "images/inventoryimages/gemblock.xml"),
+	Asset("ATLAS", "images/inventoryimages/gemblock.xml"),
+	Asset("ATLAS", "images/inventoryimages/puremoonempyreality.xml"),
 	--要显示在配方里的基础材料要保持资源名和预制体名一致
 	Asset("ATLAS", "images/inventoryimages/base_moonglass.xml"),
 	Asset("ATLAS", "images/inventoryimages/base_gemfragment.xml"),
@@ -22,6 +26,7 @@ local assets={
 	Asset("ATLAS", "images/inventoryimages/base_puregem.xml"),
 	Asset("ATLAS", "images/inventoryimages/base_moonempyreality.xml"),
 	Asset("ATLAS", "images/inventoryimages/base_gemblock.xml"),
+	Asset("ATLAS", "images/inventoryimages/base_puremoonempyreality.xml"),
 }
 
 local prefabs = 
@@ -117,16 +122,29 @@ local function puregem()
 	return inst
 end
 
---弥散月质
+--弥散月质 
 local function moonempyreality()
 	local inst = commonfn("moonempyreality")
 	inst.AnimState:PlayAnimation("idle_flight_loop",true)
 	return inst
 end
 
+--精粹月质
+local function puremoonempyreality()
+	local inst = commonfn("puremoonempyreality")
+	inst.AnimState:PlayAnimation("idle_loop",true)
+	return inst
+end
+
 --宝石块
 local function gemblock()
 	local inst = commonfn("gemblock")
+	return inst
+end
+
+--打磨宝石
+local function polishgem()
+	local inst = commonfn("polishgem")
 	return inst
 end
 
@@ -137,4 +155,6 @@ Prefab( "common/inventory/base_moonrock_nugget", moonrock_nugget, assets, prefab
 Prefab( "common/inventory/base_horrorfuel", horrorfuel, assets, prefabs),
 Prefab( "common/inventory/base_puregem", puregem, assets, prefabs),
 Prefab( "common/inventory/base_moonempyreality", moonempyreality, assets, prefabs),
-Prefab( "common/inventory/base_gemblock", gemblock, assets, prefabs)
+Prefab( "common/inventory/base_gemblock", gemblock, assets, prefabs),
+Prefab( "common/inventory/base_polishgem", polishgem, assets, prefabs),
+Prefab( "common/inventory/base_puremoonempyreality", puremoonempyreality, assets, prefabs)

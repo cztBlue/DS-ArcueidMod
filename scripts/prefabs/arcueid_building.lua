@@ -15,6 +15,7 @@ local assets =
 	Asset("ANIM", "anim/building_recycleform.zip"),
 	Asset("ANIM", "anim/building_rottenform.zip"),
 	Asset("ANIM", "anim/building_trinketworkshop.zip"),
+	Asset("ANIM", "anim/building_alchemydesk.zip"),
 
 
 	Asset("ANIM", "anim/ui_chest_3x3.zip"),
@@ -863,18 +864,18 @@ local recycletable = {
 	--紫宝石5->1碎片，50%纯粹恐惧
 	["purplegem"] = { 5, { "base_gemfragment", 1 }, { "base_horrorfuel", .5 }, },
 	["redgem"] = { 15, { "base_gemfragment", 1 }, },
-	["orangegem"] = { 3, { "base_gemfragment", 3 }, { "base_moonempyreality" }, .5 },
-	["yellowgem"] = { 3, { "base_gemfragment", 3 }, { "base_moonempyreality" }, .5 },
-	["greengem"] = { 2, { "base_gemfragment", 3 }, { "base_moonempyreality" }, .5 },
+	["orangegem"] = { 3, { "base_gemfragment", 3 }, { "base_moonempyreality" }, 1 },
+	["yellowgem"] = { 3, { "base_gemfragment", 3 }, { "base_moonempyreality" }, 1 },
+	["greengem"] = { 2, { "base_gemfragment", 3 }, { "base_moonempyreality" }, 1 },
 	--月亮
 	["base_moonrock_nugget"] = { 10, { "rocks", 10 }, { "base_moonempyreality", 1 }, },
 	["base_moonglass"] = { 3, { "base_gemfragment", 3 }, { "base_moonempyreality", 1 }, },
 	--分解饰品
+	["trinket_relaxationbook"] = { 1, { "base_moonglass", 8 }, },
 	["trinket_moonamulet"] = { 1, { "base_moonglass", 25 }, },
 	["trinket_moonwristband"] = { 1, { "base_moonglass", 25 }, },
 	["trinket_moonring"] = { 1, { "base_moonglass", 25 }, },
 	["trinket_mooncloak"] = { 1, { "base_moonglass", 25 }, },
-	["trinket_relaxationbook"] = { 1, { "base_moonglass", 5 }, },
 	["trinket_firstcanon"] = { 1, { "base_moonglass", 13 }, },
 	["trinket_jadestar"] = { 1, { "base_moonglass", 17 }, },
 	["trinket_jadeblade"] = { 1, { "base_moonglass", 17 }, },
@@ -884,7 +885,7 @@ local recycletable = {
 	["trinket_twelvedice"] = { 1, { "base_moonglass", 8 }, },
 	["trinket_propheteye"] = { 1, { "base_moonglass", 18 }, },
 	["trinket_icecrystal"] = { 1, { "base_moonglass", 30 }, },
-	["trinket_seasoningbottle"] = { 1, { "base_moonglass", 5 }, },
+	["trinket_seasoningbottle"] = { 1, { "base_moonglass", 2 }, },
 	["trinket_eternallight"] = { 1, { "base_moonglass", 4 }, },
 }
 local function recycleform(Sim)
@@ -1151,6 +1152,81 @@ local function trinketworkshop(Sim)
 	return inst
 end
 
+--炼金台
+local function alchemydesk(Sim)
+	local inst = commonfn("alchemydesk")
+	MakeObstaclePhysics(inst, .3)
+
+	local widgetbuttoninfo = {
+		text = "制作",
+		position = Vector3(0, -165, 0),
+		fn = function(inst)
+			for k1, v1 in pairs(TUNING.ARCUEID_TRINKETRECIPES) do
+				print(k1)
+				for k2 = 1, 9 do
+					if inst.components.container.slots[k2] then
+						print(inst.components.container.slots[k2])
+						if TUNING.ARCUEID_TRINKETRECIPES[k1][k2] ~= inst.components.container.slots[k2].prefab then
+							break
+						end
+					end
+
+					if k2 == 9 then
+						for k = 1, 9 do
+							local item = inst.components.container:GetItemInSlot(k)
+							if item ~= nil then
+								item:Remove()
+							end
+						end
+						inst.components.container:GiveItem(SpawnPrefab(k1), 5)
+						return
+					end
+				end
+			end
+
+		end
+	}
+
+	--容器特性
+
+	inst:AddComponent("container")
+	inst.components.container:SetNumSlots(#slotpos_miraclecookpot)
+	inst.components.container.widgetslotpos = slotpos_miraclecookpot
+	inst.components.container.widgetanimbank = "ui_chest_3x3"
+	inst.components.container.widgetanimbuild = "ui_chest_3x3"
+	inst.components.container.widgetpos = Vector3(0, 200, 0)
+	inst.components.container.side_align_tip = 100
+	inst.components.container.widgetbuttoninfo = widgetbuttoninfo
+	inst.components.container.acceptsstacks = false
+	--inst.components.container.type = "cooker"
+	inst.components.container.onopenfn = function(inst)
+		GetPlayer():PushEvent("OpenCraftRecipesTrinket")
+	end
+	inst.components.container.onclosefn = function(inst)
+		GetPlayer():PushEvent("CloseCraftRecipesTrinket")
+	end
+
+	--后注入覆盖
+	--onhammered
+	inst.components.workable:SetOnFinishCallback(function(inst, worker)
+		inst.SoundEmitter:PlaySound("dontstarve/common/destroy_wood")
+		inst:Remove()
+	end)
+
+	--onhit
+	inst.components.workable:SetOnWorkCallback(function(inst, worker)
+	end)
+
+	inst.OnSave = function(inst, data)
+	end
+
+	inst.OnLoad = function(inst, data)
+	end
+
+	return inst
+end
+
+
 return
 	CreateMoonCircleForm(TUNING.PROTOTYPER_TREES.MOONMAGIC_ONE),                      --第一具现原理
 	Prefab("common/objects/building_gemicebox", gemicebox, assets, prefabs_gemicebox), --魔术宝石冰箱
@@ -1165,6 +1241,7 @@ return
 	Prefab("common/objects/building_recycleform", recycleform, assets, prefabs),      --第二分解术式
 	Prefab("common/objects/building_rottenform", rottenform, assets, prefabs),        --腐败滋生术式
 	Prefab("common/objects/building_trinketworkshop", trinketworkshop, assets, prefabs), --饰品作坊
+	Prefab("common/objects/building_alchemydesk", alchemydesk, assets, prefabs), --炼金台
 	MakePlacer("common/building_mooncirleform_placer", "building_mooncirleform", "building_mooncirleform", "idle"),
 	MakePlacer("common/building_gemicebox_placer", "building_gemicebox", "building_gemicebox", "closed"),
 	MakePlacer("common/building_travellerbox_placer", "building_travellerbox", "building_travellerbox", "closed"),
@@ -1176,4 +1253,5 @@ return
 	MakePlacer("common/building_infinitas_placer", "building_infinitas", "building_infinitas", "closed"),
 	MakePlacer("common/building_rottenform_placer", "building_rottenform", "building_rottenform", "idle"),
 	MakePlacer("common/building_recycleform_placer", "building_recycleform", "building_recycleform", "idle"),
-	MakePlacer("common/building_trinketworkshop_placer", "building_trinketworkshop", "building_trinketworkshop", "idle")
+	MakePlacer("common/building_trinketworkshop_placer", "building_trinketworkshop", "building_trinketworkshop", "idle"),
+	MakePlacer("common/building_alchemydesk_placer", "building_alchemydesk", "building_alchemydesk", "idle")

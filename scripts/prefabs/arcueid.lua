@@ -238,71 +238,71 @@ local function arcueid_recipes()
 
     ---------------------饰品----------------------
 
-    --休憩之书
-    local trinket_relaxationbook = Recipe("trinket_relaxationbook",
-        { Ingredient("base_moonglass", 10, atlas_base_moonglass) },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    trinket_relaxationbook.atlas = "images/inventoryimages/relaxationbook.xml"
-    trinket_relaxationbook.image = "relaxationbook.tex"
-    --先知之眼
-    local trinket_propheteye = Recipe("trinket_propheteye", { Ingredient("base_moonglass", 36, atlas_base_moonglass) },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    trinket_propheteye.atlas = "images/inventoryimages/propheteye.xml"
-    trinket_propheteye.image = "propheteye.tex"
-    --十二面骰子
-    local trinket_twelvedice = Recipe("trinket_twelvedice", { Ingredient("base_moonglass", 16, atlas_base_moonglass) },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    trinket_twelvedice.atlas = "images/inventoryimages/twelvedice.xml"
-    trinket_twelvedice.image = "twelvedice.tex"
-    --瓶中灵
-    local trinket_spiritbottle = Recipe("trinket_spiritbottle",
-        { Ingredient("base_moonglass", 14, atlas_base_moonglass) },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    trinket_spiritbottle.atlas = "images/inventoryimages/spiritbottle.xml"
-    trinket_spiritbottle.image = "spiritbottle.tex"
-    --赴死者勋
-    local trinket_martyrseal = Recipe("trinket_martyrseal",
-        { Ingredient("base_moonglass", 40, atlas_base_moonglass) },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    trinket_martyrseal.atlas = "images/inventoryimages/martyrseal.xml"
-    trinket_martyrseal.image = "martyrseal.tex"
-    --翡翠之刃
-    local trinket_jadeblade = Recipe("trinket_jadeblade", { Ingredient("base_moonglass", 34, atlas_base_moonglass) },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    trinket_jadeblade.atlas = "images/inventoryimages/jadeblade.xml"
-    trinket_jadeblade.image = "jadeblade.tex"
-    --第一圣典
-    local trinket_firstcanon = Recipe("trinket_relaxationbook",
-        { Ingredient("base_moonglass", 26, atlas_base_moonglass) },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    trinket_firstcanon.atlas = "images/inventoryimages/firstcanon.xml"
-    trinket_firstcanon.image = "firstcanon.tex"
-    --翡翠星星
-    local trinket_jadestar = Recipe("trinket_jadestar", { Ingredient("base_moonglass", 17, atlas_base_moonglass) },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    trinket_jadestar.atlas = "images/inventoryimages/jadestar.xml"
-    trinket_jadestar.image = "jadestar.tex"
-    --立冬
-    local trinket_icecrystal = Recipe("trinket_icecrystal", { Ingredient("base_moonglass", 50, atlas_base_moonglass) },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    trinket_icecrystal.atlas = "images/inventoryimages/icecrystal.xml"
-    trinket_icecrystal.image = "icecrystal.tex"
-    --调料瓶
-    local trinket_seasoningbottle = Recipe("trinket_seasoningbottle",
-        { Ingredient("base_moonglass", 10, atlas_base_moonglass) },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    trinket_seasoningbottle.atlas = "images/inventoryimages/seasoningbottle.xml"
-    trinket_seasoningbottle.image = "seasoningbottle.tex"
-    --阴影斗篷
-    local trinket_shadowcloak = Recipe("trinket_shadowcloak", { Ingredient("base_moonglass", 50, atlas_base_moonglass) },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    trinket_shadowcloak.atlas = "images/inventoryimages/shadowcloak.xml"
-    trinket_shadowcloak.image = "shadowcloak.tex"
-    --不灭烛
-    local trinket_eternallight = Recipe("trinket_eternallight", { Ingredient("base_moonglass", 8, atlas_base_moonglass) },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    trinket_eternallight.atlas = "images/inventoryimages/eternallight.xml"
-    trinket_eternallight.image = "eternallight.tex"
+    -- --休憩之书
+    -- local trinket_relaxationbook = Recipe("trinket_relaxationbook",
+    --     { Ingredient("base_moonglass", 10, atlas_base_moonglass) },
+    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
+    -- trinket_relaxationbook.atlas = "images/inventoryimages/relaxationbook.xml"
+    -- trinket_relaxationbook.image = "relaxationbook.tex"
+    -- --先知之眼
+    -- local trinket_propheteye = Recipe("trinket_propheteye", { Ingredient("base_moonglass", 36, atlas_base_moonglass) },
+    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
+    -- trinket_propheteye.atlas = "images/inventoryimages/propheteye.xml"
+    -- trinket_propheteye.image = "propheteye.tex"
+    -- --十二面骰子
+    -- local trinket_twelvedice = Recipe("trinket_twelvedice", { Ingredient("base_moonglass", 16, atlas_base_moonglass) },
+    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
+    -- trinket_twelvedice.atlas = "images/inventoryimages/twelvedice.xml"
+    -- trinket_twelvedice.image = "twelvedice.tex"
+    -- --瓶中灵
+    -- local trinket_spiritbottle = Recipe("trinket_spiritbottle",
+    --     { Ingredient("base_moonglass", 14, atlas_base_moonglass) },
+    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
+    -- trinket_spiritbottle.atlas = "images/inventoryimages/spiritbottle.xml"
+    -- trinket_spiritbottle.image = "spiritbottle.tex"
+    -- --赴死者勋
+    -- local trinket_martyrseal = Recipe("trinket_martyrseal",
+    --     { Ingredient("base_moonglass", 40, atlas_base_moonglass) },
+    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
+    -- trinket_martyrseal.atlas = "images/inventoryimages/martyrseal.xml"
+    -- trinket_martyrseal.image = "martyrseal.tex"
+    -- --翡翠之刃
+    -- local trinket_jadeblade = Recipe("trinket_jadeblade", { Ingredient("base_moonglass", 34, atlas_base_moonglass) },
+    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
+    -- trinket_jadeblade.atlas = "images/inventoryimages/jadeblade.xml"
+    -- trinket_jadeblade.image = "jadeblade.tex"
+    -- --第一圣典
+    -- local trinket_firstcanon = Recipe("trinket_relaxationbook",
+    --     { Ingredient("base_moonglass", 26, atlas_base_moonglass) },
+    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
+    -- trinket_firstcanon.atlas = "images/inventoryimages/firstcanon.xml"
+    -- trinket_firstcanon.image = "firstcanon.tex"
+    -- --翡翠星星
+    -- local trinket_jadestar = Recipe("trinket_jadestar", { Ingredient("base_moonglass", 17, atlas_base_moonglass) },
+    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
+    -- trinket_jadestar.atlas = "images/inventoryimages/jadestar.xml"
+    -- trinket_jadestar.image = "jadestar.tex"
+    -- --立冬
+    -- local trinket_icecrystal = Recipe("trinket_icecrystal", { Ingredient("base_moonglass", 50, atlas_base_moonglass) },
+    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
+    -- trinket_icecrystal.atlas = "images/inventoryimages/icecrystal.xml"
+    -- trinket_icecrystal.image = "icecrystal.tex"
+    -- --调料瓶
+    -- local trinket_seasoningbottle = Recipe("trinket_seasoningbottle",
+    --     { Ingredient("base_moonglass", 10, atlas_base_moonglass) },
+    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
+    -- trinket_seasoningbottle.atlas = "images/inventoryimages/seasoningbottle.xml"
+    -- trinket_seasoningbottle.image = "seasoningbottle.tex"
+    -- --阴影斗篷
+    -- local trinket_shadowcloak = Recipe("trinket_shadowcloak", { Ingredient("base_moonglass", 50, atlas_base_moonglass) },
+    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
+    -- trinket_shadowcloak.atlas = "images/inventoryimages/shadowcloak.xml"
+    -- trinket_shadowcloak.image = "shadowcloak.tex"
+    -- --不灭烛
+    -- local trinket_eternallight = Recipe("trinket_eternallight", { Ingredient("base_moonglass", 8, atlas_base_moonglass) },
+    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
+    -- trinket_eternallight.atlas = "images/inventoryimages/eternallight.xml"
+    -- trinket_eternallight.image = "eternallight.tex"
 end
 
 local fn = function(inst)

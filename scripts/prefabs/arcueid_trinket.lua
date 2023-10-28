@@ -16,6 +16,7 @@ local assets =
     Asset("ANIM", "anim/trinket_martyrseal.zip"),
     Asset("ANIM", "anim/trinket_jadeblade.zip"),
     Asset("ANIM", "anim/trinket_firstcanon.zip"),
+    Asset("ANIM", "anim/trinket_sacrificeknife.zip"),
 
     Asset("ATLAS", "images/inventoryimages/relaxationbook.xml"),
     Asset("ATLAS", "images/inventoryimages/mooncloak.xml"),
@@ -33,6 +34,7 @@ local assets =
     Asset("ATLAS", "images/inventoryimages/martyrseal.xml"),
     Asset("ATLAS", "images/inventoryimages/jadeblade.xml"),
     Asset("ATLAS", "images/inventoryimages/firstcanon.xml"),
+    Asset("ATLAS", "images/inventoryimages/sacrificeknife.xml"),
 }
 
 local prefabs = {}
@@ -472,6 +474,25 @@ local function moonring()
     return inst
 end
 
+--献祭小刀
+local function sacrificeknife()
+    local inst = commonfn("sacrificeknife")
+
+    inst.components.equippable:SetOnEquip(function(inst, owner)
+        if owner.prefab == "arcueid" then
+            owner.components.vigour.trinketfactor = -TUNING.ARCUEID_VIGOURBUFF_B
+        end
+    end)
+
+    inst.components.equippable:SetOnUnequip(function(inst, owner)
+        if owner.prefab == "arcueid" then
+            owner.components.vigour.trinketfactor = 0
+        end
+    end)
+
+    return inst
+end
+
 return
     Prefab("common/inventory/trinket_relaxationbook", relaxationbook, assets),
     Prefab("common/inventory/trinket_mooncloak", mooncloak, assets),
@@ -488,4 +509,5 @@ return
     Prefab("common/inventory/trinket_martyrseal", martyrseal, assets),
     Prefab("common/inventory/trinket_jadeblade", jadeblade, assets),
     Prefab("common/inventory/trinket_jadestar", jadestar, assets),
-    Prefab("common/inventory/trinket_firstcanon", firstcanon, assets)
+    Prefab("common/inventory/trinket_firstcanon", firstcanon, assets),
+    Prefab("common/inventory/trinket_sacrificeknife", sacrificeknife, assets)

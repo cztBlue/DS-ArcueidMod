@@ -217,16 +217,6 @@ TECH.MOONMAGIC_ONE = { MOONMAGIC = 1 }
 --饰品栏标识
 EQUIPSLOTS.TRINKET = "trinket"
 
---饰品配方（测试）
-TUNING.ARCUEID_TRINKETRECIPES =
-{
-	--调料瓶
-	["trinket_seasoningbottle"] =
-	{ "base_moonrock_nugget", "base_moonrock_nugget", "base_moonrock_nugget", "base_moonrock_nugget", nil,
-		"base_moonrock_nugget",
-		"base_moonrock_nugget", "base_moonrock_nugget", "base_moonrock_nugget" },
-}
-
 --特征修改
 TUNING.SANITY_DAY_GAIN = -0.04166
 TUNING.SANITY_NIGHT_LIGHT = 0.0233
@@ -261,6 +251,7 @@ modimport("scripts/modmain/name_list.lua")
 modimport("scripts/modmain/foodscript.lua")
 modimport("scripts/modmain/talkchain.lua")
 modimport("scripts/modmain/arcueid_lootdropper.lua")
+modimport("scripts/modmain/ninetabRecipe.lua")
 AddModCharacter("arcueid")
 table.insert(GLOBAL.CHARACTER_GENDERS.FEMALE, "arcueid")
 
@@ -293,7 +284,6 @@ local amulets = { "amulet", "blueamulet", "purpleamulet", "orangeamulet", "green
 	"blackamulet", "pinkamulet", "whiteamulet", "endiaamulet", "grayamulet", "broken_frosthammer", }
 if GetModConfigData("amuletstype") == 2 then
 	for i, v in ipairs(amulets) do
-		print("YesConfig")
 		AddPrefabPostInit(v, function(inst)
 			if inst.components.equippable then
 				inst.components.equippable.equipslot = EQUIPSLOTS.TRINKET
