@@ -25,12 +25,7 @@ local assets =
 local prefabs = {}
 
 
-local function onhammered(inst, worker)
-	inst:Remove()
-end
 
-local function onhit(inst, worker)
-end
 
 local function OnLoad(inst, data)
 end
@@ -38,7 +33,46 @@ end
 local function OnSave(inst, data)
 end
 
+local function onhammered(inst, worker)
+	inst:Remove()
+end
+
+local function onhit(inst, worker)
+end
+
 local function onbuilt(inst)
+end
+
+-- 九格配方合法检查
+local function CanMake(inst,Recipe)
+	for k1, v1 in pairs(Recipe) do
+		for k2 = 1, 9 do
+			-- print("--------------")
+			-- print(TUNING.ARCUEID_FOODRECIPES[k1][k2])
+			-- if self.inst.components.container.slots[k2]~=nil then
+			-- 	print(self.inst.components.container.slots[k2].prefab)
+			-- end
+			-- print("--------------")
+			if inst.components.container.slots[k2] then
+				if Recipe[k1][k2] ~= inst.components.container.slots[k2].prefab then
+					break
+				end
+				if k2 == 9 then
+					return true
+				end
+			end
+
+			if inst.components.container.slots[k2] == nil  then
+				if Recipe[k1][k2] ~= nil then
+					break
+				end
+				if k2 == 9 then
+					return true
+				end
+			end
+		end
+	end
+	return false
 end
 
 local function commonfn(str)
@@ -956,7 +990,7 @@ local function recycleform(Sim)
 						heapup(inst, replacement)
 					end
 
-					if item.components.stackable==nil  then --分解饰品
+					if item.components.stackable == nil then --分解饰品
 						inst.components.container:ConsumeByName(item.prefab, replacement[1])
 						heapup(inst, replacement)
 					end
@@ -1078,7 +1112,6 @@ end
 local function trinketworkshop(Sim)
 	local inst = commonfn("trinketworkshop")
 	MakeObstaclePhysics(inst, .3)
-
 	local widgetbuttoninfo = {
 		text = "制作",
 		position = Vector3(0, -165, 0),
@@ -1105,16 +1138,13 @@ local function trinketworkshop(Sim)
 					end
 				end
 			end
-
+		end,
+		validfn = function(inst)
+			return CanMake(inst,TUNING.ARCUEID_ALCHEMYRECIPES)
 		end
-
-		-- validfn = function(inst)
-		-- 	--return inst.components.stewer:CanCook()
-		-- end,
 	}
 
 	--容器特性
-
 	inst:AddComponent("container")
 	inst.components.container:SetNumSlots(#slotpos_miraclecookpot)
 	inst.components.container.widgetslotpos = slotpos_miraclecookpot
@@ -1157,16 +1187,54 @@ local function alchemydesk(Sim)
 	local inst = commonfn("alchemydesk")
 	MakeObstaclePhysics(inst, .3)
 
+	local function heapup(inst, replacement)
+		if replacement[2] ~= nil then
+			if replacement[2][2] >= 1 then
+				for i = 1, replacement[2][2], 1 do
+					local item2 = inst.components.container:GetItemInSlot(2)
+					player.components.inventory:GiveItem(SpawnPrefab(replacement[2][1]));
+				end
+			elseif replacement[2][2] < 1 and math.random() < replacement[2][2] then
+				local item2 = inst.components.container:GetItemInSlot(2)
+				if item2 and item2.prefab == replacement[2][1] and (item2.components.stackable and not item2.components.stackable:IsFull()) then
+					item2.components.stackable:SetStackSize(item2.components.stackable.stacksize + 1)
+				else
+					inst.components.container:GiveItem(SpawnPrefab(replacement[2][1]), 2)
+				end
+			end
+		end
+
+		if replacement[3] ~= nil then
+			if replacement[3][2] >= 1 then
+				for i = 1, replacement[3][2], 1 do
+					local item2 = inst.components.container:GetItemInSlot(3)
+					if item2 and item2.prefab == replacement[3][1] and (item2.components.stackable and not item2.components.stackable:IsFull()) then
+						item2.components.stackable:SetStackSize(item2.components.stackable.stacksize + 1)
+					else
+						inst.components.container:GiveItem(SpawnPrefab(replacement[3][1]), 3)
+					end
+				end
+			elseif replacement[3][2] < 1 and math.random() < replacement[3][2] then
+				local item2 = inst.components.container:GetItemInSlot(3)
+				if item2 and item2.prefab == replacement[3][1] and (item2.components.stackable and not item2.components.stackable:IsFull()) then
+					item2.components.stackable:SetStackSize(item2.components.stackable.stacksize + 1)
+				else
+					inst.components.container:GiveItem(SpawnPrefab(replacement[3][1]), 3)
+				end
+			end
+		end
+	end
+
 	local widgetbuttoninfo = {
 		text = "制作",
 		position = Vector3(0, -165, 0),
 		fn = function(inst)
-			for k1, v1 in pairs(TUNING.ARCUEID_TRINKETRECIPES) do
+			for k1, v1 in pairs(TUNING.ARCUEID_ALCHEMYRECIPES) do
 				print(k1)
 				for k2 = 1, 9 do
 					if inst.components.container.slots[k2] then
 						print(inst.components.container.slots[k2])
-						if TUNING.ARCUEID_TRINKETRECIPES[k1][k2] ~= inst.components.container.slots[k2].prefab then
+						if TUNING.ARCUEID_ALCHEMYRECIPES[k1][k2] ~= inst.components.container.slots[k2].prefab then
 							break
 						end
 					end
@@ -1183,12 +1251,13 @@ local function alchemydesk(Sim)
 					end
 				end
 			end
-
+		end,
+		validfn = function(inst)
+			return CanMake(inst,TUNING.ARCUEID_ALCHEMYRECIPES)
 		end
 	}
 
 	--容器特性
-
 	inst:AddComponent("container")
 	inst.components.container:SetNumSlots(#slotpos_miraclecookpot)
 	inst.components.container.widgetslotpos = slotpos_miraclecookpot
@@ -1200,10 +1269,10 @@ local function alchemydesk(Sim)
 	inst.components.container.acceptsstacks = false
 	--inst.components.container.type = "cooker"
 	inst.components.container.onopenfn = function(inst)
-		GetPlayer():PushEvent("OpenCraftRecipesTrinket")
+		GetPlayer():PushEvent("OpenCraftRecipesAlchemy")
 	end
 	inst.components.container.onclosefn = function(inst)
-		GetPlayer():PushEvent("CloseCraftRecipesTrinket")
+		GetPlayer():PushEvent("CloseCraftRecipesAlchemy")
 	end
 
 	--后注入覆盖
@@ -1241,7 +1310,7 @@ return
 	Prefab("common/objects/building_recycleform", recycleform, assets, prefabs),      --第二分解术式
 	Prefab("common/objects/building_rottenform", rottenform, assets, prefabs),        --腐败滋生术式
 	Prefab("common/objects/building_trinketworkshop", trinketworkshop, assets, prefabs), --饰品作坊
-	Prefab("common/objects/building_alchemydesk", alchemydesk, assets, prefabs), --炼金台
+	Prefab("common/objects/building_alchemydesk", alchemydesk, assets, prefabs),      --炼金台
 	MakePlacer("common/building_mooncirleform_placer", "building_mooncirleform", "building_mooncirleform", "idle"),
 	MakePlacer("common/building_gemicebox_placer", "building_gemicebox", "building_gemicebox", "closed"),
 	MakePlacer("common/building_travellerbox_placer", "building_travellerbox", "building_travellerbox", "closed"),

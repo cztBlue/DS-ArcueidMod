@@ -100,7 +100,7 @@ CraftRecipesTrinket = Class(Widget, function(self, owner)
 end)
 --饰品配方里的图要在这里写，不然图打不出来
 local arcueidItem = { "base_moonglass", "base_gemfragment", "base_moonrock_nugget", "base_horrorfuel", "base_puregem",
-	"base_moonempyreality", "base_gemblock", }
+	"base_moonempyreality", "base_gemblock","base_puremoonempyreality","base_polishgem", }
 function CraftRecipesTrinket:IsArcueidItem(name)
 	for key, value in pairs(arcueidItem) do
 		if name == value then
@@ -141,22 +141,22 @@ end
 --(-120, 30, 0),(-40, 30, 0),..(120, -130, 0)
 function CraftRecipesTrinket:page1()
 	--调料瓶
-	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/seasoningbottle.xml", "seasoningbottle.tex"))
-	self.item1:SetPosition(-120, 190, 0)
+	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/seasoningbottle.xml", "seasoningbottle.tex")) --改名字
+	self.item1:SetPosition(-120, 190, 0)                                                                            --调位置
 	self.item1:SetOnClick(
 		function()
-			local name = "seasoningbottle"
+			local name = "seasoningbottle" --改名字
 			self:QK()
 			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
 			self.tubiao:SetPosition(-100, 100, 0)
 			self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
-				STRINGS.NAMES[string.upper("trinket_" .. name)]))
+				STRINGS.NAMES[string.upper("trinket_" .. name)])) --调类名(选)
 			self.text1:SetPosition(50, 100, 0)
 			self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
-				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("trinket_" .. name)]))
+				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("trinket_" .. name)])) --调类名(选)
 			self.text2:SetPosition(80, -50, 0)
 
-			for k, v in pairs(TUNING.ARCUEID_TRINKETRECIPES["trinket_" .. name]) do
+			for k, v in pairs(TUNING.ARCUEID_TRINKETRECIPES["trinket_" .. name]) do --调类名和配方表(选)
 				if v ~= nil then
 					if self:IsArcueidItem(v) then
 						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
@@ -169,36 +169,325 @@ function CraftRecipesTrinket:page1()
 				end
 			end
 		end)
+	--不灭烛
+	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/eternallight.xml", "eternallight.tex")) --改名字
+	self.item1:SetPosition(-40, 190, 0)                                                                             --调位置
+	self.item1:SetOnClick(
+		function()
+			local name = "eternallight" --改名字
+			self:QK()
+			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
+			self.tubiao:SetPosition(-100, 100, 0)
+			self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
+				STRINGS.NAMES[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text1:SetPosition(50, 100, 0)
+			self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
+				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text2:SetPosition(80, -50, 0)
 
-	--蛋包饭
-	-- self.item2 = self.image:AddChild(ImageButton("images/inventoryimages/omeletterice.xml", "omeletterice.tex"))
-	-- self.item2:SetPosition(-40, 190, 0)
-	-- self.item2:SetOnClick(
-	-- 	function()
-	-- 		local name = "omeletterice"
-	-- 		self:QK()
-	-- 		self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
-	-- 		self.tubiao:SetPosition(-100, 100, 0)
-	-- 		self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
-	-- 			STRINGS.NAMES[string.upper("arcueid_food_" .. name)]))
-	-- 		self.text1:SetPosition(50, 100, 0)
-	-- 		self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
-	-- 			STRINGS.CHARACTERS.ARCUEID.DESCRIBE.FOOD_EFFECT[string.upper("arcueid_food_" .. name)]))
-	-- 		self.text2:SetPosition(80, -50, 0)
+			for k, v in pairs(TUNING.ARCUEID_TRINKETRECIPES["trinket_" .. name]) do --调类名和配方表(选)
+				if v ~= nil then
+					if self:IsArcueidItem(v) then
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages/" .. v .. ".xml",
+							v .. ".tex"))
+					else
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages.xml", v .. ".tex"))
+					end
+				end
+			end
+		end)
+	--休憩之书
+	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/relaxationbook.xml", "relaxationbook.tex")) --改名字
+	self.item1:SetPosition(40, 190, 0)--调位置
+	self.item1:SetOnClick(
+		function()
+			local name = "relaxationbook" --改名字
+			self:QK()
+			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
+			self.tubiao:SetPosition(-100, 100, 0)
+			self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
+				STRINGS.NAMES[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text1:SetPosition(50, 100, 0)
+			self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
+				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text2:SetPosition(80, -50, 0)
 
-	-- 		for k, v in pairs(TUNING.ARCUEID_FOODRECIPES["arcueid_food_"..name]) do
-	-- 			if v ~= nil then
-	-- 				if self:IsArcueidItem(v) then
-	-- 					self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
-	-- 						"images/inventoryimages/" .. self:RemovePrefix(v) .. ".xml",
-	-- 						self:RemovePrefix(v) .. ".tex"))
-	-- 				else
-	-- 					self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
-	-- 						"images/inventoryimages.xml", v .. ".tex"))
-	-- 				end
-	-- 			end
-	-- 		end
-	-- 	end)
+			for k, v in pairs(TUNING.ARCUEID_TRINKETRECIPES["trinket_" .. name]) do --调类名和配方表(选)
+				if v ~= nil then
+					if self:IsArcueidItem(v) then
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages/" .. v .. ".xml",
+							v .. ".tex"))
+					else
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages.xml", v .. ".tex"))
+					end
+				end
+			end
+		end)
+	--先知之眼
+	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/propheteye.xml", "propheteye.tex")) --改名字
+	self.item1:SetPosition(120, 190, 0)                                                                             --调位置
+	self.item1:SetOnClick(
+		function()
+			local name = "propheteye" --改名字
+			self:QK()
+			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
+			self.tubiao:SetPosition(-100, 100, 0)
+			self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
+				STRINGS.NAMES[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text1:SetPosition(50, 100, 0)
+			self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
+				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text2:SetPosition(80, -50, 0)
+
+			for k, v in pairs(TUNING.ARCUEID_TRINKETRECIPES["trinket_" .. name]) do --调类名和配方表(选)
+				if v ~= nil then
+					if self:IsArcueidItem(v) then
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages/" .. v .. ".xml",
+							v .. ".tex"))
+					else
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages.xml", v .. ".tex"))
+					end
+				end
+			end
+		end)
+	--十二面骰子
+	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/twelvedice.xml", "twelvedice.tex")) --改名字
+	self.item1:SetPosition(-120, 110, 0)                                                                             --调位置
+	self.item1:SetOnClick(
+		function()
+			local name = "twelvedice" --改名字
+			self:QK()
+			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
+			self.tubiao:SetPosition(-100, 100, 0)
+			self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
+				STRINGS.NAMES[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text1:SetPosition(50, 100, 0)
+			self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
+				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text2:SetPosition(80, -50, 0)
+
+			for k, v in pairs(TUNING.ARCUEID_TRINKETRECIPES["trinket_" .. name]) do --调类名和配方表(选)
+				if v ~= nil then
+					if self:IsArcueidItem(v) then
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages/" .. v .. ".xml",
+							v .. ".tex"))
+					else
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages.xml", v .. ".tex"))
+					end
+				end
+			end
+		end)
+	--瓶中灵
+	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/spiritbottle.xml", "spiritbottle.tex")) --改名字
+	self.item1:SetPosition(-40, 110, 0)                                                                             --调位置
+	self.item1:SetOnClick(
+		function()
+			local name = "spiritbottle" --改名字
+			self:QK()
+			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
+			self.tubiao:SetPosition(-100, 100, 0)
+			self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
+				STRINGS.NAMES[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text1:SetPosition(50, 100, 0)
+			self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
+				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text2:SetPosition(80, -50, 0)
+
+			for k, v in pairs(TUNING.ARCUEID_TRINKETRECIPES["trinket_" .. name]) do --调类名和配方表(选)
+				if v ~= nil then
+					if self:IsArcueidItem(v) then
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages/" .. v .. ".xml",
+							v .. ".tex"))
+					else
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages.xml", v .. ".tex"))
+					end
+				end
+			end
+		end)
+	--赴死者勋
+	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/martyrseal.xml", "martyrseal.tex")) --改名字
+	self.item1:SetPosition(40, 110, 0)                                                                             --调位置
+	self.item1:SetOnClick(
+		function()
+			local name = "martyrseal" --改名字
+			self:QK()
+			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
+			self.tubiao:SetPosition(-100, 100, 0)
+			self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
+				STRINGS.NAMES[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text1:SetPosition(50, 100, 0)
+			self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
+				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text2:SetPosition(80, -50, 0)
+
+			for k, v in pairs(TUNING.ARCUEID_TRINKETRECIPES["trinket_" .. name]) do --调类名和配方表(选)
+				if v ~= nil then
+					if self:IsArcueidItem(v) then
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages/" .. v .. ".xml",
+							v .. ".tex"))
+					else
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages.xml", v .. ".tex"))
+					end
+				end
+			end
+		end)
+	--立冬
+	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/icecrystal.xml", "icecrystal.tex")) --改名字
+	self.item1:SetPosition(120, 110, 0)                                                                             --调位置
+	self.item1:SetOnClick(
+		function()
+			local name = "icecrystal" --改名字
+			self:QK()
+			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
+			self.tubiao:SetPosition(-100, 100, 0)
+			self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
+				STRINGS.NAMES[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text1:SetPosition(50, 100, 0)
+			self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
+				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text2:SetPosition(80, -50, 0)
+
+			for k, v in pairs(TUNING.ARCUEID_TRINKETRECIPES["trinket_" .. name]) do --调类名和配方表(选)
+				if v ~= nil then
+					if self:IsArcueidItem(v) then
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages/" .. v .. ".xml",
+							v .. ".tex"))
+					else
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages.xml", v .. ".tex"))
+					end
+				end
+			end
+		end)
+	--翡翠星星
+	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/jadestar.xml", "jadestar.tex")) --改名字
+	self.item1:SetPosition(-120, 30, 0)                                                                             --调位置
+	self.item1:SetOnClick(
+		function()
+			local name = "jadestar" --改名字
+			self:QK()
+			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
+			self.tubiao:SetPosition(-100, 100, 0)
+			self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
+				STRINGS.NAMES[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text1:SetPosition(50, 100, 0)
+			self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
+				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text2:SetPosition(80, -50, 0)
+
+			for k, v in pairs(TUNING.ARCUEID_TRINKETRECIPES["trinket_" .. name]) do --调类名和配方表(选)
+				if v ~= nil then
+					if self:IsArcueidItem(v) then
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages/" .. v .. ".xml",
+							v .. ".tex"))
+					else
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages.xml", v .. ".tex"))
+					end
+				end
+			end
+		end)
+	--翡翠之刃
+	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/jadeblade.xml", "jadeblade.tex")) --改名字
+	self.item1:SetPosition(-40, 30, 0)                                                                             --调位置
+	self.item1:SetOnClick(
+		function()
+			local name = "jadeblade" --改名字
+			self:QK()
+			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
+			self.tubiao:SetPosition(-100, 100, 0)
+			self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
+				STRINGS.NAMES[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text1:SetPosition(50, 100, 0)
+			self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
+				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text2:SetPosition(80, -50, 0)
+
+			for k, v in pairs(TUNING.ARCUEID_TRINKETRECIPES["trinket_" .. name]) do --调类名和配方表(选)
+				if v ~= nil then
+					if self:IsArcueidItem(v) then
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages/" .. v .. ".xml",
+							v .. ".tex"))
+					else
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages.xml", v .. ".tex"))
+					end
+				end
+			end
+		end)
+	--第一圣典
+	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/firstcanon.xml", "firstcanon.tex")) --改名字
+	self.item1:SetPosition(40, 30, 0)                                                                             --调位置
+	self.item1:SetOnClick(
+		function()
+			local name = "firstcanon" --改名字
+			self:QK()
+			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
+			self.tubiao:SetPosition(-100, 100, 0)
+			self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
+				STRINGS.NAMES[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text1:SetPosition(50, 100, 0)
+			self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
+				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text2:SetPosition(80, -50, 0)
+
+			for k, v in pairs(TUNING.ARCUEID_TRINKETRECIPES["trinket_" .. name]) do --调类名和配方表(选)
+				if v ~= nil then
+					if self:IsArcueidItem(v) then
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages/" .. v .. ".xml",
+							v .. ".tex"))
+					else
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages.xml", v .. ".tex"))
+					end
+				end
+			end
+		end)
+	--阴影斗篷
+	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/shadowcloak.xml", "shadowcloak.tex")) --改名字
+	self.item1:SetPosition(120, 30, 0)                                                                             --调位置
+	self.item1:SetOnClick(
+		function()
+			local name = "shadowcloak" --改名字
+			self:QK()
+			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
+			self.tubiao:SetPosition(-100, 100, 0)
+			self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
+				STRINGS.NAMES[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text1:SetPosition(50, 100, 0)
+			self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
+				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("trinket_" .. name)])) --调类名(选)
+			self.text2:SetPosition(80, -50, 0)
+
+			for k, v in pairs(TUNING.ARCUEID_TRINKETRECIPES["trinket_" .. name]) do --调类名和配方表(选)
+				if v ~= nil then
+					if self:IsArcueidItem(v) then
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages/" .. v .. ".xml",
+							v .. ".tex"))
+					else
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages.xml", v .. ".tex"))
+					end
+				end
+			end
+		end)
 end
 
 function CraftRecipesTrinket:page2()

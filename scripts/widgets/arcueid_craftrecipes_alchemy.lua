@@ -9,7 +9,7 @@ local TextButton = require "widgets/textbutton"
 local UIAnim = require "widgets/uianim"
 require "util"
 
-CraftRecipesTrinket = Class(Widget, function(self, owner)
+CraftRecipesAlchemy = Class(Widget, function(self, owner)
 	Widget._ctor(self, "yanjiu")
 	self.owner = owner
 	self.cailiaobuzu = 0
@@ -22,10 +22,10 @@ CraftRecipesTrinket = Class(Widget, function(self, owner)
 	self.root:SetScaleMode(SCALEMODE_PROPORTIONAL)
 	self.page = 1
 	self.pagemax = 2
-	GetPlayer():ListenForEvent("OpenCraftRecipesTrinket", function()
+	GetPlayer():ListenForEvent("OpenCraftRecipesAlchemy", function()
 		self:Open()
 	end)
-	GetPlayer():ListenForEvent("CloseCraftRecipesTrinket", function()
+	GetPlayer():ListenForEvent("CloseCraftRecipesAlchemy", function()
 		self:Close()
 	end)
 	--背景
@@ -100,8 +100,8 @@ CraftRecipesTrinket = Class(Widget, function(self, owner)
 end)
 --炼金配方里的图要在这里写，不然图打不出来
 local arcueidItem = { "base_moonglass", "base_gemfragment", "base_moonrock_nugget", "base_horrorfuel", "base_puregem",
-	"base_moonempyreality", "base_gemblock", }
-function CraftRecipesTrinket:IsArcueidItem(name)
+	"base_moonempyreality", "base_gemblock", "trinket_sacrificeknife", "base_polishgem", "base_puremoonempyreality" }
+function CraftRecipesAlchemy:IsArcueidItem(name)
 	for key, value in pairs(arcueidItem) do
 		if name == value then
 			return true
@@ -110,13 +110,14 @@ function CraftRecipesTrinket:IsArcueidItem(name)
 	return false
 end
 
--- function CraftRecipesTrinket:RemovePrefix(name)
--- 	local remove1 = string.gsub(name, "trinket_", "")
--- 	local remove2 = string.gsub(remove1, "trinket_", "")
--- 	return remove2
--- end
+--移除饰品前缀
+function CraftRecipesAlchemy:RemovePrefix(name)
+	local remove1 = string.gsub(name, "arcueid_food_", "")
+	local remove2 = string.gsub(remove1, "trinket_", "")
+	return remove2
+end
 
-function CraftRecipesTrinket:flip()
+function CraftRecipesAlchemy:flip()
 	self:CK()
 	if self.page == 1 then
 		self:page1()
@@ -139,13 +140,13 @@ end
 
 --(-120, 190, 0),(-40, 190, 0),(40, 190, 0),(120, 190, 0),(-120, 110, 0),(-40, 110, 0),(40, 110, 0),(120, 110, 0)
 --(-120, 30, 0),(-40, 30, 0),..(120, -130, 0)
-function CraftRecipesTrinket:page1()
+function CraftRecipesAlchemy:page1()
 	--宝石块
 	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/base_gemblock.xml", "base_gemblock.tex"))
 	self.item1:SetPosition(-120, 190, 0) --调位置
 	self.item1:SetOnClick(
 		function()
-			local name = "base_gemblock" --改名字
+			local name = "gemblock" --改名字
 			self:QK()
 			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
 			self.tubiao:SetPosition(-100, 100, 0)
@@ -156,65 +157,123 @@ function CraftRecipesTrinket:page1()
 				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("base_" .. name)])) --调类名(选)
 			self.text2:SetPosition(80, -50, 0)
 
-			for k, v in pairs(TUNING.ARCUEID_TRINKETRECIPES["base_" .. name]) do --调类名和配方表(选)
+			for k, v in pairs(TUNING.ARCUEID_ALCHEMYRECIPES["base_" .. name]) do --调类名和配方表(选)
 				if v ~= nil then
 					if self:IsArcueidItem(v) then
 						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
-							"images/inventoryimages/" .. v .. ".xml",
-							v .. ".tex"))
+							"images/inventoryimages/" .. self:RemovePrefix(v) .. ".xml",
+							self:RemovePrefix(v) .. ".tex"))
 					else
 						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
-							"images/inventoryimages.xml", v .. ".tex"))
+							"images/inventoryimages.xml", self:RemovePrefix(v) .. ".tex"))
 					end
 				end
 			end
 		end)
+	--打磨宝石
+	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/base_polishgem.xml", "base_polishgem.tex"))
+	self.item1:SetPosition(-40, 190, 0) --调位置
+	self.item1:SetOnClick(
+		function()
+			local name = "polishgem" --改名字
+			self:QK()
+			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
+			self.tubiao:SetPosition(-100, 100, 0)
+			self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
+				STRINGS.NAMES[string.upper("base_" .. name)])) --调类名(选)
+			self.text1:SetPosition(50, 100, 0)
+			self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
+				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("base_" .. name)])) --调类名(选)
+			self.text2:SetPosition(80, -50, 0)
 
-	--蛋包饭
-	-- self.item2 = self.image:AddChild(ImageButton("images/inventoryimages/omeletterice.xml", "omeletterice.tex"))
-	-- self.item2:SetPosition(-40, 190, 0)
-	-- self.item2:SetOnClick(
-	-- 	function()
-	-- 		local name = "omeletterice"
-	-- 		self:QK()
-	-- 		self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
-	-- 		self.tubiao:SetPosition(-100, 100, 0)
-	-- 		self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
-	-- 			STRINGS.NAMES[string.upper("arcueid_food_" .. name)]))
-	-- 		self.text1:SetPosition(50, 100, 0)
-	-- 		self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
-	-- 			STRINGS.CHARACTERS.ARCUEID.DESCRIBE.FOOD_EFFECT[string.upper("arcueid_food_" .. name)]))
-	-- 		self.text2:SetPosition(80, -50, 0)
+			for k, v in pairs(TUNING.ARCUEID_ALCHEMYRECIPES["base_" .. name]) do --调类名和配方表(选)
+				if v ~= nil then
+					if self:IsArcueidItem(v) then
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages/" .. self:RemovePrefix(v) .. ".xml",
+							self:RemovePrefix(v) .. ".tex"))
+					else
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages.xml", self:RemovePrefix(v) .. ".tex"))
+					end
+				end
+			end
+		end)
+	--纯粹宝石
+	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/base_puregem.xml", "base_puregem.tex"))
+	self.item1:SetPosition(40, 190, 0) --调位置
+	self.item1:SetOnClick(
+		function()
+			local name = "puregem" --改名字
+			self:QK()
+			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
+			self.tubiao:SetPosition(-100, 100, 0)
+			self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
+				STRINGS.NAMES[string.upper("base_" .. name)])) --调类名(选)
+			self.text1:SetPosition(50, 100, 0)
+			self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
+				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("base_" .. name)])) --调类名(选)
+			self.text2:SetPosition(80, -50, 0)
 
-	-- 		for k, v in pairs(TUNING.ARCUEID_FOODRECIPES["arcueid_food_"..name]) do
-	-- 			if v ~= nil then
-	-- 				if self:IsArcueidItem(v) then
-	-- 					self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
-	-- 						"images/inventoryimages/" .. self:RemovePrefix(v) .. ".xml",
-	-- 						self:RemovePrefix(v) .. ".tex"))
-	-- 				else
-	-- 					self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
-	-- 						"images/inventoryimages.xml", v .. ".tex"))
-	-- 				end
-	-- 			end
-	-- 		end
-	-- 	end)
+			for k, v in pairs(TUNING.ARCUEID_ALCHEMYRECIPES["base_" .. name]) do --调类名和配方表(选)
+				if v ~= nil then
+					if self:IsArcueidItem(v) then
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages/" .. self:RemovePrefix(v) .. ".xml",
+							self:RemovePrefix(v) .. ".tex"))
+					else
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages.xml", self:RemovePrefix(v) .. ".tex"))
+					end
+				end
+			end
+		end)
+	--精粹月质
+	self.item1 = self.image:AddChild(ImageButton("images/inventoryimages/base_puremoonempyreality.xml",
+		"base_puremoonempyreality.tex"))
+	self.item1:SetPosition(120, 190, 0) --调位置
+	self.item1:SetOnClick(
+		function()
+			local name = "puremoonempyreality" --改名字
+			self:QK()
+			self.tubiao = self.image2:AddChild(Image("images/inventoryimages/" .. name .. ".xml", name .. ".tex"))
+			self.tubiao:SetPosition(-100, 100, 0)
+			self.text1 = self.image2:AddChild(Text(BODYTEXTFONT, 50,
+				STRINGS.NAMES[string.upper("base_" .. name)])) --调类名(选)
+			self.text1:SetPosition(50, 100, 0)
+			self.text2 = self.image2:AddChild(Text(BODYTEXTFONT, 30,
+				STRINGS.CHARACTERS.ARCUEID.DESCRIBE.TRINKET_EFFECT[string.upper("base_" .. name)])) --调类名(选)
+			self.text2:SetPosition(80, -50, 0)
+
+			for k, v in pairs(TUNING.ARCUEID_ALCHEMYRECIPES["base_" .. name]) do --调类名和配方表(选)
+				if v ~= nil then
+					if self:IsArcueidItem(v) then
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages/" .. self:RemovePrefix(v) .. ".xml",
+							self:RemovePrefix(v) .. ".tex"))
+					else
+						self["cailiao" .. tostring(k)] = self["gezi" .. tostring(k)]:AddChild(ImageButton(
+							"images/inventoryimages.xml", self:RemovePrefix(v) .. ".tex"))
+					end
+				end
+			end
+		end)
 end
 
-function CraftRecipesTrinket:page2()
+function CraftRecipesAlchemy:page2()
 end
 
-function CraftRecipesTrinket:Close()
+function CraftRecipesAlchemy:Close()
 	self.openui = false
 	self:Hide()
 end
 
-function CraftRecipesTrinket:Open()
+function CraftRecipesAlchemy:Open()
 	self.openui = true
 	self:Show()
 end
 
-function CraftRecipesTrinket:QK()
+function CraftRecipesAlchemy:QK()
 	if self.tubiao then self.tubiao:Kill() end
 	if self.text1 then self.text1:Kill() end
 	if self.text2 then self.text2:Kill() end
@@ -229,7 +288,7 @@ function CraftRecipesTrinket:QK()
 	if self.cailiao9 then self.cailiao9:Kill() end
 end
 
-function CraftRecipesTrinket:CK()
+function CraftRecipesAlchemy:CK()
 	if self.item1 then self.item1:Kill() end
 	if self.item2 then self.item2:Kill() end
 	if self.item3 then self.item3:Kill() end
@@ -252,4 +311,4 @@ function CraftRecipesTrinket:CK()
 	if self.item20 then self.item20:Kill() end
 end
 
-return CraftRecipesTrinket
+return CraftRecipesAlchemy

@@ -16,7 +16,7 @@ local assets={
 	Asset("ATLAS", "images/inventoryimages/puregem.xml"),
 	Asset("ATLAS", "images/inventoryimages/moonempyreality.xml"),
 	Asset("ATLAS", "images/inventoryimages/gemblock.xml"),
-	Asset("ATLAS", "images/inventoryimages/gemblock.xml"),
+	Asset("ATLAS", "images/inventoryimages/polishgem.xml"),
 	Asset("ATLAS", "images/inventoryimages/puremoonempyreality.xml"),
 	--要显示在配方里的基础材料要保持资源名和预制体名一致
 	Asset("ATLAS", "images/inventoryimages/base_moonglass.xml"),
@@ -26,6 +26,7 @@ local assets={
 	Asset("ATLAS", "images/inventoryimages/base_puregem.xml"),
 	Asset("ATLAS", "images/inventoryimages/base_moonempyreality.xml"),
 	Asset("ATLAS", "images/inventoryimages/base_gemblock.xml"),
+	Asset("ATLAS", "images/inventoryimages/base_polishgem.xml"),
 	Asset("ATLAS", "images/inventoryimages/base_puremoonempyreality.xml"),
 }
 

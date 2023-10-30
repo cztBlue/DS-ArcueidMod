@@ -297,6 +297,7 @@ local icescreen = GLOBAL.require "widgets/icescreen"
 local blindscreen = GLOBAL.require "widgets/blindscreen"
 local foodrecipes = GLOBAL.require "widgets/arcueid_craftrecipes_food"
 local trinketrecipes = GLOBAL.require "widgets/arcueid_craftrecipes_trinket"
+local alchemyrecipes = GLOBAL.require "widgets/arcueid_craftrecipes_alchemy"
 
 -- --活力值
 AddClassPostConstruct("widgets/statusdisplays", function(self)
@@ -405,6 +406,19 @@ AddClassPostConstruct("widgets/controls", function(self)
 		return
 	end
 	controls.trinketrecipes:Hide()
+end)
+
+--炼金台配方
+AddClassPostConstruct("widgets/controls", function(self)
+	local controls = self
+	if controls and GetPlayer().prefab == "arcueid" then
+		if controls.containerroot then
+			controls.alchemyrecipes = controls.containerroot:AddChild(alchemyrecipes())
+		end
+	else
+		return
+	end
+	controls.alchemyrecipes:Hide()
 end)
 
 --饰品栏
