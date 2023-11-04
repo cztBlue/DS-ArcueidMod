@@ -1,5 +1,6 @@
 local ArcueidState = Class(function(self, inst)
     self.inst = inst
+    self.recipeunlock = {}
     self.careful = false
     self.iceskill_cooldown = 0
     self.martyrseal_cooldown = 0
@@ -56,6 +57,17 @@ function ArcueidState:OnUpdate()
     if self.martyrseal_highlight >= 0 then
         self.martyrseal_highlight = self.martyrseal_highlight - dt
     end
+end
+
+--记住配方次数
+function ArcueidState:OnSave()
+    local data = {}
+    data.recipeunlock = self.recipeunlock
+    return data
+end
+
+function ArcueidState:OnLoad(data)
+    self.recipeunlock = data.recipeunlock
 end
 
 return ArcueidState

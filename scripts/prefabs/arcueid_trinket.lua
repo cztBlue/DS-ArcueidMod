@@ -44,6 +44,7 @@ local function commonfn(str)
 
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
+    local sound = inst.entity:AddSoundEmitter()
 
     --物品栏类型的物理碰撞
     MakeInventoryPhysics(inst)
@@ -68,6 +69,8 @@ local function commonfn(str)
 
     return inst
 end
+
+----------------------饰品方法------------------
 
 --休憩之书
 local function relaxationbook()
@@ -142,23 +145,35 @@ local function eternallight()
     light:SetFalloff(2)
     light:SetRadius(5)
     light:SetColour(175 / 255, 238 / 255, 238 / 255)
-    light:Enable(true)
+    light:Enable(false)
 
     inst.components.equippable:SetOnEquip(function(inst, owner)
         if owner.prefab == "arcueid" then
             owner.components.vigour.trinketfactor = -TUNING.ARCUEID_VIGOURBUFF_E
-            light:SetIntensity(.6)
-            light:SetFalloff(2)
-            light:SetRadius(5)
-            light:SetColour(175 / 255, 238 / 255, 238 / 255)
-            light:Enable(true)
+
+            --动态光源?
+            owner.fire = SpawnPrefab("eternalfire")
+            local follower = owner.fire.entity:AddFollower()
+            follower:FollowSymbol(owner.GUID, "swap_object", -120, -175, 2)
+
+            inst.SoundEmitter:PlaySound("dontstarve/wilson/torch_LP", "torch")
+            inst.SoundEmitter:PlaySound("dontstarve/wilson/torch_swing")
+            inst.SoundEmitter:SetParameter( "torch", "intensity", 1 )
         end
     end)
+
+
 
     inst.components.equippable:SetOnUnequip(function(inst, owner)
         if owner.prefab == "arcueid" then
             owner.components.vigour.trinketfactor = 0
-            light:Enable(false)
+            -- light:Enable(false)
+
+            owner.fire:Remove()
+            owner.fire = nil
+
+            --inst.SoundEmitter:KillSound("torch")
+            inst.SoundEmitter:PlaySound("dontstarve/common/fireOut")
         end
     end)
 
@@ -414,20 +429,22 @@ local function twelvedice()
 end
 
 --先知之眼
+--洞察：概率暴击，1%必杀
+--睿智：可解锁物品
 local function propheteye()
     local inst = commonfn("propheteye")
 
     inst.components.equippable:SetOnEquip(function(inst, owner)
         if owner.prefab == "arcueid" then
-            owner.components.vigour.trinketfactor = -TUNING.ARCUEID_VIGOURBUFF_D
-            owner.components.builder.ingredientmod = 1
+            owner.components.vigour.trinketfactor = -TUNING.ARCUEID_VIGOURBUFF_C
+            --owner.components.builder.ingredientmod = 1
         end
     end)
 
     inst.components.equippable:SetOnUnequip(function(inst, owner)
         if owner.prefab == "arcueid" then
             owner.components.vigour.trinketfactor = 0
-            owner.components.builder.ingredientmod = 1.5
+            --owner.components.builder.ingredientmod = 1.5
         end
     end)
 
@@ -477,6 +494,7 @@ end
 --献祭小刀
 local function sacrificeknife()
     local inst = commonfn("sacrificeknife")
+    inst:AddTag("maketool")
 
     inst.components.equippable:SetOnEquip(function(inst, owner)
         if owner.prefab == "arcueid" then

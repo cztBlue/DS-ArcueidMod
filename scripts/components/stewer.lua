@@ -1,7 +1,6 @@
 --不知到为什么注入StartCooking突然失败了，暂时放一份重写在这里
 local cooking = require("cooking")
 
-
 local Stewer = Class(function(self, inst)
 	self.inst = inst
 	self.cooking = false
@@ -174,11 +173,11 @@ function Stewer:StartCooking()
 			if self.inst.components.container then
 				self.done = nil
 				self.cooking = true
-	
+
 				if self.onstartcooking then
 					self.onstartcooking(self.inst)
 				end
-	
+
 				local spoilage_total = 0
 				local spoilage_n = 0
 				local ings = {}
@@ -194,7 +193,7 @@ function Stewer:StartCooking()
 					self.product_spoilage = spoilage_total / spoilage_n
 					self.product_spoilage = 1 - (1 - self.product_spoilage) * .5
 				end
-	
+
 				local foundthespecial = false
 				local cooktime = 1
 				if self.specialcookername then
@@ -205,14 +204,14 @@ function Stewer:StartCooking()
 						foundthespecial = true
 					end
 				end
-	
+
 				if not foundthespecial then
 					-- fallback to regular cooking
 					local cooker = self.cookername or self.inst.prefab
 					self.product, cooktime = cooking.CalculateRecipe(cooker, ings)
 					self.productcooker = cooker
 				end
-	
+
 				--改动了
 				local player = GetPlayer()
 				local num    = math.random(100)
@@ -224,21 +223,21 @@ function Stewer:StartCooking()
 						self.product = oldfood
 					end
 				end
-	
-	
+
+
 				local grow_time = TUNING.BASE_COOK_TIME * cooktime
 				self.targettime = GetTime() + grow_time
 				self.task = self.inst:DoTaskInTime(grow_time, dostew, "stew")
-	
+
 				self.inst.components.container:Close()
 				self.inst.components.container:DestroyContents()
 				self.inst.components.container.canbeopened = false
 			end
 		end
 	end
-	
-	
-	
+
+
+
 	function Stewer:OnSave()
 		local time = GetTime()
 		if self.cooking then
@@ -265,7 +264,6 @@ function Stewer:StartCooking()
 		end
 	end
 end
-
 
 function Stewer:OnLoad(data)
 	--self.produce = data.produce

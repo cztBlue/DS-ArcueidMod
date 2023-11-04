@@ -17,6 +17,7 @@ PrefabFiles = {
 	"arcueid_building",
 	"arcueid_trinket",
 	"arcueid_baseitem",
+	"arcueid_efficacy",
 }
 
 Assets = {
@@ -120,6 +121,10 @@ Assets = {
 	Asset("IMAGE", "images/map_icons/recycleform.tex"),
 	Asset("ATLAS", "images/map_icons/rottenform.xml"),
 	Asset("IMAGE", "images/map_icons/rottenform.tex"),
+	Asset("ATLAS", "images/map_icons/alchemydesk.xml"),
+	Asset("IMAGE", "images/map_icons/alchemydesk.tex"),
+	Asset("ATLAS", "images/map_icons/trinketworkshop.xml"),
+	Asset("IMAGE", "images/map_icons/trinketworkshop.tex"),
 
 	--ui
 	Asset("ATLAS", "images/arcueid_gui/turnarrow_icon.xml"),
@@ -246,6 +251,8 @@ AddMinimapAtlas("images/map_icons/gemgenerator.xml")
 AddMinimapAtlas("images/map_icons/immortallight.xml")
 AddMinimapAtlas("images/map_icons/travellerbox.xml")
 AddMinimapAtlas("images/map_icons/gemicebox.xml")
+AddMinimapAtlas("images/map_icons/trinketworkshop.xml")
+AddMinimapAtlas("images/map_icons/alchemydesk.xml")
 
 modimport("scripts/modmain/name_list.lua")
 modimport("scripts/modmain/foodscript.lua")
@@ -343,39 +350,39 @@ end)
 
 
 
---修正制作倍率
-AddPrefabPostInit("greenamulet", function(inst)
-	local player = GetPlayer();
-	if player.prefab == "arcueid" then
-		inst.components.equippable:SetOnEquip(function(inst, owner)
-			owner.AnimState:OverrideSymbol("swap_body", "torso_amulets", "greenamulet")
-			--倍率矫正
-			if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
-				and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye" then
-				owner.components.builder.ingredientmod = 0.5
-			else
-				owner.components.builder.ingredientmod = 1
-			end
+--绿宝石修正制作倍率
+-- AddPrefabPostInit("greenamulet", function(inst)
+-- 	local player = GetPlayer();
+-- 	if player.prefab == "arcueid" then
+-- 		inst.components.equippable:SetOnEquip(function(inst, owner)
+-- 			owner.AnimState:OverrideSymbol("swap_body", "torso_amulets", "greenamulet")
+-- 			--倍率矫正
+-- 			if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
+-- 				and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye" then
+-- 				owner.components.builder.ingredientmod = 0.5
+-- 			else
+-- 				owner.components.builder.ingredientmod = 1
+-- 			end
 
-			inst.onitembuild = function()
-				inst.components.finiteuses:Use(1)
-			end
-			inst:ListenForEvent("consumeingredients", inst.onitembuild, owner)
-		end)
+-- 			inst.onitembuild = function()
+-- 				inst.components.finiteuses:Use(1)
+-- 			end
+-- 			inst:ListenForEvent("consumeingredients", inst.onitembuild, owner)
+-- 		end)
 
-		inst.components.equippable:SetOnUnequip(function(inst, owner)
-			owner.AnimState:ClearOverrideSymbol("swap_body")
-			--倍率矫正
-			if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
-				and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye" then
-				owner.components.builder.ingredientmod = 1
-			else
-				owner.components.builder.ingredientmod = 1.5
-			end
-			inst:RemoveEventCallback("consumeingredients", inst.onitembuild, owner)
-		end)
-	end
-end)
+-- 		inst.components.equippable:SetOnUnequip(function(inst, owner)
+-- 			owner.AnimState:ClearOverrideSymbol("swap_body")
+-- 			--倍率矫正
+-- 			if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
+-- 				and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye" then
+-- 				owner.components.builder.ingredientmod = 1
+-- 			else
+-- 				owner.components.builder.ingredientmod = 1.5
+-- 			end
+-- 			inst:RemoveEventCallback("consumeingredients", inst.onitembuild, owner)
+-- 		end)
+-- 	end
+-- end)
 
 --注入旅行箱组件
 AddPrefabPostInit("world", function(inst)
@@ -641,8 +648,13 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
 					or item.prefab == "nightmarebeak"
 					or item.prefab == "ghost"
 				then
-					item:Remove()
-					player.components.vigour:DoDelta(-50, nil, "firstcanon_skill")
+					item.AnimState:PlayAnimation("disappear")
+					if item.AnimState:GetCurrentAnimationLength() ~= nil then
+						item:DoTaskInTime(item.AnimState:GetCurrentAnimationLength(),item.Remove)
+					else
+						item:Remove()
+					end
+					player.components.vigour:DoDelta(-30, nil, "firstcanon_skill")
 				end
 			end
 		end
@@ -710,6 +722,16 @@ AddComponentPostInit("combat", function(Combat)
 				end
 				local damage = self:CalcDamage(targ, weapon, mult)
 
+
+				--先知之眼->.35概率暴击（升变后合成直死魔眼）
+				if self.inst.prefab == "arcueid"
+					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye"
+					and math.random < .35
+				then
+					damage = damage * 2
+				end
+
 				--翡翠之刃
 				if self.inst.prefab == "arcueid"
 					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
@@ -717,7 +739,6 @@ AddComponentPostInit("combat", function(Combat)
 				then
 					damage = damage * 1.15
 				end
-
 
 				--第一圣典
 				if self.inst.prefab == "arcueid"
@@ -794,8 +815,3 @@ AddComponentPostInit("combat", function(Combat)
 	end
 end)
 
-
-
-
-
---------------测试

@@ -33,14 +33,10 @@ local assets = {
     Asset("ANIM", "anim/arcueid.zip"),
     --魔术科技图标
     Asset("ATLAS", "images/arcueid_moshuTAB.xml"),
-
-
 }
 
 local prefabs = {}
-
-local start_inv = {
-}
+local start_inv = {}
 
 --监视时间改变伤害
 --满月无敌+高速+活力buff
@@ -50,8 +46,6 @@ local function updatepower(inst)
     local Isbelow70per
     local Isbelow35per
     local moon = GetClock():GetMoonPhase()
-
-
 
     if GetClock():IsDay() then
         timestr = "DAY"
@@ -130,49 +124,54 @@ local function arcueid_recipes()
     local atlas_base_puregem = "images/inventoryimages/base_puregem.xml"
     local atlas_base_moonempyreality = "images/inventoryimages/base_moonempyreality.xml"
     local atlas_base_gemblock = "images/inventoryimages/base_gemblock.xml"
-
-    --宝石块
-    local base_gemblock = Recipe("base_gemblock", {
-            Ingredient("base_gemfragment", 6, atlas_base_gemfragment),
-            Ingredient("base_moonglass", 3, atlas_base_moonglass),
-            Ingredient("thulecite", 1),
-        },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    base_gemblock.atlas = "images/inventoryimages/gemblock.xml"
-    base_gemblock.image = "gemblock.tex"
-
-    --纯粹宝石
-    local base_puregem = Recipe("base_puregem", {
-            Ingredient("base_gemblock", 4, atlas_base_gemblock),
-            Ingredient("base_moonempyreality", 3, atlas_base_moonempyreality), },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    base_puregem.atlas = "images/inventoryimages/puregem.xml"
-    base_puregem.image = "puregem.tex"
+    local atlas_base_puremoonempyreality = "images/inventoryimages/base_puremoonempyreality.xml"
+    local atlas_base_polishgem = "images/inventoryimages/base_polishgem.xml"
 
     --具现原理
     local building_mooncirleform = Recipe("building_mooncirleform", {
-            Ingredient("base_moonglass", 8, atlas_base_moonglass),
-            Ingredient("ice", 5), Ingredient("bluegem", 5) },
+            Ingredient("base_moonglass", 5, atlas_base_moonglass),
+            Ingredient("ice", 3), Ingredient("bluegem", 5) },
         RECIPETABS.MOONMAGIC, TECH.MAGIC_THREE, nil, "building_mooncirleform_placer", 2)
     building_mooncirleform.atlas = "images/map_icons/mooncirleform.xml"
     building_mooncirleform.image = "mooncirleform.tex"
     --第二分解术式
     local building_recycleform = Recipe("building_recycleform", {
-            Ingredient("base_moonglass", 5, atlas_base_moonglass), Ingredient("redgem", 5),
-            Ingredient("thulecite", 5) },
+            Ingredient("base_moonglass", 5, atlas_base_moonglass), 
+            Ingredient("redgem", 5),
+            Ingredient("bluegem", 3),
+         },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_recycleform_placer", 2)
     building_recycleform.atlas = "images/map_icons/recycleform.xml"
     building_recycleform.image = "recycleform.tex"
+    --饰品作坊
+    local building_trinketworkshop = Recipe("building_trinketworkshop", {
+            Ingredient("base_moonglass", 2, atlas_base_moonglass),
+            Ingredient("boards", 4),
+            Ingredient("goldnugget", 2),
+        },
+        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_trinketworkshop_placer", 2)
+    building_trinketworkshop.atlas = "images/map_icons/trinketworkshop.xml"
+    building_trinketworkshop.image = "trinketworkshop.tex"
+    --炼金台
+    local building_alchemydesk = Recipe("building_alchemydesk", {
+            Ingredient("base_moonglass", 5, atlas_base_moonglass),
+            Ingredient("messagebottleempty", 3),
+            Ingredient("base_horrorfuel", 5, atlas_base_horrorfuel),
+        },
+        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_alchemydesk_placer", 2)
+    building_alchemydesk.atlas = "images/map_icons/alchemydesk.xml"
+    building_alchemydesk.image = "alchemydesk.tex"
     --宝石冰箱
     local building_gemicebox = Recipe("building_gemicebox", {
-            Ingredient("base_gemblock", 2, atlas_base_gemblock),
-            Ingredient("bluegem", 7), },
+            Ingredient("base_polishgem", 2, atlas_base_polishgem),
+            Ingredient("bluegem", 8), },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_gemicebox_placer", 2)
     building_gemicebox.atlas = "images/map_icons/gemicebox.xml"
     building_gemicebox.image = "gemicebox.tex"
     --旅行者时空箱
     local building_travellerbox = Recipe("building_travellerbox", {
-            Ingredient("base_moonempyreality", 4, atlas_base_moonempyreality), Ingredient("boards", 2),
+            Ingredient("base_moonempyreality", 4, atlas_base_moonempyreality), 
+            Ingredient("boards", 2),
             Ingredient("orangegem", 2), },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_travellerbox_placer", 2)
     building_travellerbox.atlas = "images/map_icons/travellerbox.xml"
@@ -187,24 +186,24 @@ local function arcueid_recipes()
     building_immortallight.image = "immortallight.tex"
     --宝石发生器
     local building_gemgenerator = Recipe("building_gemgenerator", {
-            Ingredient("livinglog", 10),
-            Ingredient("base_puregem", 1, atlas_base_puregem),
-            Ingredient("base_horrorfuel", 7, atlas_base_horrorfuel), },
+            Ingredient("livinglog", 20),
+            Ingredient("base_gemblock", 1, atlas_base_gemblock),
+            Ingredient("base_horrorfuel", 2, atlas_base_horrorfuel), },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_gemgenerator_placer", 2)
     building_gemgenerator.atlas = "images/map_icons/gemgenerator.xml"
     building_gemgenerator.image = "gemgenerator.tex"
     --空间锚定仪
     local building_spatialanchor = Recipe("building_spatialanchor", {
-            Ingredient("base_puregem", 1, atlas_base_puregem),
+            Ingredient("base_polishgem", 1, atlas_base_polishgem),
             Ingredient("orangegem", 1),
-            Ingredient("base_gemblock", 2, atlas_base_gemblock),
+            Ingredient("base_moonrock_nugget", 10, atlas_base_moonrock_nugget),
         },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_spatialanchor_placer", 2)
     building_spatialanchor.atlas = "images/map_icons/spatialanchor.xml"
     building_spatialanchor.image = "spatialanchor.tex"
     --奇迹煮锅
     local building_miraclecookpot = Recipe("building_miraclecookpot", {
-            Ingredient("base_gemblock", 4, atlas_base_gemblock),
+            Ingredient("base_gemblock", 2, atlas_base_gemblock),
             Ingredient("base_moonrock_nugget", 5, atlas_base_moonrock_nugget),
             Ingredient("redgem", 5),
         },
@@ -213,7 +212,7 @@ local function arcueid_recipes()
     building_miraclecookpot.image = "miraclecookpot.tex"
     --魔术炮塔
     local building_guard = Recipe("building_guard", {
-            Ingredient("base_puregem", 4, atlas_base_puregem),
+            Ingredient("base_puregem", 1, atlas_base_puregem),
             Ingredient("base_moonrock_nugget", 20, atlas_base_moonrock_nugget),
         },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_guard_placer", 2)
@@ -228,81 +227,25 @@ local function arcueid_recipes()
     building_infinitas.atlas = "images/map_icons/infinitas.xml"
     building_infinitas.image = "infinitas.tex"
     --腐败滋生术式
-    local building_rottenform = Recipe("building_rottenform", { 
-        Ingredient("base_gemblock", 1, atlas_base_gemblock), 
-        Ingredient("base_horrorfuel", 5, atlas_base_horrorfuel), 
-    },
+    local building_rottenform = Recipe("building_rottenform", {
+            Ingredient("base_gemblock", 1, atlas_base_gemblock),
+            Ingredient("base_horrorfuel", 5, atlas_base_horrorfuel),
+        },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_rottenform_placer", 2)
     building_rottenform.atlas = "images/map_icons/rottenform.xml"
     building_rottenform.image = "rottenform.tex"
 
-    ---------------------饰品----------------------
 
-    -- --休憩之书
-    -- local trinket_relaxationbook = Recipe("trinket_relaxationbook",
-    --     { Ingredient("base_moonglass", 10, atlas_base_moonglass) },
-    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    -- trinket_relaxationbook.atlas = "images/inventoryimages/relaxationbook.xml"
-    -- trinket_relaxationbook.image = "relaxationbook.tex"
-    -- --先知之眼
-    -- local trinket_propheteye = Recipe("trinket_propheteye", { Ingredient("base_moonglass", 36, atlas_base_moonglass) },
-    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    -- trinket_propheteye.atlas = "images/inventoryimages/propheteye.xml"
-    -- trinket_propheteye.image = "propheteye.tex"
-    -- --十二面骰子
-    -- local trinket_twelvedice = Recipe("trinket_twelvedice", { Ingredient("base_moonglass", 16, atlas_base_moonglass) },
-    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    -- trinket_twelvedice.atlas = "images/inventoryimages/twelvedice.xml"
-    -- trinket_twelvedice.image = "twelvedice.tex"
-    -- --瓶中灵
-    -- local trinket_spiritbottle = Recipe("trinket_spiritbottle",
-    --     { Ingredient("base_moonglass", 14, atlas_base_moonglass) },
-    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    -- trinket_spiritbottle.atlas = "images/inventoryimages/spiritbottle.xml"
-    -- trinket_spiritbottle.image = "spiritbottle.tex"
-    -- --赴死者勋
-    -- local trinket_martyrseal = Recipe("trinket_martyrseal",
-    --     { Ingredient("base_moonglass", 40, atlas_base_moonglass) },
-    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    -- trinket_martyrseal.atlas = "images/inventoryimages/martyrseal.xml"
-    -- trinket_martyrseal.image = "martyrseal.tex"
-    -- --翡翠之刃
-    -- local trinket_jadeblade = Recipe("trinket_jadeblade", { Ingredient("base_moonglass", 34, atlas_base_moonglass) },
-    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    -- trinket_jadeblade.atlas = "images/inventoryimages/jadeblade.xml"
-    -- trinket_jadeblade.image = "jadeblade.tex"
-    -- --第一圣典
-    -- local trinket_firstcanon = Recipe("trinket_relaxationbook",
-    --     { Ingredient("base_moonglass", 26, atlas_base_moonglass) },
-    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    -- trinket_firstcanon.atlas = "images/inventoryimages/firstcanon.xml"
-    -- trinket_firstcanon.image = "firstcanon.tex"
-    -- --翡翠星星
-    -- local trinket_jadestar = Recipe("trinket_jadestar", { Ingredient("base_moonglass", 17, atlas_base_moonglass) },
-    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    -- trinket_jadestar.atlas = "images/inventoryimages/jadestar.xml"
-    -- trinket_jadestar.image = "jadestar.tex"
-    -- --立冬
-    -- local trinket_icecrystal = Recipe("trinket_icecrystal", { Ingredient("base_moonglass", 50, atlas_base_moonglass) },
-    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    -- trinket_icecrystal.atlas = "images/inventoryimages/icecrystal.xml"
-    -- trinket_icecrystal.image = "icecrystal.tex"
-    -- --调料瓶
-    -- local trinket_seasoningbottle = Recipe("trinket_seasoningbottle",
-    --     { Ingredient("base_moonglass", 10, atlas_base_moonglass) },
-    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    -- trinket_seasoningbottle.atlas = "images/inventoryimages/seasoningbottle.xml"
-    -- trinket_seasoningbottle.image = "seasoningbottle.tex"
-    -- --阴影斗篷
-    -- local trinket_shadowcloak = Recipe("trinket_shadowcloak", { Ingredient("base_moonglass", 50, atlas_base_moonglass) },
-    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    -- trinket_shadowcloak.atlas = "images/inventoryimages/shadowcloak.xml"
-    -- trinket_shadowcloak.image = "shadowcloak.tex"
-    -- --不灭烛
-    -- local trinket_eternallight = Recipe("trinket_eternallight", { Ingredient("base_moonglass", 8, atlas_base_moonglass) },
-    --     RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil)
-    -- trinket_eternallight.atlas = "images/inventoryimages/eternallight.xml"
-    -- trinket_eternallight.image = "eternallight.tex"
+    ---------------------底部饰品----------------------
+    --献祭小刀
+    local trinket_sacrificeknife = Recipe("trinket_sacrificeknife", { 
+            Ingredient("petals", 5),
+            Ingredient("goldnugget", 2),
+            Ingredient("twigs", 2),
+        },
+        RECIPETABS.MOONMAGIC, TECH.NONE, nil)
+    trinket_sacrificeknife.atlas = "images/inventoryimages/sacrificeknife.xml"
+    trinket_sacrificeknife.image = "sacrificeknife.tex"
 end
 
 local fn = function(inst)
@@ -342,8 +285,8 @@ local fn = function(inst)
     inst.components.locomotor.walkspeed = 4
     inst.components.locomotor.runspeed = 6
 
-    --制作倍率(*比一般人笨)
-    inst.components.builder.ingredientmod = 1.5
+    --制作倍率（改回1倍）
+    inst.components.builder.ingredientmod = 1
 
     --添加活力值组件
     inst:AddComponent("vigour")
@@ -407,6 +350,8 @@ local fn = function(inst)
     -- inst:ListenForEvent( "vigour_change", function()
     --     print(GetPlayer().components.vigour.currentvigour)
     --  end , GetWorld())
+
+    
 end
 
 return MakePlayerCharacter("arcueid", prefabs, assets, fn, start_inv)

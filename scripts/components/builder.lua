@@ -102,7 +102,7 @@ function Builder:IsCategoryResearchable(category)
 
 			local can_build = self:CanBuild(recipe.name)
 			local can_research = not has_researched and can_build and
-			CanPrototypeRecipe(recipe.level, current_research_level)
+				CanPrototypeRecipe(recipe.level, current_research_level)
 			if can_research and not recipe.nounlock then
 				return true
 			end
@@ -183,7 +183,7 @@ function Builder:CanBuildAtPoint(pt, recipe)
 			end
 		else
 			local testTile = self.inst:GetCurrentTileType(x, y, z) --ground.Map:GetTileAtPoint(x , y, z)
-			local isShore = ground.Map:IsShore(testTile)     --testTile == GROUND.OCEAN_SHORE --ground.Map:IsWater(testTile)
+			local isShore = ground.Map:IsShore(testTile)  --testTile == GROUND.OCEAN_SHORE --ground.Map:IsWater(testTile)
 			--[[
     		testTile = self.inst:GetCurrentTileType(x + buffer, y, z)--ground.Map:GetTileAtPoint(x , y, z)
     		isShore = isShore and testTile == GROUND.OCEAN_SHORE --ground.Map:IsWater(testTile)
@@ -470,21 +470,45 @@ end
 
 function Builder:UnlockRecipe(recname)
 	local recipe = GetRecipe(recname)
-	-- print(recipe)
-	-- print(recname)
-	-- print(type(recipe))
-	-- print(type(recname))
-
-	if self:CanLearnRecipe(recipe) then
-		if self.inst.components.sanity then
-			self.inst.components.sanity:DoDelta(TUNING.SANITY_MED)
+	--改动了：解锁逻辑
+	if self.inst.prefab == "arcueid" then
+		--先知之眼导入正常解锁逻辑
+		if (self.inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET))
+		and (self.inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye") then
+			if self:CanLearnRecipe(recipe) then
+				if self.inst.components.sanity then
+					self.inst.components.sanity:DoDelta(TUNING.SANITY_MED)
+				end
+				self:AddRecipe(recname)
+				self.inst:PushEvent("unlockrecipe", { recipe = recname })
+			end
+		else 
+			if self.inst.components.arcueidstate.recipeunlock[recname] == nil then
+				self.inst.components.arcueidstate.recipeunlock[recname] = 1
+			elseif self.inst.components.arcueidstate.recipeunlock[recname] >= 1
+				and self.inst.components.arcueidstate.recipeunlock[recname] < 9 then
+				self.inst.components.arcueidstate.recipeunlock[recname] = self.inst.components.arcueidstate.recipeunlock[recname] + 1
+			elseif self.inst.components.arcueidstate.recipeunlock[recname] >= 9 then
+				if self:CanLearnRecipe(recipe) then 
+					if self.inst.components.sanity then
+						self.inst.components.sanity:DoDelta(TUNING.SANITY_MED)
+					end
+					self:AddRecipe(recname)
+					self.inst:PushEvent("unlockrecipe", { recipe = recname })
+				end
+			end
 		end
-
-		self:AddRecipe(recname)
-		self.inst:PushEvent("unlockrecipe", {recipe = recname})
+	else
+		if self:CanLearnRecipe(recipe) then
+			if self.inst.components.sanity then
+				self.inst.components.sanity:DoDelta(TUNING.SANITY_MED)
+			end
+			self:AddRecipe(recname)
+			self.inst:PushEvent("unlockrecipe", { recipe = recname })
+		end
 	end
-
-	--test：改动了解锁逻辑
+	--table.insert(self.inst.components, line)
+	
 	-- if false then
 	-- 	if self.inst.components.sanity then
 	-- 		self.inst.components.sanity:DoDelta(TUNING.SANITY_MED)
@@ -684,8 +708,11 @@ function Builder:DoBuild(recname, pt, rotation, modifydata)
 				if self.inst.components.inventory then
 					--self.inst.components.inventory:GiveItem(prod)
 					self.inst:PushEvent("builditem",
-						{ item = prod, recipe = recipe,
-							used_jellybrainhat = not self:KnowsRecipeWithoutJellyBrainHat(recname) })
+						{
+							item = prod,
+							recipe = recipe,
+							used_jellybrainhat = not self:KnowsRecipeWithoutJellyBrainHat(recname)
+						})
 					ProfileStatsAdd("build_" .. prod.prefab)
 
 
@@ -837,7 +864,7 @@ function Builder:KnowsRecipeWithoutJellyBrainHat(recname)
 	-- if the recipe is from a crafting station, but player is not at the crafting station, cut it out.
 	local crafting_station_pass = true
 	if recipe then
-		for i, level in pairs(recipe.level) do	
+		for i, level in pairs(recipe.level) do
 			if RECIPETABS[i] and RECIPETABS[i].crafting_station and level > 0 then
 				if self.accessible_tech_trees[i] == 0 then
 					crafting_station_pass = false
@@ -847,7 +874,7 @@ function Builder:KnowsRecipeWithoutJellyBrainHat(recname)
 	end
 
 	return self.freebuildmode or
-	(self:IsBuildBuffered(recname) or table.contains(self.recipes, recname) and crafting_station_pass)
+		(self:IsBuildBuffered(recname) or table.contains(self.recipes, recname) and crafting_station_pass)
 end
 
 function Builder:CanBuild(recname)
