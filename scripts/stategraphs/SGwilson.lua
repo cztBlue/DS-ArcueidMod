@@ -897,7 +897,7 @@ local plant_symbols =
 
 local states =
 {
-    --自写状态在这里
+    --改动了：自写状态在这里
     State {
         name = "lizhuang",
         tags = { "canrotate", "idle" },
@@ -5132,16 +5132,16 @@ local states =
         },
     },
 
-    --冰河技能
+    --改动了:冰河技能
     State {
         name = "iceskill",
-        tags = { "doing", "busy", "canrotate", "spell" },
+        tags = { "abouttoattack","doing", "busy", "canrotate", "spell" },
 
         onenter = function(inst)
             inst.components.playercontroller:Enable(false)
             inst.AnimState:Show("ARM_carry")
             inst.AnimState:Hide("ARM_normal")
-            inst.AnimState:PlayAnimation("staff")
+            inst.AnimState:PlayAnimation("throw")
             inst.components.locomotor:Stop()
         end,
 
@@ -5155,7 +5155,7 @@ local states =
 
         timeline =
         {
-            TimeEvent(55 * FRAMES, function(inst)
+            TimeEvent(7 * FRAMES, function(inst)
                 local player = GetPlayer()
             local targnum = 0;
             local targetepic = false;
@@ -5188,15 +5188,17 @@ local states =
                     player.components.vigour:DoDelta(-60, nil, "ice_skill")
                 end
             end
+            inst.sg:RemoveStateTag("abouttoattack")
             end),
 
-            TimeEvent(65 * FRAMES, function(inst)
+            TimeEvent(11 * FRAMES, function(inst)
                 if inst.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS) == nil then
                     inst.AnimState:Show("ARM_normal")
                     inst.AnimState:Hide("ARM_carry")
                 end
-                inst.components.arcueidstate.iceskill_cooldown = 10.5
+                inst.components.arcueidstate.iceskill_cooldown = TUNING.ICESKILL_COOLDOWN
             end),
+            
         },
 
         events = {

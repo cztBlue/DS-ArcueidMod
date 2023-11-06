@@ -48,8 +48,10 @@ return
         BASE_MOONROCK_NUGGET = "有趣的石头。",
         BASE_HORRORFUEL = "令人作呕的残渣。",
         BASE_PUREGEM = "魔术的结晶！",
-        BASE_MOONEMPYREALITY = "赋有轻清的灵质，不能朽坏。",
+        BASE_MOONEMPYREALITY = "空灵的呼吸。",
         BASE_GEMBLOCK = "完美的魔力载体。",
+        BASE_PUREMOONEMPYREALITY = "赋有轻清的灵质，不能朽坏。",
+        BASE_POLISHGEM = "磨得很平整。",
 
         --食物--
         ARCUEID_FOOD_BERRYCAKE = "闻起来甜甜的,好味。",
@@ -78,8 +80,10 @@ return
         BUILDING_ROTTENFORM = "微型时间术式，间隙处可以加速时间。",
         BUILDING_GEMGENERATOR = "闪亮亮！",
         BUILDING_IMMORTALLIGHT = "可以驱散周围可恶的暗影。",
-        BUILDING_TRAVELLERBOX = "要是把手伸进去会不会从另一边出来？",
+        BUILDING_TRAVELLERBOX = "从这里把手伸进去会不会从另一边出来？",
         BUILDING_GEMICEBOX = "暂停时间！话说是不是有点大材小用了？",
+        BUILDING_ALCHEMYDESK = "天才炼金师——爱尔奎特将于此行使奇迹！",
+        BUILDING_TRINKETWORKSHOP = "一张破桌子。",
 
         --食物效果
         FOOD_EFFECT = 
@@ -106,6 +110,17 @@ return
         TRINKET_EFFECT = 
         {
             TRINKET_SEASONINGBOTTLE = "做饭用",
+            TRINKET_ETERNALLIGHT = "缓慢的燃烧体力\n小小火苗将跟随你",
+            TRINKET_SHADOWCLOAK = "按shift切换潜行\n用于进入险地",
+            TRINKET_MOONCLOAK = "防热防水回活力\n月光庇护你",
+            TRINKET_ICECRYSTAL = "礼装身缠冰河\n礼装后按x激发技能",
+            TRINKET_JADESTAR = "装备后可以诱惑蜘蛛\n右键消耗活力解毒",
+            TRINKET_MARTYRSEAL = "免疫一次致命伤害\n生成一个三秒的\n无敌护盾",
+            TRINKET_SPIRITBOTTLE = "触摸后，小精灵\n给你一个祝福",
+            TRINKET_PROPHETEYE = "洞察：30%触发暴击\n睿智：让你记性更好",
+            TRINKET_RELAXATIONBOOK = "消耗饱食，回复状态。",
+            TRINKET_JADEBLADE = "更高的伤害",
+            TRINKET_FIRSTCANON = "按x消耗体力\n驱散低级暗影生物",
         },
         
 

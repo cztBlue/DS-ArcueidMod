@@ -259,6 +259,13 @@ local function icecrystal()
 
     inst:AddComponent("lizhuang")
 
+    --用耐久代替冷却系统？
+    inst:AddComponent("finiteuses")
+	inst.components.finiteuses:SetMaxUses(100)
+	inst.components.finiteuses:SetUses(100)
+	inst.components.finiteuses:SetOnFinished(function(inst)end)
+	--inst.components.finiteuses:SetConsumption(ACTIONS.CHOP, 99)
+
     inst.components.equippable:SetOnEquip(function(inst, owner)
         owner.components.vigour.trinketfactor = -TUNING.ARCUEID_VIGOURBUFF_E
     end)

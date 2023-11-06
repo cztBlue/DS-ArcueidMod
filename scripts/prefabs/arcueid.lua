@@ -86,7 +86,6 @@ local function updatepower(inst)
             TUNING["ARCUEID_" .. timestr .. "_DAMAGEMULTIPLIER"])
         inst.components.locomotor.walkspeed = TUNING["ARCUEID_" .. timestr .. "_WALKSPEED"]
         inst.components.locomotor.runspeed = TUNING["ARCUEID_" .. timestr .. "_RUNSPEED"]
-        return
     elseif Isbelow70per == true and Isbelow35per == false then
         inst.components.combat:AddDamageModifier(string.lower(timestr) .. "_damage",
             TUNING["ARCUEID_" .. timestr .. "_DAMAGEMULTIPLIER"] * (inst.components.vigour.currentvigour / 252))
@@ -94,13 +93,11 @@ local function updatepower(inst)
             (inst.components.vigour.currentvigour / 252)
         inst.components.locomotor.runspeed = TUNING["ARCUEID_" .. timestr .. "_RUNSPEED"] *
             (inst.components.vigour.currentvigour / 252)
-        return
     elseif Isbelow70per == true and Isbelow35per == true then
         inst.components.combat:AddDamageModifier(string.lower(timestr) .. "_damage",
             TUNING["ARCUEID_" .. timestr .. "_DAMAGEMULTIPLIER"] * (inst.components.vigour.currentvigour / 252))
         inst.components.locomotor.walkspeed = TUNING["ARCUEID_" .. timestr .. "_WALKSPEED"] * 0.35
         inst.components.locomotor.runspeed = TUNING["ARCUEID_" .. timestr .. "_RUNSPEED"] * 0.35
-        return
     end
 
     if inst.components.arcueidstate.careful == true then
@@ -108,10 +105,11 @@ local function updatepower(inst)
         inst.components.locomotor.runspeed = inst.components.locomotor.runspeed * TUNING.ARCUEID_SNEAKYMULTIPLIER
     end
 
-    if inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) and inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_relaxationbook" then
-        inst.components.locomotor.walkspeed = 0.6 * inst.components.locomotor.walkspeed
-        inst.components.locomotor.runspeed = 0.6 * inst.components.locomotor.runspeed
-        inst.components.combat:AddDamageModifier("relaxationbook_damage", 0.5)
+    if inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
+        and inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_relaxationbook" then
+        inst.components.locomotor.walkspeed = 0.7 * inst.components.locomotor.walkspeed
+        inst.components.locomotor.runspeed = 0.7 * inst.components.locomotor.runspeed
+        inst.components.combat:AddDamageModifier("relaxationbook_damage", -0.5)
     end
 end
 
@@ -136,10 +134,10 @@ local function arcueid_recipes()
     building_mooncirleform.image = "mooncirleform.tex"
     --第二分解术式
     local building_recycleform = Recipe("building_recycleform", {
-            Ingredient("base_moonglass", 5, atlas_base_moonglass), 
+            Ingredient("base_moonglass", 5, atlas_base_moonglass),
             Ingredient("redgem", 5),
             Ingredient("bluegem", 3),
-         },
+        },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_recycleform_placer", 2)
     building_recycleform.atlas = "images/map_icons/recycleform.xml"
     building_recycleform.image = "recycleform.tex"
@@ -170,7 +168,7 @@ local function arcueid_recipes()
     building_gemicebox.image = "gemicebox.tex"
     --旅行者时空箱
     local building_travellerbox = Recipe("building_travellerbox", {
-            Ingredient("base_moonempyreality", 4, atlas_base_moonempyreality), 
+            Ingredient("base_moonempyreality", 4, atlas_base_moonempyreality),
             Ingredient("boards", 2),
             Ingredient("orangegem", 2), },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_travellerbox_placer", 2)
@@ -238,7 +236,7 @@ local function arcueid_recipes()
 
     ---------------------底部饰品----------------------
     --献祭小刀
-    local trinket_sacrificeknife = Recipe("trinket_sacrificeknife", { 
+    local trinket_sacrificeknife = Recipe("trinket_sacrificeknife", {
             Ingredient("petals", 5),
             Ingredient("goldnugget", 2),
             Ingredient("twigs", 2),
@@ -309,12 +307,22 @@ local fn = function(inst)
     inst:ListenForEvent("vigour_change", function() updatepower(inst) end, GetWorld())
 
     local adjust = 0
+    local curtrinket
     --借助频繁的sanitydelta更新一些状态
     inst:ListenForEvent("sanitydelta", function()
         inst.components.vigour:OnUpdate()
         inst.components.arcueidstate:OnUpdate()
         inst.components.arcueidstate:OnCarefulStateUpdate()
         inst.components.health:DoDelta(0)
+        curtrinket = inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+        --简陋的冷却系统
+        if curtrinket ~= nil
+            and curtrinket.prefab == "trinket_icecrystal" then
+            curtrinket.components.finiteuses:SetUses(100 -
+                math.floor((inst.components.arcueidstate.iceskill_cooldown / TUNING.ICESKILL_COOLDOWN) *
+                    100 + 1))
+        end
+
 
         --dress_ice会掉出来发光，治个标先
         adjust = adjust + 0.2
@@ -350,8 +358,6 @@ local fn = function(inst)
     -- inst:ListenForEvent( "vigour_change", function()
     --     print(GetPlayer().components.vigour.currentvigour)
     --  end , GetWorld())
-
-    
 end
 
 return MakePlayerCharacter("arcueid", prefabs, assets, fn, start_inv)

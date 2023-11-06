@@ -34,11 +34,11 @@ local ArcueidBuff = Class(function(self, inst)
         end,
         --回血
         ['lbuff_recover'] = function(self)
-            self.inst.components.health:DoDelta(.05)
+            self.inst.components.health:DoDelta(.09)
         end,
         --回san
         ['lbuff_pep'] = function(self)
-            self.inst.components.sanity:DoDelta(.05)
+            self.inst.components.sanity:DoDelta(.12)
         end,
         --去饱食度
         ['lbuff_dehunger'] = function(self)
