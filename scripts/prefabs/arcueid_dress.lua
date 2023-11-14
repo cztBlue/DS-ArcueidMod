@@ -63,6 +63,7 @@ local function ice()
         if owner.prefab == "arcueid" then
             owner.components.vigour.bodyequipfactor = -0.06
             owner.AnimState:OverrideSymbol("torso", "dress_ice", "torso")
+            owner.AnimState:OverrideSymbol("face", "dress_ice", "face")
             owner.AnimState:OverrideSymbol("arm_upper_skin", "dress_ice", "arm_upper_skin")
             owner.AnimState:OverrideSymbol("arm_lower", "dress_ice", "arm_lower")
             owner.AnimState:OverrideSymbol("foot", "dress_ice", "foot")
@@ -81,6 +82,7 @@ local function ice()
         if owner.prefab == "arcueid" then
             owner.components.vigour.bodyequipfactor = 0
             owner.AnimState:OverrideSymbol("torso", "arcueid", "torso")
+            owner.AnimState:OverrideSymbol("face", "arcueid", "face")
             owner.AnimState:OverrideSymbol("arm_upper_skin", "arcueid", "arm_upper_skin")
             owner.AnimState:OverrideSymbol("arm_lower", "arcueid", "arm_lower")
             owner.AnimState:OverrideSymbol("foot", "arcueid", "foot")

@@ -892,9 +892,9 @@ local recycletable = {
 	--紫宝石5->1碎片，50%纯粹恐惧
 	["purplegem"] = { 5, { "base_gemfragment", 1 }, { "base_horrorfuel", .5 }, },
 	["redgem"] = { 15, { "base_gemfragment", 1 }, },
-	["orangegem"] = { 3, { "base_gemfragment", 3 }, { "base_moonempyreality" }, 1 },
-	["yellowgem"] = { 3, { "base_gemfragment", 3 }, { "base_moonempyreality" }, 1 },
-	["greengem"] = { 2, { "base_gemfragment", 3 }, { "base_moonempyreality" }, 1 },
+	["orangegem"] = { 2, { "base_gemfragment", 3 }, { "base_moonempyreality",1 }, 1 },
+	["yellowgem"] = { 2, { "base_gemfragment", 3 }, { "base_moonempyreality",1 }, 1 },
+	["greengem"] = { 2, { "base_gemfragment", 3 }, { "base_moonempyreality",1 }, 1 },
 	--月亮
 	["base_moonrock_nugget"] = { 10, { "rocks", 10 }, { "base_moonempyreality", 1 }, },
 	["base_moonglass"] = { 3, { "base_gemfragment", 3 }, { "base_moonempyreality", 1 }, },
