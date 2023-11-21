@@ -651,7 +651,7 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
 				then
 					item.AnimState:PlayAnimation("disappear")
 					if item.AnimState:GetCurrentAnimationLength() ~= nil then
-						item:DoTaskInTime(item.AnimState:GetCurrentAnimationLength(),item.Remove)
+						item:DoTaskInTime(item.AnimState:GetCurrentAnimationLength(), item.Remove)
 					else
 						item:Remove()
 					end
@@ -662,8 +662,35 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
 	end
 end)
 
+--修改火焰范围
+AddComponentPostInit("firefx", function(FireFX)
+	local gettime = GetTime
+	local clock = GetClock()
+	function FireFX:OnUpdate(dt)
+		local time = gettime() * 30
+		local flicker = (math.sin(time) + math.sin(time + 2) + math.sin(time + 0.7777)) / 2.0 -- range = [-1 , 1]
+		flicker = (1.0 + flicker) / 2.0                                  -- range = 0:1
+		local rad = self.current_radius + flicker * .05
+		rad = rad / 4
+		self.inst.Light:SetRadius(rad)
 
---被影怪击中固定真实伤害18点
+		if self.usedayparamforsound then
+			local isday = clock:IsDay()
+			if isday ~= self.isday then
+				self.isday = isday
+				local val = isday and 1 or 2
+				self.inst.SoundEmitter:SetParameter("fire", "daytime", val)
+			end
+		end
+	end
+end)
+
+--修改火焰范围
+AddPrefabPostInit("torchfire", function(inst)
+	inst.Light:SetRadius(1.3)
+end)
+
+--战斗机制改动
 AddComponentPostInit("combat", function(Combat)
 	function Combat:DoAttack(target_override, weapon, projectile, stimuli, instancemult)
 		local targ = target_override or self.target
@@ -687,6 +714,7 @@ AddComponentPostInit("combat", function(Combat)
 					targ.components.health:DoDelta(-6, nil, "nightattack")
 					targ.components.vigour:DoDelta(-12, nil, "nightattack")
 				else
+					--被影怪击中固定真实伤害18点
 					targ.components.health:DoDelta(-18, nil, "nightattack")
 				end
 			end
@@ -815,4 +843,3 @@ AddComponentPostInit("combat", function(Combat)
 		end
 	end
 end)
-

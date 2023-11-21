@@ -16,7 +16,7 @@ local assets =
 	Asset("ANIM", "anim/building_rottenform.zip"),
 	Asset("ANIM", "anim/building_trinketworkshop.zip"),
 	Asset("ANIM", "anim/building_alchemydesk.zip"),
-
+	Asset("ANIM", "anim/building_moondial.zip"),
 
 	Asset("ANIM", "anim/ui_chest_3x3.zip"),
 	Asset("ANIM", "anim/ui_chester_shadow_3x4.zip"),
@@ -1116,7 +1116,7 @@ local function trinketworkshop(Sim)
 			local res,currecipe = CanMakeAndResult(inst, TUNING.ARCUEID_TRINKETRECIPES)
 			for i = 1, 9 do
 				local curitem = inst.components.container:GetItemInSlot(i)
-				if not curitem:HasTag("maketool") then
+				if curitem and not curitem:HasTag("maketool") then
 					if curitem.components.stackable and curitem.components.stackable.stacksize > 1 then
 						curitem.components.stackable:SetStackSize(curitem.components.stackable.stacksize - 1)
 					else
@@ -1238,6 +1238,21 @@ local function alchemydesk(Sim)
 	return inst
 end
 
+--映月台
+local function moondial(Sim)
+	local inst = commonfn("moondial")
+	MakeObstaclePhysics(inst, .2)
+
+	inst.AnimState:PlayAnimation("idle_new", true)
+
+	inst.OnSave = function(inst, data)
+	end
+
+	inst.OnLoad = function(inst, data)
+	end
+
+	return inst
+end
 
 return
 	CreateMoonCircleForm(TUNING.PROTOTYPER_TREES.MOONMAGIC_ONE),                      --第一具现原理
@@ -1254,6 +1269,7 @@ return
 	Prefab("common/objects/building_rottenform", rottenform, assets, prefabs),        --腐败滋生术式
 	Prefab("common/objects/building_trinketworkshop", trinketworkshop, assets, prefabs), --饰品作坊
 	Prefab("common/objects/building_alchemydesk", alchemydesk, assets, prefabs),      --炼金台
+	Prefab("common/objects/building_moondial", moondial, assets, prefabs),      --映月台
 	MakePlacer("common/building_mooncirleform_placer", "building_mooncirleform", "building_mooncirleform", "idle"),
 	MakePlacer("common/building_gemicebox_placer", "building_gemicebox", "building_gemicebox", "closed"),
 	MakePlacer("common/building_travellerbox_placer", "building_travellerbox", "building_travellerbox", "closed"),
@@ -1266,4 +1282,5 @@ return
 	MakePlacer("common/building_rottenform_placer", "building_rottenform", "building_rottenform", "idle"),
 	MakePlacer("common/building_recycleform_placer", "building_recycleform", "building_recycleform", "idle"),
 	MakePlacer("common/building_trinketworkshop_placer", "building_trinketworkshop", "building_trinketworkshop", "idle"),
-	MakePlacer("common/building_alchemydesk_placer", "building_alchemydesk", "building_alchemydesk", "idle")
+	MakePlacer("common/building_alchemydesk_placer", "building_alchemydesk", "building_alchemydesk", "idle"),
+	MakePlacer("common/building_moondial_placer", "building_moondial", "building_moondial", "idle")

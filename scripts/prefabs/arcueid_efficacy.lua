@@ -7,6 +7,8 @@ local assets =
 {
 	Asset( "IMAGE", texture ),
 	Asset( "SHADER", shader ),
+	Asset("ANIM", "anim/ef_set.zip"),
+	
 }
 
 local max_scale = 3
@@ -42,7 +44,7 @@ local max_lifetime = 0.9
 --local ground_height = 0.1
 
 
-----------------prefab func----------------
+----------------fx_prefab func----------------
 local function eternalfire(Sim)
 	local inst = CreateEntity()
 	inst:AddTag("FX")
@@ -123,5 +125,26 @@ local function eternalfire(Sim)
     return inst
 end
 
-return Prefab( "common/fx/eternalfire", eternalfire, assets) 
+
+
+
+----------------normal_prefab func------------
+--暗影撕裂特效
+local function ef_darkscar(Sim)
+	local inst = CreateEntity()
+	local trans = inst.entity:AddTransform()
+	local anim = inst.entity:AddAnimState()
+	inst.entity:AddSoundEmitter()
+
+	--日常动画
+	anim:SetBank("ef_set")
+	anim:SetBuild("ef_set")
+	anim:PlayAnimation("darkscar")
+	inst:DoTaskInTime(.4, inst.Remove)
+
+	return inst
+end
+
+return Prefab( "common/fx/eternalfire", eternalfire, assets),
+Prefab( "ef_darkscar", ef_darkscar, assets)
  

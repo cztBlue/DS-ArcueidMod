@@ -1,7 +1,7 @@
 name = "Arcueid"
 description = "Arc迷迷糊糊遇险中..."
 author = "cztBlue"
-version = "0.315"
+version = "0.371"
 forumthread = ""
 
 api_version = 6
@@ -26,3 +26,4 @@ configuration_options = {
         default = 2
     }
 }
+
