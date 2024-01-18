@@ -4068,7 +4068,7 @@ local states =
                     inst.SoundEmitter:PlaySound("dontstarve/wilson/attack_firestaff")
                 elseif weapon:HasTag("halberd") then
                     inst.SoundEmitter:PlaySound("dontstarve_DLC003/common/items/weapon/halberd")
-                elseif weapon:HasTag("cutlass") or weapon:HasTag("sharpclaw")then
+                elseif weapon:HasTag("cutlass") or weapon:HasTag("sharpclaw") then
                     inst.SoundEmitter:PlaySound("dontstarve_DLC002/common/swordfish_sword")
                 elseif weapon:HasTag("pegleg") then
                     inst.SoundEmitter:PlaySound("dontstarve_DLC002/common/pegleg_weapon")
@@ -5135,7 +5135,7 @@ local states =
     --改动了:冰河技能
     State {
         name = "iceskill",
-        tags = { "abouttoattack","doing", "busy", "canrotate", "spell" },
+        tags = { "abouttoattack", "doing", "busy", "canrotate", "spell" },
 
         onenter = function(inst)
             inst.components.playercontroller:Enable(false)
@@ -5157,38 +5157,53 @@ local states =
         {
             TimeEvent(7 * FRAMES, function(inst)
                 local player = GetPlayer()
-            local targnum = 0;
-            local targetepic = false;
-            local x, y, z = player:GetPosition():Get()
-            local ents = TheSim:FindEntities(x, y, z, 21, nil, { "player", "arcueid" })
-            local _staff = SpawnPrefab("icestaff")
-            inst.SoundEmitter:PlaySound("dontstarve/common/freezecreature")
-            for _, item in pairs(ents) do
-                if item.sg ~= nil and not item.sg:HasStateTag("frozen") then
-                    item:PushEvent("attacked", { attacker = player, damage = 0, weapon = _staff })
-                end
+                local targnum = 0;
+                local targetepic = false;
+                local x, y, z = player:GetPosition():Get()
+                local ents = TheSim:FindEntities(x, y, z, 21, nil, { "player", "arcueid" })
+                local _staff = SpawnPrefab("icestaff")
+                inst.SoundEmitter:PlaySound("dontstarve/common/freezecreature")
+                for _, item in pairs(ents) do
+                    -- if item.sg ~= nil and not item.sg:HasStateTag("frozen") then
+                    --     local circle = SpawnPrefab("ef_icecircle")
+                    --     local pt = Vector3(item.Transform:GetWorldPosition())
+                    --     circle.Transform:SetPosition(pt:Get())
+                    --     local follower = circle.entity:AddFollower()
+                    --     follower:FollowSymbol(item.GUID, "swap_object", 0, 0, 0)
 
-                if item.components.freezable then
-                    item.components.freezable:AddColdness(5)
-                    item.components.freezable:SpawnShatterFX()
-                    targnum = targnum + 1;
-                    if item:HasTag("epic") then
-                        targetepic = true
+                    --     item:DoTaskInTime(.85,
+                    --         item:PushEvent("attacked", { attacker = player, damage = 0, weapon = _staff }))
+                    -- end
+
+                    if item.components.freezable then
+                        local circle = SpawnPrefab("ef_icecircle")
+                        local pt = Vector3(item.Transform:GetWorldPosition())
+                        circle.Transform:SetPosition(pt:Get())
+                        local follower = circle.entity:AddFollower()
+                        follower:FollowSymbol(item.GUID, "swap_object", 0, 0, 0)
+                        
+                        item:DoTaskInTime(.85, function()
+                            item.components.freezable:AddColdness(5)
+                            item.components.freezable:SpawnShatterFX()
+                        end)
+                        targnum = targnum + 1;
+                        if item:HasTag("epic") then
+                            targetepic = true
+                        end
                     end
                 end
-            end
-            _staff:Remove() 
+                _staff:Remove()
 
-            if (targnum ~= 0) then
-                if targnum <= 10 and (not targetepic) then
-                    player.components.vigour:DoDelta(-(targnum %2) * 10, nil, "ice_skill")
-                elseif targnum > 10 and (not targetepic) then
-                    player.components.vigour:DoDelta(-50, nil, "ice_skill")
-                elseif targetepic then
-                    player.components.vigour:DoDelta(-60, nil, "ice_skill")
+                if (targnum ~= 0) then
+                    if targnum <= 10 and (not targetepic) then
+                        player.components.vigour:DoDelta(-(targnum % 2) * 10, nil, "ice_skill")
+                    elseif targnum > 10 and (not targetepic) then
+                        player.components.vigour:DoDelta(-50, nil, "ice_skill")
+                    elseif targetepic then
+                        player.components.vigour:DoDelta(-60, nil, "ice_skill")
+                    end
                 end
-            end
-            inst.sg:RemoveStateTag("abouttoattack")
+                inst.sg:RemoveStateTag("abouttoattack")
             end),
 
             TimeEvent(11 * FRAMES, function(inst)
@@ -5198,7 +5213,7 @@ local states =
                 end
                 inst.components.arcueidstate.iceskill_cooldown = TUNING.ICESKILL_COOLDOWN
             end),
-            
+
         },
 
         events = {

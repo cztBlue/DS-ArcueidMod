@@ -18,6 +18,7 @@ PrefabFiles = {
 	"arcueid_trinket",
 	"arcueid_baseitem",
 	"arcueid_efficacy",
+	"arcueid_shadowcreature"
 }
 
 Assets = {
@@ -222,6 +223,25 @@ TUNING.PROTOTYPER_TREES.MOONMAGIC_ONE =
 TECH.MOONMAGIC_ONE = { MOONMAGIC = 1 }
 --饰品栏标识
 EQUIPSLOTS.TRINKET = "trinket"
+--营火火焰半径削减
+TUNING.FIRERADIUSRATE = 0.42
+--火把火焰半径削减
+TUNING.TORCHRADIUSRATE = .65
+--暗影骑士数值
+TUNING.SHADOW_KNIGHT =
+{
+	LEVELUP_SCALE = {1, 1.7, 2.5},
+	SPEED = {7, 9, 12},
+	HEALTH = {900, 2700, 8100},
+	DAMAGE = {40, 90, 150},
+	ATTACK_PERIOD = {3, 2.5, 2},
+	ATTACK_RANGE = 2.3,                 -- levels are procedural
+	ATTACK_RANGE_LONG = 4.5,            -- levels are procedural
+	RETARGET_DIST = 15,
+}
+
+TUNING.SHADOW_CHESSPIECE_EPICSCARE_RANGE = 10
+TUNING.SHADOW_CHESSPIECE_DESPAWN_TIME = 30
 
 --特征修改
 TUNING.SANITY_DAY_GAIN = -0.04166
@@ -338,14 +358,15 @@ end)
 
 --冰滤镜/盲滤镜
 AddClassPostConstruct("widgets/controls", function(self, owner)
-	self.Icescreen = self:AddChild(icescreen(self.owner))
+--冰滤镜废弃
+	-- self.Icescreen = self:AddChild(icescreen(self.owner))
 	self.Blindscreen = self:AddChild(blindscreen(self.owner))
 	GetPlayer():ListenForEvent("sanitydelta", function()
-		self.Icescreen:OnUpdate()
+		-- self.Icescreen:OnUpdate()
 		self.Blindscreen:OnUpdate()
 	end, inst)
 
-	self.Icescreen:Show()
+	-- self.Icescreen:Show()
 	self.Blindscreen:Show()
 end)
 
@@ -664,30 +685,44 @@ end)
 
 --修改火焰范围
 AddComponentPostInit("firefx", function(FireFX)
-	local gettime = GetTime
-	local clock = GetClock()
-	function FireFX:OnUpdate(dt)
-		local time = gettime() * 30
-		local flicker = (math.sin(time) + math.sin(time + 2) + math.sin(time + 0.7777)) / 2.0 -- range = [-1 , 1]
-		flicker = (1.0 + flicker) / 2.0                                  -- range = 0:1
-		local rad = self.current_radius + flicker * .05
-		rad = rad / 4
-		self.inst.Light:SetRadius(rad)
+	if GetPlayer().prefab == "arcueid" then
+		local gettime = GetTime
+		local clock = GetClock()
+		local oldUpdateRadius = FireFX.UpdateRadius
+		local oldSetLevel = FireFX.SetLevel
+		function FireFX:OnUpdate(dt)
+			local time = gettime() * 30
+			local flicker = (math.sin(time) + math.sin(time + 2) + math.sin(time + 0.7777)) / 2.0 -- range = [-1 , 1]
+			flicker = (1.0 + flicker) / 2.0                                             -- range = 0:1
+			local rad = self.current_radius + flicker * .05
+			rad = rad * TUNING.FIRERADIUSRATE
+			self.inst.Light:SetRadius(rad)
 
-		if self.usedayparamforsound then
-			local isday = clock:IsDay()
-			if isday ~= self.isday then
-				self.isday = isday
-				local val = isday and 1 or 2
-				self.inst.SoundEmitter:SetParameter("fire", "daytime", val)
+			if self.usedayparamforsound then
+				local isday = clock:IsDay()
+				if isday ~= self.isday then
+					self.isday = isday
+					local val = isday and 1 or 2
+					self.inst.SoundEmitter:SetParameter("fire", "daytime", val)
+				end
 			end
+		end
+
+		function FireFX:UpdateRadius()
+			oldUpdateRadius(self)
+			self.inst.Light:SetRadius(self.current_radius * TUNING.FIRERADIUSRATE)
+		end
+
+		function FireFX:SetLevel(lev, immediate)
+			oldSetLevel(self, lev, immediate)
+			self.inst.Light:SetRadius(self.levels[self.level].radius * TUNING.FIRERADIUSRATE)
 		end
 	end
 end)
 
---修改火焰范围
+--修改火把范围
 AddPrefabPostInit("torchfire", function(inst)
-	inst.Light:SetRadius(1.3)
+	inst.Light:SetRadius(2 * TUNING.TORCHRADIUSRATE)
 end)
 
 --战斗机制改动

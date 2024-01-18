@@ -3,12 +3,15 @@ local shader = "shaders/particle.ksh"
 local colour_envelope_name = "firecolourenvelope"
 local scale_envelope_name = "firescaleenvelope"
 
+local testfire = resolvefilepath("images/testfire.tex")
+
 local assets =
 {
 	Asset( "IMAGE", texture ),
+	Asset( "IMAGE", testfire ),
 	Asset( "SHADER", shader ),
-	Asset("ANIM", "anim/ef_set.zip"),
-	
+	Asset("ANIM", "anim/ef_darkscar.zip"),
+	Asset("ANIM", "anim/ef_icecircle.zip"),
 }
 
 local max_scale = 3
@@ -23,12 +26,19 @@ local function InitEnvelope()
 		init = true
 		EnvelopeManager:AddColourEnvelope(
 			colour_envelope_name,
-			{	{ 0,	IntColour( 175, 238, 238, 128 ) },
-				{ 0.49,	IntColour( 60, 111, 187, 128 ) },
-				{ 0.5,	IntColour( 0, 255, 255, 128 ) },
-				{ 0.51,	IntColour( 56, 30, 255, 128 ) },
-				{ 0.75,	IntColour( 56, 30, 255, 128 ) },
-				{ 1,	IntColour( 28, 7, 255, 0 ) },
+			{	
+				-- { 0,	IntColour( 175, 238, 238, 128 ) },
+				-- { 0.49,	IntColour( 60, 111, 187, 128 ) },
+				-- { 0.5,	IntColour( 0, 255, 255, 128 ) },
+				-- { 0.51,	IntColour( 56, 30, 255, 128 ) },
+				-- { 0.75,	IntColour( 56, 30, 255, 128 ) },
+				-- { 1,	IntColour( 28, 7, 255, 0 ) },
+				{ 0,	IntColour( 33, 74, 248, 128 ) },
+				{ 0.49,	IntColour( 33, 74, 248, 128 ) },
+				{ 0.5,	IntColour( 33, 74, 248, 128 ) },
+				{ 0.51,	IntColour( 33, 74, 248, 128 ) },
+				{ 0.75,	IntColour( 33, 74, 248, 128 ) },
+				{ 1,	IntColour( 33, 74, 248, 0 ) },
 			} )
 
 		EnvelopeManager:AddVector2Envelope(
@@ -53,14 +63,14 @@ local function eternalfire(Sim)
 
 	InitEnvelope()
 
-	emitter:SetRenderResources( texture, shader )
-	emitter:SetMaxNumParticles( 64 )
+	emitter:SetRenderResources( testfire, shader )
+	emitter:SetMaxNumParticles( 20 )
 	emitter:SetMaxLifetime( max_lifetime )
 	emitter:SetColourEnvelope( colour_envelope_name )
 	emitter:SetScaleEnvelope( scale_envelope_name );
 	emitter:SetBlendMode( BLENDMODE.Additive )
 	emitter:EnableBloomPass( true )
-	emitter:SetUVFrameSize( 1.0 / 4.0, 1.0 )
+	emitter:SetUVFrameSize( 1.0 , 1.0 )
 
 	inst.entity:AddLight()
     inst.Light:Enable(true)
@@ -137,14 +147,31 @@ local function ef_darkscar(Sim)
 	inst.entity:AddSoundEmitter()
 
 	--日常动画
-	anim:SetBank("ef_set")
-	anim:SetBuild("ef_set")
+	anim:SetBank("ef_darkscar")
+	anim:SetBuild("ef_darkscar")
 	anim:PlayAnimation("darkscar")
 	inst:DoTaskInTime(.4, inst.Remove)
 
 	return inst
 end
 
+--冰魔法阵特效
+local function ef_icecircle(Sim)
+	local inst = CreateEntity()
+	local trans = inst.entity:AddTransform()
+	local anim = inst.entity:AddAnimState()
+	inst.entity:AddSoundEmitter()
+
+	--日常动画
+	anim:SetBank("ef_icecircle")
+	anim:SetBuild("ef_icecircle")
+	anim:PlayAnimation("icecircle")
+	inst:DoTaskInTime(.85, inst.Remove)
+
+	return inst
+end
+
 return Prefab( "common/fx/eternalfire", eternalfire, assets),
-Prefab( "ef_darkscar", ef_darkscar, assets)
+Prefab( "ef_darkscar", ef_darkscar, assets),
+Prefab( "ef_icecircle", ef_icecircle, assets)
  

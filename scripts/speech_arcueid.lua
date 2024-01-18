@@ -72,8 +72,8 @@ return
 
         --建筑
         BUILDING_MOONCIRLEFORM = "具现能力模拟魔术回路，可以临时掌握一些魔术。",
-        BUILDING_SPATIALANCHOR = "不稳定的时空魔术，锚定和破开空间。",
-        BUILDING_MIRACLECOOKPOT = "真正的魔法，就算是我也能在这里做出美味的食物。",
+        BUILDING_SPATIALANCHOR = "不稳定的时空魔术，锚定和爆破空间。",
+        BUILDING_MIRACLECOOKPOT = "魔法厨具！",
         BUILDING_GUARD = "看起来脾气不太好。",
         BUILDING_INFINITAS = "我先来：\"喂，出来。\"",
         BUILDING_RECYCLEFORM = "逆转术式，分解一些宝石和饰品",
@@ -82,8 +82,9 @@ return
         BUILDING_IMMORTALLIGHT = "可以驱散周围可恶的暗影。",
         BUILDING_TRAVELLERBOX = "从这里把手伸进去会不会从另一边出来？",
         BUILDING_GEMICEBOX = "暂停时间！话说是不是有点大材小用了？",
-        BUILDING_ALCHEMYDESK = "天才炼金师——爱尔奎特将于此行使奇迹！",
+        BUILDING_ALCHEMYDESK = "见习炼金师Brunestud是也。",
         BUILDING_TRINKETWORKSHOP = "一张破桌子。",
+        BUILDING_MOONDIAL = "它的作用是集聚月光。",
 
         --食物效果
         FOOD_EFFECT = 

@@ -1239,17 +1239,22 @@ local function alchemydesk(Sim)
 end
 
 --映月台
+function onmoonphasechagned(inst,phase)
+	phase = GetClock():GetMoonPhase()
+    if phase ~= nil then
+        inst.sg:GoToState("next")
+    end
+end
 local function moondial(Sim)
 	local inst = commonfn("moondial")
+	inst:SetStateGraph("SGmoondial_")
 	MakeObstaclePhysics(inst, .2)
+	inst.AnimState:PlayAnimation("idle_new")
+	inst:ListenForEvent("moonphaseschange",onmoonphasechagned,GetWorld())
+	onmoonphasechagned(inst)
 
-	inst.AnimState:PlayAnimation("idle_new", true)
-
-	inst.OnSave = function(inst, data)
-	end
-
-	inst.OnLoad = function(inst, data)
-	end
+	inst.OnSave = function(inst, data)end
+	inst.OnLoad = function(inst, data)end
 
 	return inst
 end

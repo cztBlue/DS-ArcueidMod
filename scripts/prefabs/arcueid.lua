@@ -41,11 +41,18 @@ local start_inv = {}
 --监视时间改变伤害
 --满月无敌+高速+活力buff
 --伤害和速度与活力,时间，月相挂钩
+local staticmoon = ""
 local function updatepower(inst)
     local timestr
     local Isbelow70per
     local Isbelow35per
     local moon = GetClock():GetMoonPhase()
+    if staticmoon == nil or staticmoon == "" then
+        staticmoon = GetClock():GetMoonPhase()
+    elseif moon ~= staticmoon then
+        GetWorld():PushEvent("moonphaseschange")
+        staticmoon = moon
+    end
 
     if GetClock():IsDay() then
         timestr = "DAY"
@@ -82,6 +89,7 @@ local function updatepower(inst)
     end
 
     if Isbelow70per == false and Isbelow35per == false then
+        inst.components.combat.attack_damage_modifiers = {}
         inst.components.combat:AddDamageModifier(string.lower(timestr) .. "_damage",
             TUNING["ARCUEID_" .. timestr .. "_DAMAGEMULTIPLIER"])
         inst.components.locomotor.walkspeed = TUNING["ARCUEID_" .. timestr .. "_WALKSPEED"]
@@ -308,12 +316,15 @@ local fn = function(inst)
 
     local adjust = 0
     local curtrinket
-    --借助频繁的sanitydelta更新一些状态
+
+    --借sanitydelta更新一些状态
     inst:ListenForEvent("sanitydelta", function()
         inst.components.vigour:OnUpdate()
         inst.components.arcueidstate:OnUpdate()
         inst.components.arcueidstate:OnCarefulStateUpdate()
         inst.components.health:DoDelta(0)
+
+
         curtrinket = inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
         --简陋的冷却系统
         if curtrinket ~= nil

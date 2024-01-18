@@ -84,9 +84,9 @@ local function berrycake()
 	inst.components.edible.foodtype = "VEGGIE"
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_A)
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
 		if eater:HasTag("arcueid") then
 			eater.components.arcueidbuff:ActiveArcueidBuff("buff_recover")
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
 		end
 	end)
 
@@ -100,8 +100,10 @@ local function takoyaki()
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_C)
 	--inst.SetFoodValue({0,0,0,-50})
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
-		eater.components.arcueidbuff:ActiveArcueidBuff("buff_pieInTheSky")
+		if eater:HasTag("arcueid") then
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+			eater.components.arcueidbuff:ActiveArcueidBuff("buff_pieInTheSky")
+		end
 	end)
 
 	return inst
@@ -113,7 +115,9 @@ local function tofusoup()
 	inst.components.edible.foodtype = "VEGGIE"
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_E)
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+		if eater:HasTag("arcueid") then
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+		end
 	end)
 
 	return inst
@@ -125,8 +129,10 @@ local function omeletterice()
 	inst.components.edible.foodtype = "MEAT"
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_C)
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
-		eater.components.arcueidbuff:ActiveArcueidBuff("buff_pieInTheSky")
+		if eater:HasTag("arcueid") then
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+			eater.components.arcueidbuff:ActiveArcueidBuff("buff_pieInTheSky")
+		end
 	end)
 
 	return inst
@@ -136,8 +142,10 @@ local function berryeggtart()
 	local inst = commonfn("berryeggtart")
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_C)
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
-		eater.components.arcueidbuff:ActiveArcueidBuff("buff_pep")
+		if eater:HasTag("arcueid") then
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+			eater.components.arcueidbuff:ActiveArcueidBuff("buff_pep")
+		end
 	end)
 
 	return inst
@@ -148,8 +156,10 @@ local function chocolatecookies()
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_B)
 	inst.components.edible.foodtype = "VEGGIE"
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
-		eater.components.arcueidbuff:ActiveArcueidBuff("buff_restore")
+		if eater:HasTag("arcueid") then
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+			eater.components.arcueidbuff:ActiveArcueidBuff("buff_restore")
+		end
 	end)
 
 	return inst
@@ -160,8 +170,10 @@ local function creamhoneycut()
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_A)
 	inst.components.edible.foodtype = "VEGGIE"
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
-		eater.components.arcueidbuff:ActiveArcueidBuff("buff_restore")
+		if eater:HasTag("arcueid") then
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+			eater.components.arcueidbuff:ActiveArcueidBuff("buff_restore")
+		end
 	end)
 
 	return inst
@@ -172,8 +184,10 @@ local function doughnut()
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_B)
 	inst.components.edible.foodtype = "VEGGIE"
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
-		eater.components.arcueidbuff:ActiveArcueidBuff("buff_rest")
+		if eater:HasTag("arcueid") then
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+			eater.components.arcueidbuff:ActiveArcueidBuff("buff_rest")
+		end
 	end)
 
 	return inst
@@ -184,8 +198,10 @@ local function hotdog()
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_E)
 	inst.components.edible.foodtype = "MEAT"
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
-		eater.components.arcueidbuff:ActiveArcueidBuff("buff_rest",110)
+		if eater:HasTag("arcueid") then
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+			eater.components.arcueidbuff:ActiveArcueidBuff("buff_rest", 110)
+		end
 	end)
 
 	return inst
@@ -196,8 +212,9 @@ local function ketchup()
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_C)
 	inst.components.edible.foodtype = "VEGGIE"
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
-
+		if eater:HasTag("arcueid") then
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+		end
 	end)
 
 	return inst
@@ -208,9 +225,11 @@ local function mixedsoup()
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_A)
 	inst.components.edible.foodtype = "VEGGIE"
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
-		eater.components.arcueidbuff:ActiveArcueidBuff("buff_halo")
-		eater.components.arcueidbuff:ActiveArcueidBuff("buff_recover")
+		if eater:HasTag("arcueid") then
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+			eater.components.arcueidbuff:ActiveArcueidBuff("buff_halo")
+			eater.components.arcueidbuff:ActiveArcueidBuff("buff_recover")
+		end
 	end)
 
 	return inst
@@ -221,7 +240,9 @@ local function pepper()
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_C)
 	inst.components.edible.foodtype = "VEGGIE"
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+		if eater:HasTag("arcueid") then
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+		end
 	end)
 
 	return inst
@@ -232,7 +253,9 @@ local function piri()
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_C)
 	inst.components.edible.foodtype = "VEGGIE"
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+		if eater:HasTag("arcueid") then
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+		end
 	end)
 
 	return inst
@@ -243,8 +266,10 @@ local function puff()
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_D)
 	inst.components.edible.foodtype = "VEGGIE"
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
-		eater.components.arcueidbuff:ActiveArcueidBuff("buff_pep")
+		if eater:HasTag("arcueid") then
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+			eater.components.arcueidbuff:ActiveArcueidBuff("buff_pep")
+		end
 	end)
 
 	return inst
@@ -255,8 +280,10 @@ local function sandwich()
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_B)
 	inst.components.edible.foodtype = "MEAT"
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
-		eater.components.arcueidbuff:ActiveArcueidBuff("buff_pieInTheSky")
+		if eater:HasTag("arcueid") then
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+			eater.components.arcueidbuff:ActiveArcueidBuff("buff_pieInTheSky")
+		end
 	end)
 
 	return inst
@@ -267,8 +294,10 @@ local function shrimpfriedrice()
 	inst.SetFoodValue(TUNING.ARCUEID_FOOD_VALUE_C)
 	inst.components.edible.foodtype = "MEAT"
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
-		eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
-		eater.components.arcueidbuff:ActiveArcueidBuff("buff_halo")
+		if eater:HasTag("arcueid") then
+			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
+			eater.components.arcueidbuff:ActiveArcueidBuff("buff_halo")
+		end
 	end)
 
 	return inst
