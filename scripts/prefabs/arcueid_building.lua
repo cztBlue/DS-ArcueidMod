@@ -576,7 +576,6 @@ end
 local function ShowProduct(inst)
 	if not inst:HasTag("burnt") then
 		local product = string.gsub(inst.components.stewer.product, "arcueid_food_", "");
-		print(product)
 		inst.AnimState:OverrideSymbol("swap_cooked", "arcueid_food", product)
 	end
 end

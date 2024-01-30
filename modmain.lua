@@ -18,7 +18,8 @@ PrefabFiles = {
 	"arcueid_trinket",
 	"arcueid_baseitem",
 	"arcueid_efficacy",
-	"arcueid_shadowcreature"
+	"arcueid_shadowcreature",
+	"arcueid_letter",
 }
 
 Assets = {
@@ -130,6 +131,10 @@ Assets = {
 	--ui
 	Asset("ATLAS", "images/arcueid_gui/turnarrow_icon.xml"),
 	Asset("IMAGE", "images/arcueid_gui/turnarrow_icon.tex"),
+	Asset("ATLAS", "images/arcueid_gui/letter_paper.xml"),
+	Asset("IMAGE", "images/arcueid_gui/letter_paper.tex"),
+	Asset("ATLAS", "images/arcueid_gui/arcueid_close.xml"),
+	Asset("IMAGE", "images/arcueid_gui/arcueid_close.tex"),
 }
 GLOBAL.setmetatable(env, { __index = function(t, k) return GLOBAL.rawget(GLOBAL, k) end })
 
@@ -230,13 +235,13 @@ TUNING.TORCHRADIUSRATE = .65
 --暗影骑士数值
 TUNING.SHADOW_KNIGHT =
 {
-	LEVELUP_SCALE = {1, 1.7, 2.5},
-	SPEED = {7, 9, 12},
-	HEALTH = {900, 2700, 8100},
-	DAMAGE = {40, 90, 150},
-	ATTACK_PERIOD = {3, 2.5, 2},
-	ATTACK_RANGE = 2.3,                 -- levels are procedural
-	ATTACK_RANGE_LONG = 4.5,            -- levels are procedural
+	LEVELUP_SCALE = { 1, 1.7, 2.5 },
+	SPEED = { 7, 9, 12 },
+	HEALTH = { 900, 2700, 8100 },
+	DAMAGE = { 40, 90, 150 },
+	ATTACK_PERIOD = { 3, 2.5, 2 },
+	ATTACK_RANGE = 2.3,   -- levels are procedural
+	ATTACK_RANGE_LONG = 4.5, -- levels are procedural
 	RETARGET_DIST = 15,
 }
 
@@ -326,6 +331,7 @@ local blindscreen = GLOBAL.require "widgets/blindscreen"
 local foodrecipes = GLOBAL.require "widgets/arcueid_craftrecipes_food"
 local trinketrecipes = GLOBAL.require "widgets/arcueid_craftrecipes_trinket"
 local alchemyrecipes = GLOBAL.require "widgets/arcueid_craftrecipes_alchemy"
+local letter = GLOBAL.require "widgets/letter_normal"
 
 -- --活力值
 AddClassPostConstruct("widgets/statusdisplays", function(self)
@@ -358,7 +364,7 @@ end)
 
 --冰滤镜/盲滤镜
 AddClassPostConstruct("widgets/controls", function(self, owner)
---冰滤镜废弃
+	--冰滤镜废弃
 	-- self.Icescreen = self:AddChild(icescreen(self.owner))
 	self.Blindscreen = self:AddChild(blindscreen(self.owner))
 	GetPlayer():ListenForEvent("sanitydelta", function()
@@ -463,6 +469,19 @@ AddClassPostConstruct("screens/playerhud", function(self)
 	end
 end)
 
+--信
+AddClassPostConstruct("widgets/controls", function(self)
+	local controls = self
+	if controls and GetPlayer().prefab == "arcueid" then
+		if controls.containerroot then
+			controls.letter = controls.containerroot:AddChild(letter())
+		end
+	else
+		return
+	end
+	controls.letter:Hide()
+end)
+
 --注入条件让Mouse强制时刻监视到Arc
 AddComponentPostInit("playeractionpicker", function(PlayerActionPicker)
 	function PlayerActionPicker:DoGetMouseActions(force_target)
@@ -544,6 +563,7 @@ local EQUIP_LI = GLOBAL.Action({})
 local EDIT_ANCHOR = GLOBAL.Action({})
 local DESTINATION = GLOBAL.Action({})
 local TOUCH_BOTTLE = GLOBAL.Action({})
+local READLETTER = GLOBAL.Action({ mount_enabled = true })
 
 --上爪动画
 SHARPCLAW_EQUIP.id = "SHARPCLAW_EQUIP"
@@ -563,6 +583,9 @@ DESTINATION.str = "选择锚点"
 --接触
 TOUCH_BOTTLE.id = "TOUCH_BOTTLE"
 TOUCH_BOTTLE.str = "接触"
+--读信
+READLETTER.id = "READLETTER"
+READLETTER.str = "阅读"
 
 -- 动作触发的函数。传入一个BufferedAction对象。(target,doer)
 -- 可以通过它直接调用动作的执行者，目标，具体的动作内容等等，详情请查看bufferedaction.lua文件
@@ -609,12 +632,21 @@ TOUCH_BOTTLE.fn = function(act)
 	return true
 end
 
+READLETTER.fn = function(act)
+	local targ = act.target or act.invobject
+	if targ and targ.components.book and act.doer and act.doer.components.reader then
+		return act.doer.components.reader:Read(targ)
+	end
+	return true
+end
+
 AddAction(SHARPCLAW_EQUIP)
 AddAction(EQUIP_LI)
 AddAction(REMOVE_LI)
 AddAction(DESTINATION)
 AddAction(EDIT_ANCHOR)
 AddAction(TOUCH_BOTTLE)
+AddAction(READLETTER)
 
 --[[通过在组件中定义类的函数来搜集组件动作。
 CollectSceneActions，CollectUseActions，CollectPointActions，CollectEquippedActions，CollectInventoryActions这五个函数，
@@ -629,17 +661,20 @@ AddStategraphActionHandler("wilson", ActionHandler(REMOVE_LI, "lizhuang"))
 AddStategraphActionHandler("wilson", ActionHandler(DESTINATION, "give"))
 AddStategraphActionHandler("wilson", ActionHandler(EDIT_ANCHOR, "lizhuang"))
 AddStategraphActionHandler("wilson", ActionHandler(TOUCH_BOTTLE, "lizhuang"))
+AddStategraphActionHandler("wilson", ActionHandler(READLETTER, "readletter"))
 -----------自定义动作
 
 --监听键盘事件,shift切换潜行
 GLOBAL.TheInput:AddKeyHandler(function(key, down)
-	local player = GetPlayer()
-	if down and key == 304 and player.prefab == "arcueid" and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
-		and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_shadowcloak" then
-		if player.components.arcueidstate.careful == true then
-			player.components.arcueidstate.careful = false
-		else
-			player.components.arcueidstate.careful = true
+	if GetPlayer() then
+		local player = GetPlayer()
+		if down and key == 304 and player.prefab == "arcueid" and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
+			and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_shadowcloak" then
+			if player.components.arcueidstate.careful == true then
+				player.components.arcueidstate.careful = false
+			else
+				player.components.arcueidstate.careful = true
+			end
 		end
 	end
 end)
@@ -693,7 +728,7 @@ AddComponentPostInit("firefx", function(FireFX)
 		function FireFX:OnUpdate(dt)
 			local time = gettime() * 30
 			local flicker = (math.sin(time) + math.sin(time + 2) + math.sin(time + 0.7777)) / 2.0 -- range = [-1 , 1]
-			flicker = (1.0 + flicker) / 2.0                                             -- range = 0:1
+			flicker = (1.0 + flicker) / 2.0                                              -- range = 0:1
 			local rad = self.current_radius + flicker * .05
 			rad = rad * TUNING.FIRERADIUSRATE
 			self.inst.Light:SetRadius(rad)

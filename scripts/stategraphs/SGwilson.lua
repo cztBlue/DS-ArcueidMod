@@ -3695,6 +3695,54 @@ local states =
         },
     },
 
+    --相比map只替换了符号messagebottle
+    State {
+        name = "readletter",
+        tags = { "doing" },
+
+        onenter = function(inst)
+            inst.components.locomotor:Stop()
+            inst.AnimState:PlayAnimation("scroll", false)
+            inst.AnimState:OverrideSymbol("scroll", "arcueid_letterpaper", "scroll")
+            inst.AnimState:PushAnimation("scroll_pst", false)
+
+            --inst.AnimState:Hide("ARM_carry")
+            inst.AnimState:Show("ARM_normal")
+            if inst.components.inventory.activeitem and inst.components.inventory.activeitem.components.book then
+                inst.components.inventory:ReturnActiveItem()
+            end
+        end,
+
+        onexit = function(inst)
+            if inst.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS) and not inst.were then
+                inst.AnimState:Show("ARM_carry")
+                inst.AnimState:Hide("ARM_normal")
+            end
+        end,
+
+        timeline =
+        {
+            TimeEvent(24 * FRAMES,
+                function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC002/common/treasuremap_open") end),
+            TimeEvent(58 * FRAMES,
+                function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC002/common/treasuremap_close") end),
+        },
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                inst:PerformBufferedAction()
+            end),
+
+
+            EventHandler("animqueueover", function(inst)
+                inst.sg:GoToState("idle")
+            end),
+
+
+        },
+    },
+
     State {
         name = "blowdart",
         tags = { "attack", "notalking", "abouttoattack" },

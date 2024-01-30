@@ -1,7 +1,8 @@
-local ShadowChess = require("stategraphs/SGshadow_chesspieces_")
+local ShadowChess = require("stategraphs/SGshadow_chesspieces")
 
 -- basic attack extent = 2.75
 -- plus attack extent = 4.75
+
 --See SGshadow_chesspieces.lua for CommonEventList
 
 local states =
