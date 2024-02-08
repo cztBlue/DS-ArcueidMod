@@ -9,8 +9,7 @@ local Text = require "widgets/text"
 local TextButton = require "widgets/textbutton" 
 require "util"
 
-
-letter_normal = Class(Widget, function(self,owner)
+local letter_normal = Class(Widget, function(self,owner)
 	Widget._ctor(self, "yanjiu")
     self.owner = owner
 	GetPlayer():ListenForEvent("OpenNormalLetter",function()
@@ -80,6 +79,7 @@ letter_normal = Class(Widget, function(self,owner)
 	self:StartUpdating()
 end)
 function letter_normal:OnUpdate(dt)
+	
 end
 
 function letter_normal:Open()

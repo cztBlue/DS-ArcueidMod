@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Atlas>
+	<Texture filename="bloodscreen.tex" />
+	<Elements>
+		<Element name="bloodscreen_border.tex" u1="0.001" u2="0.46775" v2="0.999" v1="0.737328125" variant="" />
+		<Element name="bloodscreen_c1.tex" u1="0.46975" u2="0.772681640625" v2="0.999" v1="0.737328125" variant="" />
+		<Element name="bloodscreen_c2.tex" u1="0.001" u2="0.429908203125" v2="0.735328125" v1="0.47365625" variant="" />
+		<Element name="bloodscreen_c3.tex" u1="0.001" u2="0.332984375" v2="0.47165625" v1="0.241966796875" variant="" />
+	</Elements>
+</Atlas>

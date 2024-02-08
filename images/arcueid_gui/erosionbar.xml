@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Atlas>
+	<Texture filename="erosionbar.tex" />
+	<Elements>
+		<Element name="edark_1.tex" u1="0.001" u2="0.0390390625" v2="0.999" v1="0.96975" variant="" />
+		<Element name="edark_10.tex" u1="0.081078125" u2="0.1191171875" v2="0.879859375" v1="0.5869375" variant="" />
+		<Element name="edark_11.tex" u1="0.241234375" u2="0.2792734375" v2="0.999" v1="0.67678125" variant="" />
+		<Element name="edark_12.tex" u1="0.2812734375" u2="0.3193125" v2="0.999" v1="0.647484375" variant="" />
+		<Element name="edark_13.tex" u1="0.3213125" u2="0.3593515625" v2="0.999" v1="0.6181875" variant="" />
+		<Element name="edark_14.tex" u1="0.3613515625" u2="0.399390625" v2="0.999" v1="0.588890625" variant="" />
+		<Element name="edark_15.tex" u1="0.401390625" u2="0.4394296875" v2="0.999" v1="0.55959375" variant="" />
+		<Element name="edark_16.tex" u1="0.4414296875" u2="0.47946875" v2="0.999" v1="0.530296875" variant="" />
+		<Element name="edark_17.tex" u1="0.001" u2="0.0390390625" v2="0.758765625" v1="0.260765625" variant="" />
+		<Element name="edark_18.tex" u1="0.1211171875" u2="0.15915625" v2="0.821265625" v1="0.29396875" variant="" />
+		<Element name="edark_19.tex" u1="0.0410390625" u2="0.079078125" v2="0.64353125" v1="0.0869375" variant="" />
+		<Element name="edark_2.tex" u1="0.001" u2="0.0390390625" v2="0.96775" v1="0.909203125" variant="" />
+		<Element name="edark_20.tex" u1="0.16115625" u2="0.1991953125" v2="0.79196875" v1="0.204125" variant="" />
+		<Element name="edark_3.tex" u1="0.0410390625" u2="0.079078125" v2="0.999" v1="0.91115625" variant="" />
+		<Element name="edark_4.tex" u1="0.081078125" u2="0.1191171875" v2="0.999" v1="0.881859375" variant="" />
+		<Element name="edark_5.tex" u1="0.001" u2="0.0390390625" v2="0.907203125" v1="0.760765625" variant="" />
+		<Element name="edark_6.tex" u1="0.1211171875" u2="0.15915625" v2="0.999" v1="0.823265625" variant="" />
+		<Element name="edark_7.tex" u1="0.16115625" u2="0.1991953125" v2="0.999" v1="0.79396875" variant="" />
+		<Element name="edark_8.tex" u1="0.2011953125" u2="0.239234375" v2="0.999" v1="0.764671875" variant="" />
+		<Element name="edark_9.tex" u1="0.0410390625" u2="0.079078125" v2="0.90915625" v1="0.64553125" variant="" />
+		<Element name="erosionbar.tex" u1="0.48146875" u2="0.5380625" v2="0.999" v1="0.3681875" variant="" />
+	</Elements>
+</Atlas>

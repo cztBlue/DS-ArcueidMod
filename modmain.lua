@@ -30,75 +30,10 @@ Assets = {
 	Asset("ATLAS", "images/selectscreen_portraits/arcueid.xml"),
 	Asset("IMAGE", "images/selectscreen_portraits/arcueid_silho.tex"),
 	Asset("ATLAS", "images/selectscreen_portraits/arcueid_silho.xml"),
-
 	Asset("IMAGE", "bigportraits/arcueid.tex"),
 	Asset("ATLAS", "bigportraits/arcueid.xml"),
-
 	Asset("IMAGE", "images/map_icons/arcueid.tex"),
 	Asset("ATLAS", "images/map_icons/arcueid.xml"),
-
-	--vigourbadge资源
-	Asset("IMAGE", "images/replace_res/vigourbadge/frame_circle-0.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/frame_circle-0.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/Symbol 1-0.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/Symbol 1-0.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/Symbol 2-0.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/Symbol 2-0.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-0.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-0.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-1.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-1.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-2.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-2.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-3.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-3.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-4.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-4.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-5.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-5.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-6.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-6.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-7.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-7.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-8.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-8.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-9.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-9.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-10.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-10.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-11.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-11.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-12.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-12.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-13.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-13.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-14.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-14.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-15.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-15.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-16.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-16.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-17.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-17.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-18.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-18.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-19.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-19.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-20.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-20.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigour_level-21.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigour_level-21.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigourstatus-0.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigourstatus-0.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigourstatus-1.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigourstatus-1.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigourstatus-2.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigourstatus-2.xml"),
-	Asset("IMAGE", "images/replace_res/vigourbadge/vigourstatus-3.tex"),
-	Asset("ATLAS", "images/replace_res/vigourbadge/vigourstatus-3.xml"),
-
-	Asset("IMAGE", "images/trinketslot.tex"),
-	Asset("ATLAS", "images/trinketslot.xml"),
 
 	--小地图
 	Asset("ATLAS", "images/map_icons/mooncirleform.xml"),
@@ -129,12 +64,23 @@ Assets = {
 	Asset("IMAGE", "images/map_icons/trinketworkshop.tex"),
 
 	--ui
+	Asset("ANIM", "anim/vigour.zip"),
 	Asset("ATLAS", "images/arcueid_gui/turnarrow_icon.xml"),
 	Asset("IMAGE", "images/arcueid_gui/turnarrow_icon.tex"),
 	Asset("ATLAS", "images/arcueid_gui/letter_paper.xml"),
 	Asset("IMAGE", "images/arcueid_gui/letter_paper.tex"),
 	Asset("ATLAS", "images/arcueid_gui/arcueid_close.xml"),
 	Asset("IMAGE", "images/arcueid_gui/arcueid_close.tex"),
+	Asset("ATLAS", "images/arcueid_gui/erosionbar.xml"),
+	Asset("IMAGE", "images/arcueid_gui/erosionbar.tex"),
+	Asset("ATLAS", "images/arcueid_gui/num_bg.xml"),
+	Asset("IMAGE", "images/arcueid_gui/num_bg.tex"),
+	Asset("IMAGE", "images/trinketslot.tex"),
+	Asset("ATLAS", "images/trinketslot.xml"),
+	--test
+	Asset("IMAGE", "images/bloodscreen.tex"),
+	Asset("ATLAS", "images/bloodscreen.xml"),
+
 }
 GLOBAL.setmetatable(env, { __index = function(t, k) return GLOBAL.rawget(GLOBAL, k) end })
 
@@ -142,6 +88,7 @@ GLOBAL.setmetatable(env, { __index = function(t, k) return GLOBAL.rawget(GLOBAL,
 --常量
 --写成表的形式会有调用上的bug，不知道为什么
 TUNING.ARCUEID_MAXVIGOUR = 360
+TUNING.ARCUEID_MAXEROSION = 360
 
 TUNING.ARCUEID_DAY_DAMAGEMULTIPLIER = -0.1
 TUNING.ARCUEID_DUSK_DAMAGEMULTIPLIER = 0.5
@@ -255,7 +202,6 @@ TUNING.SANITY_NIGHT_MID = 0.0433
 TUNING.SANITY_NIGHT_DARK = -1
 TUNING.ARCUEID_HUNGER_RATE = 0.2 --0.15625->0.2
 
-
 --人物信息
 STRINGS.CHARACTER_TITLES.arcueid = "稀世明珠般的公主大人"
 STRINGS.CHARACTER_NAMES.arcueid = "Arcueid Brunestud"
@@ -303,15 +249,6 @@ if GLOBAL.IsDLCEnabled(GLOBAL.PORKLAND_DLC) then
 	GLOBAL.IsHAM = true
 end
 
--- 换hunger值贴图
--- badge下的有三个接口(hunger->stomach,sanity->brain,health->heart)
--- local function Arcueid_Badge(class, owner)
--- 	if GLOBAL.GetPlayer().prefab == "arcueid" then
--- 		class.stomach.anim:GetAnimState():SetBuild("arcueid_hunger")
--- 	end
--- end
--- AddClassPostConstruct("widgets/statusdisplays", Arcueid_Badge)
-
 --调整护符位
 local amulets = { "amulet", "blueamulet", "purpleamulet", "orangeamulet", "greenamulet", "yellowamulet", --standard
 	"blackamulet", "pinkamulet", "whiteamulet", "endiaamulet", "grayamulet", "broken_frosthammer", }
@@ -325,92 +262,45 @@ if GetModConfigData("amuletstype") == 2 then
 	end
 end
 
-local vigour_b = GLOBAL.require "widgets/vigourbadge"
-local icescreen = GLOBAL.require "widgets/icescreen"
+local vigour = GLOBAL.require "widgets/vigourbadge"
+local bloodscreen = GLOBAL.require "widgets/bloodscreen"
 local blindscreen = GLOBAL.require "widgets/blindscreen"
 local foodrecipes = GLOBAL.require "widgets/arcueid_craftrecipes_food"
 local trinketrecipes = GLOBAL.require "widgets/arcueid_craftrecipes_trinket"
 local alchemyrecipes = GLOBAL.require "widgets/arcueid_craftrecipes_alchemy"
 local letter = GLOBAL.require "widgets/letter_normal"
+local erosion = GLOBAL.require "widgets/erosionbadge"
 
--- --活力值
+--活力值
 AddClassPostConstruct("widgets/statusdisplays", function(self)
-	if self.owner.prefab == "arcueid" then
-		self.hud_vigour = self:AddChild(vigour_b(self.owner))
-
-		--UI位置
-		-- self.hud_vigour:SetHAnchor(0)
-		-- self.hud_vigour:SetVAnchor(0)
-		-- self.hud_vigour:SetPosition(750, 220)
-
+	if self.owner and GetPlayer().prefab == "arcueid" then
+		self.vigour_hud = self:AddChild(vigour(self.owner))
 		local x1, y1, z1 = self.stomach:GetPosition():Get()
 		local x2, y2, z2 = self.brain:GetPosition():Get()
 		local x3, y3, z3 = self.heart:GetPosition():Get()
-		------------
-		if KnownModIndex:IsModEnabled("workshop-574636989") then
-			self.hud_vigour:SetPosition(self.stomach:GetPosition() + GLOBAL.Vector3(x1 - x3 - 15, 15, 0))
-		else
-			--self.hud_vigour:SetPosition(self.stomach:GetPosition() + GLOBAL.Vector3(x1 - x2 - 40, 0, 0))
-			self.hud_vigour:SetPosition(self.stomach:GetPosition() + GLOBAL.Vector3(x1 - x3, 0, 0))
-		end
 
-		self.owner:ListenForEvent("vigour_change", function()
-			self.hud_vigour:SetPercent(self.owner.components.vigour:GetPercent(), TUNING.ARCUEID_MAXVIGOUR)
-		end, GetWorld())
+		if KnownModIndex:IsModEnabled("workshop-574636989") then
+			self.vigour_hud:SetPosition(self.stomach:GetPosition() + GLOBAL.Vector3(15, y2 - y1 - 10, 0))
+		else
+			self.vigour_hud:SetPosition(self.brain:GetPosition() + GLOBAL.Vector3(x1 - x3, 0, 0))
+		end
 		self.owner.components.vigour:DoDelta(0, self.owner, "loadupdate")
+		self.vigour_hud:Show()
 	end
 end)
 
-
 --冰滤镜/盲滤镜
 AddClassPostConstruct("widgets/controls", function(self, owner)
-	--冰滤镜废弃
-	-- self.Icescreen = self:AddChild(icescreen(self.owner))
+	self.bloodscreen = self:AddChild(bloodscreen(self.owner))
 	self.Blindscreen = self:AddChild(blindscreen(self.owner))
 	GetPlayer():ListenForEvent("sanitydelta", function()
 		-- self.Icescreen:OnUpdate()
 		self.Blindscreen:OnUpdate()
 	end, inst)
 
-	-- self.Icescreen:Show()
+	self.bloodscreen:Show()
 	self.Blindscreen:Show()
 end)
-
-
-
---绿宝石修正制作倍率
--- AddPrefabPostInit("greenamulet", function(inst)
--- 	local player = GetPlayer();
--- 	if player.prefab == "arcueid" then
--- 		inst.components.equippable:SetOnEquip(function(inst, owner)
--- 			owner.AnimState:OverrideSymbol("swap_body", "torso_amulets", "greenamulet")
--- 			--倍率矫正
--- 			if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
--- 				and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye" then
--- 				owner.components.builder.ingredientmod = 0.5
--- 			else
--- 				owner.components.builder.ingredientmod = 1
--- 			end
-
--- 			inst.onitembuild = function()
--- 				inst.components.finiteuses:Use(1)
--- 			end
--- 			inst:ListenForEvent("consumeingredients", inst.onitembuild, owner)
--- 		end)
-
--- 		inst.components.equippable:SetOnUnequip(function(inst, owner)
--- 			owner.AnimState:ClearOverrideSymbol("swap_body")
--- 			--倍率矫正
--- 			if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
--- 				and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye" then
--- 				owner.components.builder.ingredientmod = 1
--- 			else
--- 				owner.components.builder.ingredientmod = 1.5
--- 			end
--- 			inst:RemoveEventCallback("consumeingredients", inst.onitembuild, owner)
--- 		end)
--- 	end
--- end)
 
 --注入旅行箱组件
 AddPrefabPostInit("world", function(inst)
@@ -481,6 +371,20 @@ AddClassPostConstruct("widgets/controls", function(self)
 	end
 	controls.letter:Hide()
 end)
+
+--侵蚀度
+AddClassPostConstruct("widgets/controls", function(self)
+	local controls = self
+	if controls and GetPlayer().prefab == "arcueid" then
+		if controls.containerroot then
+			controls.erosion = controls.containerroot:AddChild(erosion())
+		end
+	else
+		return
+	end
+	-- controls.erosion:Show()
+end)
+
 
 --注入条件让Mouse强制时刻监视到Arc
 AddComponentPostInit("playeractionpicker", function(PlayerActionPicker)
@@ -750,7 +654,9 @@ AddComponentPostInit("firefx", function(FireFX)
 
 		function FireFX:SetLevel(lev, immediate)
 			oldSetLevel(self, lev, immediate)
-			self.inst.Light:SetRadius(self.levels[self.level].radius * TUNING.FIRERADIUSRATE)
+			if self.levels[self.level] and self.inst.Light then
+				self.inst.Light:SetRadius(self.levels[self.level].radius * TUNING.FIRERADIUSRATE)
+			end
 		end
 	end
 end)
@@ -758,6 +664,33 @@ end)
 --修改火把范围
 AddPrefabPostInit("torchfire", function(inst)
 	inst.Light:SetRadius(2 * TUNING.TORCHRADIUSRATE)
+end)
+
+--侵蚀度影响月相
+AddComponentPostInit("clock", function(Clock)
+	local rmoonphases = {}
+	rmoonphases["new"] = 1
+	rmoonphases["quarter"] = 2
+	rmoonphases["half"] = 3
+	rmoonphases["threequarter"] = 4
+	rmoonphases["full"] = 5
+	local moonphases = { "new", "quarter", "half", "threequarter", "full", }
+	if GetPlayer().prefab == "arcueid" then
+		local oldmoon = Clock:GetMoonPhase()
+		function Clock:GetMoonPhase()
+			local erosion = GetPlayer().components.arcueidstate.nightmarerosion
+			local index = rmoonphases[oldmoon]
+			if erosion >= 180 and erosion < 240 then
+				index = (index % 3) + 1
+				return moonphases[index]
+			elseif erosion >= 240 and erosion < 360 then
+				index = (index % 2) + 1
+				return moonphases[index]
+			elseif erosion == 360 then
+				return "new"
+			end
+		end
+	end
 end)
 
 --战斗机制改动

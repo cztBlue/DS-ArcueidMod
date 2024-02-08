@@ -12,8 +12,13 @@ local Vigour = Class(function(self, inst)
     self.rate = 0 --每秒x点
 
     self.careful = false
-    
+
+    self.inst:StartUpdatingComponent(self)
 end)
+
+function Vigour:OnUpdate()
+    self:Recalc()
+end
 
 function Vigour:IsCarefulWalking()
     return self.careful
@@ -90,10 +95,6 @@ end
 function Vigour:GetRate()
     self.rate = self.moonfactor + self.trinketfactor + self.bodyequipfactor
 	return self.rate
-end
-
-function Vigour:OnUpdate()
-    self:Recalc()
 end
 
 function Vigour:Recalc()

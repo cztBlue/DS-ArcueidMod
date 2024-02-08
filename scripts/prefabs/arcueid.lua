@@ -310,6 +310,9 @@ local fn = function(inst)
     --添加buff
     inst:AddComponent("arcueidbuff")
 
+    --影潮世界
+    GetWorld():AddComponent("darkwave")
+
     updatepower(inst)
     -- inst:ListenForEvent("arrive", function() updatepower(inst) end, GetWorld())  --Sadly only SW and HAM having this
     inst:ListenForEvent("vigour_change", function() updatepower(inst) end, GetWorld())
@@ -319,12 +322,7 @@ local fn = function(inst)
 
     --借sanitydelta更新一些状态
     inst:ListenForEvent("sanitydelta", function()
-        inst.components.vigour:OnUpdate()
-        inst.components.arcueidstate:OnUpdate()
-        inst.components.arcueidstate:OnCarefulStateUpdate()
         inst.components.health:DoDelta(0)
-
-
         curtrinket = inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
         --简陋的冷却系统
         if curtrinket ~= nil
@@ -333,7 +331,6 @@ local fn = function(inst)
                 math.floor((inst.components.arcueidstate.iceskill_cooldown / TUNING.ICESKILL_COOLDOWN) *
                     100 + 1))
         end
-
 
         --dress_ice会掉出来发光，治个标先
         adjust = adjust + 0.2

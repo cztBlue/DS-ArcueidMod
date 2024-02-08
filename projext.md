@@ -188,19 +188,37 @@ v0.4
 * 食物bug
 
 ---
+滤镜
+活力值挡住雨水值
+侵蚀值挡住雨水值
+活力值动画没了
+解决不了-和state stuatu的月相兼容问题（它独立计算）
+
 * 映月台(显示月相,月化岩石)
-* 暗影骑士+更替狗潮（生成代码）
+*暗影骑士+更替狗潮（生成代码）
 能追着玩家跑
 有完整的动作
 
-* 测试电报文一份
+*测试电报文一份
+
+* 影怪生成机制
+* 影滤镜
 
 * 更恶劣的环境(抄一些永不妥协)
-暗影侵蚀度(滤镜+debuff+怪物生成规律)
-暗月灾(新月不更替)
-酸雨
-暴风雪
-温和断季
+* 暗影侵蚀度(滤镜+debuff+怪物生成规律)
+* 暗月灾(新月不更替)时段api->self:SetSegs(0,0,16)
+新月强制+60红点(不可洗),击杀影怪+3黑点(可洗)
+每有60侵蚀度，暗灾取走1/6的白天和黄昏
+侵蚀度超过180季节顺序失调，秋季消失，满月消失,(3-5天一换季)
+侵蚀度超过240点，春季消失，上弦月消失
+侵蚀度超过240点，半月消失
+侵蚀度超过360点，冬季消失，只有新月，（进入乱季？）
+
+试金石污染
+
+* 酸雨
+* 暴风雪
+* 温和断季
 
 * 影怪种类++(抄一些永不妥协)
 移植三基佬
@@ -398,3 +416,5 @@ The character mapping used a large amount of material from "Moon Concubine A pie
 There may also be some other online materials that must be deleted if invaded.
 
 If there is a malicious crash bug, it can also be resolved through Ringsonskypa@gmail.com Contact me and send me Documents Klei DoNotStarve log.txt. [strike] At the very least, send me an error screenshot. [/strike]
+
+怎么快速的找到函数定义

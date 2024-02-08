@@ -5,7 +5,96 @@ local ArcueidState = Class(function(self, inst)
     self.iceskill_cooldown = 0
     self.martyrseal_cooldown = 0
     self.martyrseal_highlight = 0
+    self.nightmarerosion = 0
+    self.nightmarerosion_deep = 0
+    self.erosion_deep_count = 10 --防止连续下弦累加
+    self.seasontoggle = 3
+    
+    self.inst:ListenForEvent("daytime", function(inst, data)
+        if self.seasontoggle then
+            self.seasontoggle = self.seasontoggle - 1
+        else
+            self.seasontoggle = math.random(2,8)
+        end
+
+        --新月+60事件
+        if self.erosion_deep_count then
+            self.erosion_deep_count = self.erosion_deep_count - 1
+        else
+            self.erosion_deep_count = 10
+        end
+        if GetClock():GetMoonPhase() == "new" and self.erosion_deep_count <= 0 then
+            self.nightmarerosion_deep = self.nightmarerosion_deep + 60
+            self.erosion_deep_count = 10
+        end
+        --改时段
+        self:CalSegment()
+        --乱季
+        self:ToggleSeason()
+    end, GetWorld())
+
+    self.inst:ListenForEvent("dusktime", function(inst, data) self:CalSegment() end, GetWorld())
+    self.inst:ListenForEvent("nighttime", function(inst, data) self:CalSegment() end, GetWorld())
+    
+    self.inst:StartUpdatingComponent(self)
 end)
+
+--切换季节
+function ArcueidState:ToggleSeason()
+    if self.nightmarerosion == 360 and self.seasontoggle <= 0 then
+        if SaveGameIndex:IsModePorkland() then
+            GetSeasonManager():StartLush()
+        elseif SaveGameIndex:IsModeShipwrecked() then
+            GetSeasonManager():StartDry()
+        else
+            GetSeasonManager():StartSummer()
+        end
+        return
+    end
+
+    if self.nightmarerosion > 240 and self.seasontoggle <= 0 then
+        local indexnum = math.random(1,2)
+        if SaveGameIndex:IsModePorkland() then
+            if indexnum == 1 then GetSeasonManager():StartHumid()
+            elseif indexnum == 2 then GetSeasonManager():StartLush() end
+        elseif SaveGameIndex:IsModeShipwrecked() then
+            if indexnum == 1 then GetSeasonManager():StartWet()
+            elseif indexnum == 2 then GetSeasonManager():StartDry() end
+        else
+            if indexnum == 1 then GetSeasonManager():StartWinter()
+            elseif indexnum == 2 then GetSeasonManager():StartSummer() end
+        end
+        return
+    end
+
+
+    if self.nightmarerosion > 180 and self.seasontoggle <= 0 then
+        local indexnum = math.random(1,3)
+        if SaveGameIndex:IsModePorkland() then
+            if indexnum == 1 then GetSeasonManager():StartHumid()
+            elseif indexnum == 2 or indexnum == 3 then GetSeasonManager():StartLush() end
+        elseif SaveGameIndex:IsModeShipwrecked() then
+            if indexnum == 1 then GetSeasonManager():StartWet()
+            elseif indexnum == 2 then GetSeasonManager():StartDry()
+            elseif indexnum == 3 then GetSeasonManager():StartGreen() end
+        else
+            if indexnum == 1 then GetSeasonManager():StartSpring()
+            elseif indexnum == 2 then GetSeasonManager():StartSummer()
+            elseif indexnum == 3 then GetSeasonManager():StartWinter() end
+        end
+        return
+    end
+
+    
+end
+
+--暗灾时祸
+function ArcueidState:CalSegment()
+    local clock = GetClock()
+    local f = 1 - self.nightmarerosion / TUNING.ARCUEID_MAXEROSION
+    local day, dusk = math.floor(clock.daysegs * f), math.floor(clock.dusksegs * f)
+    clock:SetSegs(day, dusk, 16 - day - dusk)
+end
 
 function ArcueidState:IsCarefulWalking()
     return self.careful
@@ -42,20 +131,17 @@ function ArcueidState:OnCarefulStateUpdate()
     end
 end
 
+function ArcueidState:OnUpdate(dt)
+    self:OnCarefulStateUpdate()
+    if self.iceskill_cooldown >= 0 then self.iceskill_cooldown = self.iceskill_cooldown - dt end
+    if self.martyrseal_cooldown >= 0 then self.martyrseal_cooldown = self.martyrseal_cooldown - dt end
+    if self.martyrseal_highlight >= 0 then self.martyrseal_highlight = self.martyrseal_highlight - dt end
 
---arcueid.lua注册OnUpdate
-function ArcueidState:OnUpdate()
-    local dt = 0.0333333
-    if self.iceskill_cooldown >= 0 then
-        self.iceskill_cooldown = self.iceskill_cooldown - dt
-    end
-
-    if self.martyrseal_cooldown >= 0 then
-        self.martyrseal_cooldown = self.martyrseal_cooldown - dt
-    end
-
-    if self.martyrseal_highlight >= 0 then
-        self.martyrseal_highlight = self.martyrseal_highlight - dt
+    --test
+    if self.nightmarerosion and self.nightmarerosion_deep then
+        if self.nightmarerosion <= self.nightmarerosion_deep then
+            self.nightmarerosion = self.nightmarerosion_deep
+        end
     end
 end
 
@@ -63,11 +149,25 @@ end
 function ArcueidState:OnSave()
     local data = {}
     data.recipeunlock = self.recipeunlock
+    data.nightmarerosion = self.nightmarerosion
+    data.nightmarerosion_deep = self.nightmarerosion_deep
+    data.erosion_deep_count = self.erosion_deep_count
     return data
 end
 
 function ArcueidState:OnLoad(data)
     self.recipeunlock = data.recipeunlock
+    self.nightmarerosion = 0
+    self.nightmarerosion_deep = 0
+    self.erosion_deep_count = data.erosion_deep_count
+
+    if not self.nightmarerosion then
+        self.nightmarerosion = 0
+    end
+    if not self.nightmarerosion_deep then
+        self.nightmarerosion_deep = 0
+    end
+    self:CalSegment()
 end
 
 return ArcueidState

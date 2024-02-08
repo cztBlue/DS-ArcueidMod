@@ -281,6 +281,9 @@ local function sandwich()
 	inst.components.edible.foodtype = "MEAT"
 	inst.components.edible:SetOnEatenFn(function(inst, eater)
 		if eater:HasTag("arcueid") then
+			--test
+			-- GetWorld():PushEvent("generadog") 
+			eater.components.arcueidstate.nightmarerosion = eater.components.arcueidstate.nightmarerosion + 30
 			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
 			eater.components.arcueidbuff:ActiveArcueidBuff("buff_pieInTheSky")
 		end
