@@ -10,11 +10,10 @@ local TextButton = require "widgets/textbutton"
 require "util"
 
 local letter_normal = Class(Widget, function(self,owner)
-	Widget._ctor(self, "yanjiu")
+	Widget._ctor(self, "letter")
     self.owner = owner
-	GetPlayer():ListenForEvent("OpenNormalLetter",function()
-		self:Open()
-	end)
+	self.total_page = 0
+	self.letterid = 0
 	self.curpagenum = 0
 	self.IsUIShow =false
     SetPause(true,"pause")
@@ -37,39 +36,35 @@ local letter_normal = Class(Widget, function(self,owner)
 	end)
 
 	--文本(BODYFONT,TITLEFONT,NUMBERFONT,UIFONT,TALKINGFONT)
-	self.txt = self:AddChild(Text(UIFONT, 25,[[
-		    任务：对外交流
-		条件：获得1个通讯台
-		说明：反正肯定回不去（bushi）
-		制作1个研究台，并进行研究
-		获得一定量的研究点数
-		制作研究通讯技术
-		学会制作通讯台后制作通讯台
-		由于通讯台材料包含终端
-		该任务无需提交
-		注意，过快推进主线会有负面事件
-		请先以攀科技为主
-		]]))
-	self.txt:SetPosition(-350, 0, 0)
+	-- self.txt = self:AddChild(Text(UIFONT, 25,STRINGS.LETTERCONTENT["ID"..tostring(self.letterid)]))
+	self.txt = self:AddChild(Text(UIFONT, 25,""))
+
+	GetPlayer():ListenForEvent("OpenNormalLetter",function(inst,data)
+		self.letterid = data.letterid 
+		self.total_page = data.total 
+		self.txt:SetString(STRINGS.LETTERCONTENT["ID"..tostring(self.letterid).."_"..tostring(self.curpagenum)])
+		self:Open()
+	end)
+	self.txt:SetPosition(0, 0, 0)
 	self.txt:SetHAlign(ANCHOR_LEFT)
 
 	--翻页
 	self.arrow_l = self.image:AddChild(ImageButton("images/arcueid_gui/turnarrow_icon.xml", "turnarrow_icon.tex")) --上一页
 	self.arrow_l:SetPosition(-630, 0, 0)
 	self.arrow_l:SetOnClick(function()
-		self.txt:SetString([[
-			翻页测试文本0
-		]])
-		self.curpagenum = self.curpagenum - 1
+		if self.curpagenum  >=  1 then
+			self.curpagenum = self.curpagenum - 1
+		end
+		self.txt:SetString(STRINGS.LETTERCONTENT["ID"..tostring(self.letterid).."_"..tostring(self.curpagenum)])
 	end)
 	self.arrow_l:SetScale(2, 2, 2)
 	self.arrow_r = self.image:AddChild(ImageButton("images/hud.xml", "turnarrow_icon.tex")) --下一页
 	self.arrow_r:SetPosition(630, 0, 0)
 	self.arrow_r:SetOnClick(function()
-		self.txt:SetString([[
-			翻页测试文本1
-		]])
-		self.curpagenum = self.curpagenum + 1
+		if self.curpagenum < self.total_page - 1 then
+			self.curpagenum = self.curpagenum + 1
+		end
+		self.txt:SetString(STRINGS.LETTERCONTENT["ID"..tostring(self.letterid).."_"..tostring(self.curpagenum)])
 	end)
 	self.arrow_r:SetScale(2, 2, 2)
 	self.arrow_r:Show()

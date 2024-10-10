@@ -1,7 +1,8 @@
 local ArcueidBuff = Class(function(self, inst)
     self.inst = inst
     self.interval = 1
-
+    
+    --不按规则起名字找不到对应资源
     self.islastbuffactive =
     {
         ['lbuff_recover'] = false,
@@ -9,7 +10,8 @@ local ArcueidBuff = Class(function(self, inst)
         ['lbuff_dehunger'] = false,
         ['lbuff_echou'] = false,
     }
-    self.buff_modifiers_add_timer = {['buff_bottlelight'] = 0}
+    --记录buff的剩余时长，也用于检测身上有那些buff
+    self.buff_modifiers_add_timer = { ['buff_bottlelight'] = 0 }
     self.buff_modifiers_add = {
         --持续性buff
         --恶臭，被视为怪物,自动被蜘蛛跟随
@@ -93,7 +95,7 @@ local ArcueidBuff = Class(function(self, inst)
             self.inst.components.vigour:DoDelta(.35)
         end,
 
-        --回复->同时回复三维
+        --舒适->同时回复三维
         ['buff_restore'] = function(self)
             self.inst.components.health:DoDelta(.2)
             self.inst.components.hunger:DoDelta(.2)
@@ -149,7 +151,7 @@ local ArcueidBuff = Class(function(self, inst)
     self:Starbuff()
 end)
 
-local buffDefueatTime =
+local buffDefaultTime =
 {
     --buff
     ['buff_recover'] = 300,
@@ -166,27 +168,30 @@ local buffDefueatTime =
     ['buff_blindness'] = 20,
 }
 
+--给arc设置一个buff 时长为timer名为key的buff
 function ArcueidBuff:ActiveArcueidBuff(key, timer)
     if key then
-        self.buff_modifiers_add_timer[key] = timer or buffDefueatTime[key]
+        self.buff_modifiers_add_timer[key] = timer or buffDefaultTime[key]
     end
 end
 
+--给arc增量一个buff 时长为timer名为key的buff时间
 function ArcueidBuff:AddArcueidBuff(key, timer)
     if key and self.buff_modifiers_add_timer[key] == nil then
         self.buff_modifiers_add_timer[key] = 0
     end
 
     if key then
-        self.buff_modifiers_add_timer[key] = self.buff_modifiers_add_timer[key] + (timer or buffDefueatTime[key])
+        self.buff_modifiers_add_timer[key] = self.buff_modifiers_add_timer[key] + (timer or buffDefaultTime[key])
     end
 end
 
+-- 让buff生效一次
 function ArcueidBuff:TaskBufffn()
     --持续性buff逻辑
     for key, value in pairs(self.islastbuffactive) do
         if self.islastbuffactive[key] == true then
-            self.buff_modifiers_add_timer[key] = 1
+            self.buff_modifiers_add_timer[key] = 10
         else
             self.buff_modifiers_add_timer[key] = 0
         end
@@ -200,6 +205,7 @@ function ArcueidBuff:TaskBufffn()
     end
 end
 
+-- 周期让buff生效
 function ArcueidBuff:Starbuff()
     self.taskbuff = self.inst:DoPeriodicTask(self.interval, function()
         self:TaskBufffn()
@@ -214,7 +220,7 @@ end
 
 function ArcueidBuff:OnLoad(data)
     self.buff_modifiers_add_timer = data.buff_modifiers_add_timer
-    self:TaskBufffn()
+    self:Starbuff()
 end
 
 return ArcueidBuff

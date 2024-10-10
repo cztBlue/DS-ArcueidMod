@@ -1,4 +1,4 @@
-name = "Arcueid"
+name = "Arcueid_dev"
 description = "Arc迷迷糊糊遇险中..."
 author = "cztBlue"
 version = "0.371"

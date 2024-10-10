@@ -269,6 +269,7 @@ local function puff()
 		if eater:HasTag("arcueid") then
 			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
 			eater.components.arcueidbuff:ActiveArcueidBuff("buff_pep")
+			-- eater.components.arcueidstate:DoDeltaForErosion_DEEP(30)
 		end
 	end)
 
@@ -283,7 +284,8 @@ local function sandwich()
 		if eater:HasTag("arcueid") then
 			--test
 			-- GetWorld():PushEvent("generadog") 
-			eater.components.arcueidstate.nightmarerosion = eater.components.arcueidstate.nightmarerosion + 30
+			-- GetSeasonManager():StartPrecip()
+			-- eater.components.arcueidstate:DoDeltaForErosion_TEMP(30)
 			eater.components.vigour:DoDelta(inst.arc_vig, eater, "successdish")
 			eater.components.arcueidbuff:ActiveArcueidBuff("buff_pieInTheSky")
 		end

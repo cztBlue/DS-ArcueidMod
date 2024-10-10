@@ -18,44 +18,6 @@ AddIngredientValues({"arcueid_food_tofusoup"}, { -- 豆腐汤入锅
     inedible = 1
 })
 
----九格食谱:
-TUNING.ARCUEID_FOODRECIPES = 
-{
-	--浆果蛋糕（浆果，羊奶，蛋，冰）-高
-	["arcueid_food_berrycake"] = {nil,"berries",nil,	"goatmilk","trinket_seasoningbottle","bird_egg",	nil,"ice",nil},
-	--蛋包饭（高脚鸟蛋，蛋，花，肉）-中
-	["arcueid_food_omeletterice"] = {nil,"bird_egg",nil,	"petals","trinket_seasoningbottle","meat",	nil,"tallbirdegg",nil},
-	--章鱼烧（鸟蛋，死水母，死水母,树枝)-中
-	["arcueid_food_takoyaki"] = {nil,"bird_egg",nil,		"jellyfish_dead","trinket_seasoningbottle","jellyfish_dead",		nil,"twigs",nil},
-	--豆腐汤（南瓜，蓝蘑菇，硝石，冰）-低
-	["arcueid_food_tofusoup"] = {nil,"pumpkin",nil,		"blue_cap","trinket_seasoningbottle","nitre",		nil,"ice",nil},
-	--虾仁炒饭(虾，帽贝，冰，小肉)-中
-	["arcueid_food_shrimpfriedrice"] = {nil,"lobster_dead",nil,		"limpets","trinket_seasoningbottle","cookedsmallmeat",		nil,"ice",nil},
-	--三明治(玉米，蛋，萝卜，肉干)-中高
-	["arcueid_food_sandwich"] = {nil,"corn",nil,		"bird_egg","trinket_seasoningbottle","carrot",		nil,"meat_dried",nil},
-	--泡芙(红薯,蛋,蛋,花瓣)-中低
-	["arcueid_food_puff"] = {nil,"sweet_potato",nil,		"bird_egg","trinket_seasoningbottle","bird_egg",		nil,"petals",nil},
-	--辣椒酱-配
-	["arcueid_food_piri"] = {nil,nil,nil,		"arcueid_food_pepper","trinket_seasoningbottle","arcueid_food_pepper",		nil,nil,nil},
-	-- --辣椒
-	-- ["arcueid_food_pepper"] = {nil,nil,nil,nil,"trinket_seasoningbottle",nil,nil,nil,nil},
-	--杂炖鲜汤(豆腐汤，肉，高鸟蛋，冰)-高
-	["arcueid_food_mixedsoup"] = {nil,"arcueid_food_tofusoup",nil,		"meat","trinket_seasoningbottle","tallbirdegg",		nil,"ice",nil},
-	--番茄酱-配
-	--["arcueid_food_ketchup"] = {nil,nil,nil,nil,"trinket_seasoningbottle",nil,nil,nil,nil},
-	--热狗 (小肉,浆果)（小）E
-	["arcueid_food_hotdog"] = {nil,nil,nil,		"smallmeat","trinket_seasoningbottle","berries",		nil,nil,nil},
-	--甜甜圈(西瓜，小肉，玉米，咖啡豆)中高
-	["arcueid_food_doughnut"] = {nil,"watermelon",nil,		"smallmeat","trinket_seasoningbottle","coffeebeans",		nil,"corn",nil},
-	--奶油蜂蜜切饼(蜂蜜，羊奶，蛋，玉米)高
-	["arcueid_food_creamhoneycut"] = {nil,"honey",nil,		"goatmilk","trinket_seasoningbottle","bird_egg",		nil,"corn",nil},
-	--巧克力曲奇（咖啡豆,蜂蜜,蜂蜜,烤仙人掌）中高
-	["arcueid_food_chocolatecookies"] = {nil,"coffeebeans",nil,		"honey","trinket_seasoningbottle","honey",		nil,"cactus_meat_cooked",nil},
-	--浆果蛋挞（浆果，蜂蜜，蛋，蛋）中
-	["arcueid_food_berryeggtart"] = {nil,"berries",nil,		"bird_egg","trinket_seasoningbottle","bird_egg",		nil,"honey",nil},
-}
-
-
 --烧烤食物可能失败,.3产生一个烤糊的食物
 ACTIONS.COOK.fn = function(act)
 	if act.target.components.cooker then

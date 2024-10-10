@@ -1,10 +1,10 @@
-return 
+return
 {
     -- 检查物品的表述
-    DESCRIBE={
+    DESCRIBE = {
         --原版对话部分重制
         CUTGRASS = "摸起来软软的。", --草
-        GASMASKHAT = "我不做人人啦!哈..哈..哈.. 好无聊。",--防毒面具
+        GASMASKHAT = "我不做人人啦!哈..哈..哈.. 好无聊。", --防毒面具
         LIVINGJUNGLETREE = "我觉得这种树突然说起话也是完全不奇怪的。", --普普通通的丛林树
         --LIVINGJUNGLETREE = "我觉得可以和它聊聊。", --普普通通的丛林树
         LIVINGTREE = "千万不要把尸体留在这邪恶的树下面。", --完全正常的树
@@ -13,7 +13,7 @@ return
         FLINT = "我搞不懂为什么要把它带在身上。", --燧石
         SILK = "bui~bui~", --蜘蛛丝
         DECIDUOUS_ROOT = "白桦树下刻着两个人的名字♪\n他们发誓相爱用尽这一生♪",
-        DECIDUOUSTREE = "白桦树下刻着两个人的名字♪\n他们发誓相爱用尽这一生♪",--桦树
+        DECIDUOUSTREE = "白桦树下刻着两个人的名字♪\n他们发誓相爱用尽这一生♪", --桦树
 
 
         --mod物品
@@ -21,9 +21,12 @@ return
         SHARPCLAW = "别惹我,哼。",
         FAILEDDISH = "最好碰都别碰！",
         SUCCESSDISH = "感觉能吃。",
-        DRESS_ICE = "卢恩符文-isa,\"冰\",\"动作停止\"。呵，神秘学还是那个女人擅长呢。",
+        DRESS_ICE = "。。。",
+        DRESS_REDMOON = "。。。",
         DRESS_PRINCESS = "啊,这个,我以前很常穿的。",
         ARCUEID_FAKEBEEBOX = "什么嘛,明明里面根本没有蜜蜂的。",
+        arcueid_letter_normal = "什么嘛,明明里面根本没有蜜蜂的。",
+        ARCUEID_LETTER_NORMAL = "这是给我的吗!?",
 
         --饰品
         TRINKET_MOONCLOAK = "简直是上个世纪某些邪教徒的标配。",
@@ -85,9 +88,19 @@ return
         BUILDING_ALCHEMYDESK = "见习炼金师Brunestud是也。",
         BUILDING_TRINKETWORKSHOP = "一张破桌子。",
         BUILDING_MOONDIAL = "它的作用是集聚月光。",
+        BUILDING_ROOMBOX= "能存很多东西。",
+
+        --灵化
+        BUILDING_PSIONIC_FARM = "周围散发着一股凉气。",
+        PSIONIC_HOLYPETAL = "这个好香！",
+        PSIONIC_SOIL = "闻起来有股怪味。",
+        PSIONIC_NORSOIL = "脏兮兮的土块。",
+        PSIONIC_LIQUID = "看起来好恶心。",
+        POTION_HOLYWATER = "坏女人身上特有的香水味。",
+        PSIONIC_MOONSEED = "是妙蛙种子。",
 
         --食物效果
-        FOOD_EFFECT = 
+        FOOD_EFFECT =
         {
             ARCUEID_FOOD_BERRYEGGTART = "回复四维\n(22,22,22,46)\nbuff:振奋",
             ARCUEID_FOOD_CHOCOLATECOOKIES = "回复四维\n(27,27,27,57)\nbuff:回复",
@@ -108,7 +121,7 @@ return
         },
 
         --饰品效果
-        TRINKET_EFFECT = 
+        TRINKET_EFFECT =
         {
             TRINKET_SEASONINGBOTTLE = "做饭用",
             TRINKET_ETERNALLIGHT = "缓慢的燃烧体力\n小小火苗将跟随你",
@@ -123,21 +136,21 @@ return
             TRINKET_JADEBLADE = "更高的伤害",
             TRINKET_FIRSTCANON = "按x消耗体力\n驱散低级暗影生物",
         },
-        
+
 
         -------------
         MOUND =
-		{
-			DUG = "真的对不起！",
-			GENERIC = "我感觉下面可能会有各种各样的好东西。",
-		},
+        {
+            DUG = "真的对不起！",
+            GENERIC = "我感觉下面可能会有各种各样的好东西。",
+        },
     },
     -- 战斗
-    BATTLECRY ={},
+    BATTLECRY = {},
     --脱离战斗
-    COMBAT_QUIT ={},
+    COMBAT_QUIT = {},
 
-    ANNOUNCE_ENTER_DARK = "我感觉喘不过气",--视野变黑--"浓密的暗影压得我喘不过气"
+    ANNOUNCE_ENTER_DARK = "我感觉喘不过气", --视野变黑--"浓密的暗影压得我喘不过气"
     ANNOUNCE_ENTER_LIGHT = "感觉好多了",
     ANNOUNCE_CHARLIE = "谁在那里！？",
     ANNOUNCE_CHARLIE_ATTACK = "无礼之徒！"

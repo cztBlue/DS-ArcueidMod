@@ -6,6 +6,7 @@ local ArcueidState = Class(function(self, inst)
     self.martyrseal_cooldown = 0
     self.martyrseal_highlight = 0
     self.nightmarerosion = 0
+    self.nightmarerosion_temp = 0
     self.nightmarerosion_deep = 0
     self.erosion_deep_count = 10 --防止连续下弦累加
     self.seasontoggle = 3
@@ -24,7 +25,7 @@ local ArcueidState = Class(function(self, inst)
             self.erosion_deep_count = 10
         end
         if GetClock():GetMoonPhase() == "new" and self.erosion_deep_count <= 0 then
-            self.nightmarerosion_deep = self.nightmarerosion_deep + 60
+            self:DoDeltaForErosion_DEEP(60)
             self.erosion_deep_count = 10
         end
         --改时段
@@ -87,7 +88,6 @@ function ArcueidState:ToggleSeason()
 
     
 end
-
 --暗灾时祸
 function ArcueidState:CalSegment()
     local clock = GetClock()
@@ -131,6 +131,48 @@ function ArcueidState:OnCarefulStateUpdate()
     end
 end
 
+function ArcueidState:DoDeltaForErosion_TEMP(value) 
+    local over =  self.nightmarerosion + value - TUNING.ARCUEID_MAXEROSION
+    if over <= 0 then
+        if self.nightmarerosion_temp + value >= 0 then
+            self.nightmarerosion_temp = self.nightmarerosion_temp + value
+        else
+            self.nightmarerosion_temp = 0
+        end
+    elseif over > 0 then
+        self.nightmarerosion_temp = self.nightmarerosion_temp + value - over
+    end
+end
+
+function ArcueidState:DoDeltaForErosion_DEEP(value)
+    if self.nightmarerosion_deep + value >=  TUNING.ARCUEID_MAXEROSION then
+        self.nightmarerosion_deep = TUNING.ARCUEID_MAXEROSION
+    elseif self.nightmarerosion_deep + value <=  0 then
+        self.nightmarerosion_deep = 0
+    else
+        self.nightmarerosion_deep = self.nightmarerosion_deep + value
+    end
+
+    if self.nightmarerosion_deep > TUNING.ARCUEID_MAXEROSION then
+        self.nightmarerosion_deep = TUNING.ARCUEID_MAXEROSION
+    end
+end
+
+function ArcueidState:DoDeltaForErosion_POTION(value)
+    local dero = self.nightmarerosion_deep
+    local tero = self.nightmarerosion_temp
+    if dero + value >= 0  then
+        self:DoDeltaForErosion_DEEP(value)
+    elseif dero + value <= 0 then
+        self:DoDeltaForErosion_DEEP(-dero)
+        self:DoDeltaForErosion_TEMP(dero+value)
+    end
+end
+
+function ArcueidState:GetErosionPercent()
+    return (self.nightmarerosion /TUNING.ARCUEID_MAXEROSION )
+end
+
 function ArcueidState:OnUpdate(dt)
     self:OnCarefulStateUpdate()
     if self.iceskill_cooldown >= 0 then self.iceskill_cooldown = self.iceskill_cooldown - dt end
@@ -139,8 +181,20 @@ function ArcueidState:OnUpdate(dt)
 
     --test
     if self.nightmarerosion and self.nightmarerosion_deep then
+        self.nightmarerosion = self.nightmarerosion_deep + self.nightmarerosion_temp
+
         if self.nightmarerosion <= self.nightmarerosion_deep then
             self.nightmarerosion = self.nightmarerosion_deep
+        end
+
+        if self.nightmarerosion > self.nightmarerosion_deep then
+            self:DoDeltaForErosion_TEMP(- 0.0013)
+        end
+        
+        --检查溢出
+        if self.nightmarerosion > TUNING.ARCUEID_MAXEROSION then
+            self.nightmarerosion_temp = TUNING.ARCUEID_MAXEROSION - self.nightmarerosion_deep
+            self.nightmarerosion = TUNING.ARCUEID_MAXEROSION
         end
     end
 end
@@ -157,8 +211,8 @@ end
 
 function ArcueidState:OnLoad(data)
     self.recipeunlock = data.recipeunlock
-    self.nightmarerosion = 0
-    self.nightmarerosion_deep = 0
+    self.nightmarerosion = data.nightmarerosion
+    self.nightmarerosion_deep = data.nightmarerosion_deep
     self.erosion_deep_count = data.erosion_deep_count
 
     if not self.nightmarerosion then

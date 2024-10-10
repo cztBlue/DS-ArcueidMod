@@ -1,0 +1,6 @@
+<Atlas>
+    <Texture filename="building_psionic_farm.tex" />
+    <Elements>
+        <Element name="building_psionic_farm.tex" u1="0.0078125" v1="0.0234375" u2="0.9921875" v2="0.9921875" />
+    </Elements>
+</Atlas>

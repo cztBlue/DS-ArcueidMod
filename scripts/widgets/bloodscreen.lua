@@ -31,7 +31,7 @@ local BloodScreen = Class(Widget, function(self, owner)
     self.img4:SetVAnchor(ANCHOR_MIDDLE)
     self.img4:SetScaleMode(SCALEMODE_FILLSCREEN)
 
-    self:Show()
+    self:Hide()
     self.laststep = 0
     
     self.alpha_min = 0.3
@@ -51,7 +51,7 @@ function BloodScreen:OnUpdate()
 	if self.alpha_min >= .99 then
 		self:Hide()
 	else
-		self:Show()
+		-- self:Show()
 	end
 end
 

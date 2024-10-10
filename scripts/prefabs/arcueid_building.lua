@@ -17,9 +17,14 @@ local assets =
 	Asset("ANIM", "anim/building_trinketworkshop.zip"),
 	Asset("ANIM", "anim/building_alchemydesk.zip"),
 	Asset("ANIM", "anim/building_moondial.zip"),
+	Asset("ANIM", "anim/building_roombox.zip"),
 
 	Asset("ANIM", "anim/ui_chest_3x3.zip"),
 	Asset("ANIM", "anim/ui_chester_shadow_3x4.zip"),
+	Asset("ANIM", "anim/ui_chest_4x5.zip"),
+	Asset("ANIM", "anim/ui_chest_5x8.zip"),
+	Asset("ANIM", "anim/ui_chest_5x12.zip"),
+	Asset("ANIM", "anim/ui_chest_5x16.zip"),
 }
 
 local prefabs = {}
@@ -572,14 +577,8 @@ local function spatialanchor(Sim)
 	return inst
 end
 
---奇迹煮锅
-local function ShowProduct(inst)
-	if not inst:HasTag("burnt") then
-		local product = string.gsub(inst.components.stewer.product, "arcueid_food_", "");
-		inst.AnimState:OverrideSymbol("swap_cooked", "arcueid_food", product)
-	end
-end
 
+--奇迹煮锅
 local slotpos_miraclecookpot = {}
 for y = 2, 0, -1 do
 	for x = 0, 2 do
@@ -588,7 +587,7 @@ for y = 2, 0, -1 do
 end
 local function miraclecookpot(Sim)
 	local inst = commonfn("miraclecookpot")
-	inst.AnimState:PlayAnimation("cook_pot", true)
+	inst.AnimState:PlayAnimation("idle", true)
 	inst.entity:AddLight()
 
 	--碰撞箱
@@ -600,65 +599,32 @@ local function miraclecookpot(Sim)
 	inst.Light:SetIntensity(.5)
 	inst.Light:SetColour(235 / 255, 62 / 255, 12 / 255)
 
+	
+
 	local widgetbuttoninfo = {
-		text = STRINGS.ACTIONS.COOK.GENERIC,
+		text = "投入",
 		position = Vector3(0, -165, 0),
 		fn = function(inst)
-			inst.components.stewer:StartCooking()
+			local opener = inst.components.container.opener or GetPlayer()
+			--这里可优化
+			local res,currecipe = CanMakeAndResult(inst, TUNING.ARCUEID_FOODRECIPES)
+			for i = 1, 9 do
+				local curitem = inst.components.container:GetItemInSlot(i)
+				if curitem and not curitem:HasTag("maketool") then
+					if curitem.components.stackable and curitem.components.stackable.stacksize > 1 then
+						curitem.components.stackable:SetStackSize(curitem.components.stackable.stacksize - 1)
+					else
+						curitem:Remove()
+					end
+				end
+			end
+			opener.components.inventory:GiveItem(SpawnPrefab(currecipe))
 		end,
-
 		validfn = function(inst)
-			return inst.components.stewer:CanCook()
-		end,
+			local res= CanMakeAndResult(inst, TUNING.ARCUEID_FOODRECIPES)
+			return res
+		end
 	}
-
-	inst:AddComponent("stewer")
-	inst.components.stewer.onstartcooking = function(inst)
-		if not inst:HasTag("burnt") then
-			inst.AnimState:PlayAnimation("cooking_loop", true)
-			--play a looping sound
-			inst.SoundEmitter:KillSound("snd")
-			inst.SoundEmitter:PlaySound("dontstarve/common/cookingpot_rattle", "snd")
-			inst.Light:Enable(true)
-		end
-	end
-	inst.components.stewer.oncontinuecooking = function(inst)
-		if not inst:HasTag("burnt") then
-			inst.AnimState:PlayAnimation("cooking_loop", true)
-			--play a looping sound
-			inst.Light:Enable(true)
-
-			inst.SoundEmitter:PlaySound("dontstarve/common/cookingpot_rattle", "snd")
-		end
-	end
-	inst.components.stewer.oncontinuedone = function(inst)
-		if not inst:HasTag("burnt") then
-			inst.AnimState:PlayAnimation("idle_full")
-			ShowProduct(inst)
-		end
-	end
-	inst.components.stewer.ondonecooking = function(inst)
-		if not inst:HasTag("burnt") then
-			inst.AnimState:PlayAnimation("cooking_pst")
-			inst.AnimState:PushAnimation("idle_full")
-			ShowProduct(inst)
-			inst.SoundEmitter:KillSound("snd")
-			inst.SoundEmitter:PlaySound("dontstarve/common/cookingpot_finish", "snd")
-			inst.Light:Enable(false)
-			--play a one-off sound
-		end
-	end
-	inst.components.stewer.onharvest = function(inst)
-		if not inst:HasTag("burnt") then
-			inst.AnimState:PlayAnimation("idle_empty")
-		end
-	end
-	inst.components.stewer.onspoil = function(inst)
-		if not inst:HasTag("burnt") then
-			inst.components.stewer.product = inst.components.stewer.spoiledproduct
-			ShowProduct(inst)
-		end
-	end
 
 	inst:AddComponent("container")
 	inst.components.container:SetNumSlots(#slotpos_miraclecookpot)
@@ -668,8 +634,8 @@ local function miraclecookpot(Sim)
 	inst.components.container.widgetpos = Vector3(0, 200, 0)
 	inst.components.container.side_align_tip = 100
 	inst.components.container.widgetbuttoninfo = widgetbuttoninfo
-	inst.components.container.acceptsstacks = false
-	inst.components.container.type = "cooker"
+	inst.components.container.acceptsstacks = true
+	-- inst.components.container.type = "cooker"
 	inst.components.container.onopenfn = function(inst)
 		GetPlayer():PushEvent("OpenCraftRecipesFood")
 	end
@@ -914,6 +880,13 @@ local recycletable = {
 	["trinket_icecrystal"] = { 1, { "base_moonglass", 30 }, },
 	["trinket_seasoningbottle"] = { 1, { "base_moonglass", 2 }, },
 	["trinket_eternallight"] = { 1, { "base_moonglass", 4 }, },
+	--分解土壤
+	["turf_forest"] = { 2, { "psionic_norsoil", 1 }, },
+	["turf_grass"] = { 2, { "psionic_norsoil", 1 }, },
+	["turf_marsh"] = { 2, { "psionic_norsoil", 1 }, },
+	["turf_jungle"] = { 2, { "psionic_norsoil", 1 }, },
+	["turf_meadow"] = { 2, { "psionic_norsoil", 1 }, },
+	["turf_deciduous"] = { 2, { "psionic_norsoil", 1 }, },
 }
 local function recycleform(Sim)
 	local inst = commonfn("recycleform")
@@ -978,7 +951,7 @@ local function recycleform(Sim)
 					local replacement = recycletable[item.prefab]
 					-- replacement foramt such as {5(consume once),{xx,1},{aa,2}}
 
-					if replacement and item.components.stackable and item.components.stackable.stacksize > replacement[1] then
+					if replacement and item.components.stackable and item.components.stackable.stacksize >= replacement[1] then
 						inst.components.container:ConsumeByName(item.prefab, replacement[1])
 						heapup(inst, replacement)
 					end
@@ -1238,23 +1211,51 @@ local function alchemydesk(Sim)
 end
 
 --映月台
-function onmoonphasechagned(inst,phase)
-	phase = GetClock():GetMoonPhase()
+function onmoonphasechagned(inst)
+	local phase = GetClock():GetMoonPhase()
     if phase ~= nil then
         inst.sg:GoToState("next")
     end
 end
+
 local function moondial(Sim)
 	local inst = commonfn("moondial")
 	inst:SetStateGraph("SGmoondial_")
 	MakeObstaclePhysics(inst, .2)
 	inst.AnimState:PlayAnimation("idle_new")
-	inst:ListenForEvent("moonphaseschange",onmoonphasechagned,GetWorld())
 	onmoonphasechagned(inst)
-
+	inst:ListenForEvent("moonphaseschange",onmoonphasechagned(inst),GetWorld())
+	
 	inst.OnSave = function(inst, data)end
 	inst.OnLoad = function(inst, data)end
 
+	return inst
+end
+
+local slotpos_roombox = {}
+for y = 4, 0, -1 do
+	for x = 0, 11 do
+		table.insert(slotpos_roombox, Vector3(80*x-346*2+98, 80*y-100*2+42,0))
+	end
+end
+--空间箱
+local function roombox(Sim)
+	local inst = commonfn("roombox")
+	inst:AddComponent("container")
+	inst.components.container:SetNumSlots(#slotpos_roombox)
+	inst.components.container.widgetslotpos = slotpos_roombox
+	inst.components.container.widgetanimbank = "ui_chest_5x12"
+	inst.components.container.widgetanimbuild = "ui_chest_5x12"
+	inst.components.container.side_align_tip = 160
+	inst.components.container.acceptsstacks = true
+	inst.components.container.onopenfn = function(inst)
+	end
+	inst.components.container.onclosefn = function(inst)
+	end
+
+	MakeObstaclePhysics(inst, .2)
+	inst.OnSave = function(inst, data)end
+	inst.OnLoad = function(inst, data)end
 	return inst
 end
 
@@ -1274,6 +1275,7 @@ return
 	Prefab("common/objects/building_trinketworkshop", trinketworkshop, assets, prefabs), --饰品作坊
 	Prefab("common/objects/building_alchemydesk", alchemydesk, assets, prefabs),      --炼金台
 	Prefab("common/objects/building_moondial", moondial, assets, prefabs),      --映月台
+	Prefab("common/objects/building_roombox", roombox, assets, prefabs),      --映月台
 	MakePlacer("common/building_mooncirleform_placer", "building_mooncirleform", "building_mooncirleform", "idle"),
 	MakePlacer("common/building_gemicebox_placer", "building_gemicebox", "building_gemicebox", "closed"),
 	MakePlacer("common/building_travellerbox_placer", "building_travellerbox", "building_travellerbox", "closed"),
@@ -1287,4 +1289,5 @@ return
 	MakePlacer("common/building_recycleform_placer", "building_recycleform", "building_recycleform", "idle"),
 	MakePlacer("common/building_trinketworkshop_placer", "building_trinketworkshop", "building_trinketworkshop", "idle"),
 	MakePlacer("common/building_alchemydesk_placer", "building_alchemydesk", "building_alchemydesk", "idle"),
-	MakePlacer("common/building_moondial_placer", "building_moondial", "building_moondial", "idle")
+	MakePlacer("common/building_moondial_placer", "building_moondial", "building_moondial", "idle"),
+	MakePlacer("common/building_roombox_placer", "building_roombox", "building_roombox", "idle")

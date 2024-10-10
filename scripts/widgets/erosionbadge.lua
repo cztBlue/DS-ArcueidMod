@@ -4,7 +4,7 @@ local Widget = require "widgets/widget"
 local Text = require "widgets/text"
 
 local bar_bg_x = -55
-local bar_bg_y = 80
+local bar_bg_y = 40
 
 local erosion = Class(Widget, function(self, owner)
     Widget._ctor(self, "erosion")
@@ -45,12 +45,26 @@ function erosion:recal()
     if player then
         local erosion = player.components.arcueidstate.nightmarerosion
         if erosion then
+            -- self.fill:Show()
+
             local percent = (erosion / TUNING.ARCUEID_MAXEROSION)
             local fillImageNumber = math.floor(percent * 20)
-            if fillImageNumber == 0 then fillImageNumber = 1 end
-            self.fill:SetPosition(bar_bg_x, bar_bg_y-(21-fillImageNumber)*(81/20), 0)
-            self.fill:SetTexture("images/arcueid_gui/erosionbar.xml", "edark_" .. fillImageNumber .. ".tex")
-            if erosion <= 10 then self.fill:Hide() end
+            if erosion <= 10 or fillImageNumber == 0 then
+                self.fill:SetTexture("images/clear.xml", "clear.tex")
+            elseif fillImageNumber == 20 then
+                self.fill:SetPosition(bar_bg_x, bar_bg_y - (21 - fillImageNumber) * (81 / 20) + 2, 0)
+                self.fill:SetTexture("images/arcueid_gui/erosionbar.xml", "edark_" .. fillImageNumber .. ".tex")
+                self.fill:SetScale(.55, .57, .55)
+            -- elseif fillImageNumber >= 20 then
+            --     fillImageNumber = 20
+            --     self.fill:SetPosition(bar_bg_x, bar_bg_y - (21 - fillImageNumber) * (81 / 20) + 2, 0)
+            --     self.fill:SetTexture("images/arcueid_gui/erosionbar.xml", "edark_" .. fillImageNumber .. ".tex")
+            --     self.fill:SetScale(.55, .57, .55)
+            else
+                self.fill:SetScale(.55, .55, .55)
+                self.fill:SetPosition(bar_bg_x, bar_bg_y - (21 - fillImageNumber) * (81 / 20) + 2, 0)
+                self.fill:SetTexture("images/arcueid_gui/erosionbar.xml", "edark_" .. fillImageNumber .. ".tex")
+            end
             self.num:SetString(tostring(math.floor(erosion)))
         end
     end

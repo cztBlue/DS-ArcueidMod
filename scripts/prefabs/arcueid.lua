@@ -95,6 +95,7 @@ local function updatepower(inst)
         inst.components.locomotor.walkspeed = TUNING["ARCUEID_" .. timestr .. "_WALKSPEED"]
         inst.components.locomotor.runspeed = TUNING["ARCUEID_" .. timestr .. "_RUNSPEED"]
     elseif Isbelow70per == true and Isbelow35per == false then
+        inst.components.combat.attack_damage_modifiers = {}
         inst.components.combat:AddDamageModifier(string.lower(timestr) .. "_damage",
             TUNING["ARCUEID_" .. timestr .. "_DAMAGEMULTIPLIER"] * (inst.components.vigour.currentvigour / 252))
         inst.components.locomotor.walkspeed = TUNING["ARCUEID_" .. timestr .. "_WALKSPEED"] *
@@ -102,10 +103,20 @@ local function updatepower(inst)
         inst.components.locomotor.runspeed = TUNING["ARCUEID_" .. timestr .. "_RUNSPEED"] *
             (inst.components.vigour.currentvigour / 252)
     elseif Isbelow70per == true and Isbelow35per == true then
+        inst.components.combat.attack_damage_modifiers = {}
         inst.components.combat:AddDamageModifier(string.lower(timestr) .. "_damage",
             TUNING["ARCUEID_" .. timestr .. "_DAMAGEMULTIPLIER"] * (inst.components.vigour.currentvigour / 252))
         inst.components.locomotor.walkspeed = TUNING["ARCUEID_" .. timestr .. "_WALKSPEED"] * 0.35
         inst.components.locomotor.runspeed = TUNING["ARCUEID_" .. timestr .. "_RUNSPEED"] * 0.35
+    end
+
+    --侵蚀削弱
+    local esrosionper = inst.components.arcueidstate:GetErosionPercent()
+    if esrosionper > .2 then
+        local factor = ((esrosionper - 0.2) / 0.8) * (0.45)
+        inst.components.combat:AddDamageModifier("erosionweaken", -factor)
+        inst.components.locomotor.walkspeed = inst.components.locomotor.walkspeed * (1 - factor)
+        inst.components.locomotor.runspeed = inst.components.locomotor.runspeed * (1 - factor)
     end
 
     if inst.components.arcueidstate.careful == true then
@@ -132,19 +143,25 @@ local function arcueid_recipes()
     local atlas_base_gemblock = "images/inventoryimages/base_gemblock.xml"
     local atlas_base_puremoonempyreality = "images/inventoryimages/base_puremoonempyreality.xml"
     local atlas_base_polishgem = "images/inventoryimages/base_polishgem.xml"
+    local atlas_psionic_soil = "images/inventoryimages/psionic_soil.xml"
+    local atlas_psionic_norsoil = "images/inventoryimages/psionic_norsoil.xml"
+    local atlas_psionic_liquid = "images/inventoryimages/psionic_liquid.xml"
+    local atlas_psionic_holypetal = "images/inventoryimages/psionic_holypetal.xml"
 
+    ---------------------【基建】-------------------
     --具现原理
     local building_mooncirleform = Recipe("building_mooncirleform", {
             Ingredient("base_moonglass", 5, atlas_base_moonglass),
-            Ingredient("ice", 3), Ingredient("bluegem", 5) },
+            Ingredient("ice", 3),
+            Ingredient("bluegem", 1) },
         RECIPETABS.MOONMAGIC, TECH.MAGIC_THREE, nil, "building_mooncirleform_placer", 2)
     building_mooncirleform.atlas = "images/map_icons/mooncirleform.xml"
     building_mooncirleform.image = "mooncirleform.tex"
     --第二分解术式
     local building_recycleform = Recipe("building_recycleform", {
             Ingredient("base_moonglass", 5, atlas_base_moonglass),
-            Ingredient("redgem", 5),
-            Ingredient("bluegem", 3),
+            Ingredient("redgem", 2),
+            Ingredient("bluegem", 2),
         },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_recycleform_placer", 2)
     building_recycleform.atlas = "images/map_icons/recycleform.xml"
@@ -160,13 +177,37 @@ local function arcueid_recipes()
     building_trinketworkshop.image = "trinketworkshop.tex"
     --炼金台
     local building_alchemydesk = Recipe("building_alchemydesk", {
-            Ingredient("base_moonglass", 5, atlas_base_moonglass),
-            Ingredient("messagebottleempty", 3),
-            Ingredient("base_horrorfuel", 5, atlas_base_horrorfuel),
+            Ingredient("base_moonglass", 3, atlas_base_moonglass),
+            Ingredient("livinglog", 4),
         },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_alchemydesk_placer", 2)
     building_alchemydesk.atlas = "images/map_icons/alchemydesk.xml"
     building_alchemydesk.image = "alchemydesk.tex"
+    --奇迹煮锅
+    local building_miraclecookpot = Recipe("building_miraclecookpot", {
+        Ingredient("redgem", 4),
+        Ingredient("base_moonrock_nugget", 5, atlas_base_moonrock_nugget),
+    },
+    RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_miraclecookpot_placer", 2)
+    building_miraclecookpot.atlas = "images/map_icons/miraclecookpot.xml"
+    building_miraclecookpot.image = "miraclecookpot.tex"
+    --映月台
+    local building_moondial = Recipe("building_moondial", {
+        Ingredient("base_moonglass", 1, atlas_base_moonglass),
+        Ingredient("base_moonrock_nugget", 8, atlas_base_moonrock_nugget),
+    },
+    RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_moondial_placer", 2)
+    building_moondial.atlas = "images/map_icons/mapicon.xml"
+    building_moondial.image = "moondial.tex"
+
+    ---------------------【进阶】-------------------
+    -----空间箱
+    local building_roombox = Recipe("building_roombox", {
+            Ingredient("base_polishgem", 1, atlas_base_polishgem),
+            Ingredient("base_moonrock_nugget", 9), },
+        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_gemicebox_placer", 2)
+        building_roombox.atlas = "images/map_icons/mapicon.xml"
+        building_roombox.image = "roombox.tex"
     --宝石冰箱
     local building_gemicebox = Recipe("building_gemicebox", {
             Ingredient("base_polishgem", 2, atlas_base_polishgem),
@@ -192,7 +233,7 @@ local function arcueid_recipes()
     building_immortallight.image = "immortallight.tex"
     --宝石发生器
     local building_gemgenerator = Recipe("building_gemgenerator", {
-            Ingredient("livinglog", 20),
+            Ingredient("livinglog", 10),
             Ingredient("base_gemblock", 1, atlas_base_gemblock),
             Ingredient("base_horrorfuel", 2, atlas_base_horrorfuel), },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_gemgenerator_placer", 2)
@@ -207,15 +248,7 @@ local function arcueid_recipes()
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_spatialanchor_placer", 2)
     building_spatialanchor.atlas = "images/map_icons/spatialanchor.xml"
     building_spatialanchor.image = "spatialanchor.tex"
-    --奇迹煮锅
-    local building_miraclecookpot = Recipe("building_miraclecookpot", {
-            Ingredient("base_gemblock", 2, atlas_base_gemblock),
-            Ingredient("base_moonrock_nugget", 5, atlas_base_moonrock_nugget),
-            Ingredient("redgem", 5),
-        },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_miraclecookpot_placer", 2)
-    building_miraclecookpot.atlas = "images/map_icons/miraclecookpot.xml"
-    building_miraclecookpot.image = "miraclecookpot.tex"
+    
     --魔术炮塔
     local building_guard = Recipe("building_guard", {
             Ingredient("base_puregem", 1, atlas_base_puregem),
@@ -230,7 +263,7 @@ local function arcueid_recipes()
             Ingredient("base_gemblock", 1, atlas_base_gemblock),
         },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_infinitas_placer", 2)
-    building_infinitas.atlas = "images/map_icons/infinitas.xml"
+    building_infinitas.atlas = "images/map_icons/mapicon.xml"
     building_infinitas.image = "infinitas.tex"
     --腐败滋生术式
     local building_rottenform = Recipe("building_rottenform", {
@@ -241,8 +274,53 @@ local function arcueid_recipes()
     building_rottenform.atlas = "images/map_icons/rottenform.xml"
     building_rottenform.image = "rottenform.tex"
 
+    ---------------------【灵化】-------------------
+    --灵液
+    local psionic_liquid = Recipe("psionic_liquid", {
+            Ingredient("meat", 1),
+            Ingredient("nightmarefuel", 2),
+        },
+        RECIPETABS.MOONMAGIC, TECH.NONE, nil)
+    psionic_liquid.atlas = "images/inventoryimages/psionic_liquid.xml"
+    psionic_liquid.image = "psionic_liquid.tex"
 
-    ---------------------底部饰品----------------------
+    --灵化农场
+    local psionic_farm = Recipe("building_psionic_farm", {
+            Ingredient("cutstone", 4),
+            Ingredient("psionic_soil", 3, atlas_psionic_soil),
+        },
+        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_psionic_farm_placer", 2)
+    psionic_farm.atlas = "images/map_icons/building_psionic_farm.xml"
+    psionic_farm.image = "building_psionic_farm.tex"
+
+    --灵化土壤
+    local psionic_farm = Recipe("psionic_soil", {
+            Ingredient("psionic_liquid", 1, atlas_psionic_liquid),
+            Ingredient("psionic_norsoil", 1, atlas_psionic_norsoil),
+        },
+        RECIPETABS.MOONMAGIC, TECH.NONE)
+    psionic_farm.atlas = "images/inventoryimages/psionic_soil.xml"
+    psionic_farm.image = "psionic_soil.tex"
+
+    --灵化种子
+    local psionic_moonseed = Recipe("psionic_moonseed", {
+            Ingredient("seeds", 1),
+            Ingredient("psionic_liquid", 1, atlas_psionic_liquid),
+        },
+        RECIPETABS.MOONMAGIC, TECH.NONE)
+    psionic_moonseed.atlas = "images/inventoryimages/psionic_moonseed.xml"
+    psionic_moonseed.image = "psionic_moonseed.tex"
+
+    --洗涤水
+    local potion_holywater = Recipe("potion_holywater", {
+            Ingredient("base_moonglass", 1, atlas_base_moonglass),
+            Ingredient("psionic_holypetal", 1, atlas_psionic_holypetal),
+        },
+        RECIPETABS.MOONMAGIC, TECH.NONE)
+    potion_holywater.atlas = "images/inventoryimages/potion_holywater.xml"
+    potion_holywater.image = "potion_holywater.tex"
+
+    ----------------------【底部饰品】-------------------
     --献祭小刀
     local trinket_sacrificeknife = Recipe("trinket_sacrificeknife", {
             Ingredient("petals", 5),
@@ -322,6 +400,14 @@ local fn = function(inst)
 
     --借sanitydelta更新一些状态
     inst:ListenForEvent("sanitydelta", function()
+        --酸雨扣血临时先写在这里
+        if inst.components.arcueidstate:GetErosionPercent() >= .5 then
+            if inst.components.moisture:GetMoistureRate() > 0 then
+                inst.components.health:DoDelta(-0.2 * 0.03)
+            end
+        end
+
+
         inst.components.health:DoDelta(0)
         curtrinket = inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
         --简陋的冷却系统

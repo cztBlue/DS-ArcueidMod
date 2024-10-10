@@ -1,0 +1,6 @@
+<Atlas>
+    <Texture filename="transframe_1.tex" />
+    <Elements>
+        <Element name="transframe_1.tex" u1="0.0009765625" v1="0.3388671875" u2="0.9189453125" v2="0.9990234375" />
+    </Elements>
+</Atlas>

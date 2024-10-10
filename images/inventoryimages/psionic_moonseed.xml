@@ -1,0 +1,6 @@
+<Atlas>
+    <Texture filename="psionic_moonseed.tex" />
+    <Elements>
+        <Element name="psionic_moonseed.tex" u1="0.0078125" v1="0.3984375" u2="0.8359375" v2="0.9921875" />
+    </Elements>
+</Atlas>

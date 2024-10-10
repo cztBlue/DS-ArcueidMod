@@ -1,0 +1,21 @@
+<Atlas>
+    <Texture filename="mapicon.tex" />
+    <Elements>
+        <Element name="alchemydesk.tex" u1="0.0009765625" v1="0.751953125" u2="0.1240234375" v2="0.998046875" />
+        <Element name="arcueid.tex" u1="0.1259765625" v1="0.751953125" u2="0.2490234375" v2="0.998046875" />
+        <Element name="gemgenerator.tex" u1="0.2509765625" v1="0.751953125" u2="0.3740234375" v2="0.998046875" />
+        <Element name="gemicebox.tex" u1="0.3759765625" v1="0.751953125" u2="0.4990234375" v2="0.998046875" />
+        <Element name="guard.tex" u1="0.5009765625" v1="0.751953125" u2="0.6240234375" v2="0.998046875" />
+        <Element name="immortallight.tex" u1="0.6259765625" v1="0.751953125" u2="0.7490234375" v2="0.998046875" />
+        <Element name="Infinitas.tex" u1="0.7509765625" v1="0.751953125" u2="0.8740234375" v2="0.998046875" />
+        <Element name="miraclecookpot.tex" u1="0.8759765625" v1="0.751953125" u2="0.9990234375" v2="0.998046875" />
+        <Element name="mooncirleform.tex" u1="0.0009765625" v1="0.501953125" u2="0.1240234375" v2="0.748046875" />
+        <Element name="moondial.tex" u1="0.1259765625" v1="0.501953125" u2="0.2490234375" v2="0.748046875" />
+        <Element name="roombox.tex" u1="0.2509765625" v1="0.501953125" u2="0.3740234375" v2="0.748046875" />
+        <Element name="rottenform.tex" u1="0.3759765625" v1="0.501953125" u2="0.4990234375" v2="0.748046875" />
+        <Element name="spatialanchor.tex" u1="0.5009765625" v1="0.501953125" u2="0.6240234375" v2="0.748046875" />
+        <Element name="travellerbox.tex" u1="0.6259765625" v1="0.501953125" u2="0.7490234375" v2="0.748046875" />
+        <Element name="trinketworkshop.tex" u1="0.7509765625" v1="0.501953125" u2="0.8740234375" v2="0.748046875" />
+        <Element name="building_psionic_farm.tex" u1="0.8759765625" v1="0.505859375" u2="0.9990234375" v2="0.748046875" />
+    </Elements>
+</Atlas>

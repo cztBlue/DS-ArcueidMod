@@ -236,7 +236,7 @@ end
 local function seasoningbottle()
     local inst = commonfn("seasoningbottle")
 
-    inst:AddTag("foodtool")
+    inst:AddTag("maketool")
 
     inst.components.equippable:SetOnEquip(function(inst, owner)
         if owner.prefab == "arcueid" then
@@ -501,17 +501,47 @@ end
 --献祭小刀
 local function sacrificeknife()
     local inst = commonfn("sacrificeknife")
+    inst:AddComponent("lizhuang")
     inst:AddTag("maketool")
 
     inst.components.equippable:SetOnEquip(function(inst, owner)
         if owner.prefab == "arcueid" then
-            owner.components.vigour.trinketfactor = -TUNING.ARCUEID_VIGOURBUFF_B
+            owner.components.vigour.trinketfactor = 0
         end
     end)
 
     inst.components.equippable:SetOnUnequip(function(inst, owner)
         if owner.prefab == "arcueid" then
             owner.components.vigour.trinketfactor = 0
+        end
+    end)
+
+    return inst
+end
+
+
+
+local function icecrystal()
+    local inst = commonfn("icecrystal")
+
+    inst:AddComponent("lizhuang")
+
+    --用耐久代替冷却系统？
+    inst:AddComponent("finiteuses")
+	inst.components.finiteuses:SetMaxUses(100)
+	inst.components.finiteuses:SetUses(100)
+	inst.components.finiteuses:SetOnFinished(function(inst)end)
+	--inst.components.finiteuses:SetConsumption(ACTIONS.CHOP, 99)
+
+    inst.components.equippable:SetOnEquip(function(inst, owner)
+        owner.components.vigour.trinketfactor = -TUNING.ARCUEID_VIGOURBUFF_E
+    end)
+
+    inst.components.equippable:SetOnUnequip(function(inst, owner)
+        if owner.prefab == "arcueid"
+            and owner.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY) ~= nil
+            and owner.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY).prefab == "dress_ice" then
+            owner.components.inventory:Unequip(EQUIPSLOTS.BODY)
         end
     end)
 

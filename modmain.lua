@@ -20,6 +20,11 @@ PrefabFiles = {
 	"arcueid_efficacy",
 	"arcueid_shadowcreature",
 	"arcueid_letter",
+	-- "arcueid_acidrain",
+	"arcueid_acidraindrop",
+	"arcueid_potion",
+	"psionic_farm",
+	"psionic_item",
 }
 
 Assets = {
@@ -36,6 +41,8 @@ Assets = {
 	Asset("ATLAS", "images/map_icons/arcueid.xml"),
 
 	--小地图
+	Asset("ATLAS", "images/map_icons/mapicon.xml"),
+	Asset("IMAGE", "images/map_icons/mapicon.tex"),
 	Asset("ATLAS", "images/map_icons/mooncirleform.xml"),
 	Asset("IMAGE", "images/map_icons/mooncirleform.tex"),
 	Asset("ATLAS", "images/map_icons/gemicebox.xml"),
@@ -52,8 +59,6 @@ Assets = {
 	Asset("IMAGE", "images/map_icons/miraclecookpot.tex"),
 	Asset("ATLAS", "images/map_icons/guard.xml"),
 	Asset("IMAGE", "images/map_icons/guard.tex"),
-	Asset("ATLAS", "images/map_icons/infinitas.xml"),
-	Asset("IMAGE", "images/map_icons/infinitas.tex"),
 	Asset("ATLAS", "images/map_icons/recycleform.xml"),
 	Asset("IMAGE", "images/map_icons/recycleform.tex"),
 	Asset("ATLAS", "images/map_icons/rottenform.xml"),
@@ -62,6 +67,8 @@ Assets = {
 	Asset("IMAGE", "images/map_icons/alchemydesk.tex"),
 	Asset("ATLAS", "images/map_icons/trinketworkshop.xml"),
 	Asset("IMAGE", "images/map_icons/trinketworkshop.tex"),
+	Asset("ATLAS", "images/map_icons/building_psionic_farm.xml"),
+	Asset("IMAGE", "images/map_icons/building_psionic_farm.tex"),
 
 	--ui
 	Asset("ANIM", "anim/vigour.zip"),
@@ -75,8 +82,15 @@ Assets = {
 	Asset("IMAGE", "images/arcueid_gui/erosionbar.tex"),
 	Asset("ATLAS", "images/arcueid_gui/num_bg.xml"),
 	Asset("IMAGE", "images/arcueid_gui/num_bg.tex"),
+	Asset("IMAGE", "images/arcueid_gui/transframe_1.tex"),
+	Asset("ATLAS", "images/arcueid_gui/transframe_1.xml"),
 	Asset("IMAGE", "images/trinketslot.tex"),
 	Asset("ATLAS", "images/trinketslot.xml"),
+	Asset("IMAGE", "images/clear.tex"),
+	Asset("ATLAS", "images/clear.xml"),
+	Asset("IMAGE", "images/bufficon.tex"),
+	Asset("ATLAS", "images/bufficon.xml"),
+
 	--test
 	Asset("IMAGE", "images/bloodscreen.tex"),
 	Asset("ATLAS", "images/bloodscreen.xml"),
@@ -211,11 +225,11 @@ STRINGS.CHARACTER_QUOTES.arcueid = "\"称我为布伦史塔德就好！\""
 STRINGS.CHARACTERS.ARCUEID = require "speech_arcueid"
 
 --小地图插入map_icons
+AddMinimapAtlas("images/map_icons/mapicon.xml")
 AddMinimapAtlas("images/map_icons/mooncirleform.xml")
 AddMinimapAtlas("images/map_icons/arcueid.xml")
 AddMinimapAtlas("images/map_icons/rottenform.xml")
 AddMinimapAtlas("images/map_icons/recycleform.xml")
-AddMinimapAtlas("images/map_icons/infinitas.xml")
 AddMinimapAtlas("images/map_icons/guard.xml")
 AddMinimapAtlas("images/map_icons/miraclecookpot.xml")
 AddMinimapAtlas("images/map_icons/spatialanchor.xml")
@@ -233,7 +247,6 @@ modimport("scripts/modmain/arcueid_lootdropper.lua")
 modimport("scripts/modmain/ninetabRecipe.lua")
 AddModCharacter("arcueid")
 table.insert(GLOBAL.CHARACTER_GENDERS.FEMALE, "arcueid")
-
 
 -- DLC检测
 GLOBAL.IsROG = false
@@ -270,6 +283,7 @@ local trinketrecipes = GLOBAL.require "widgets/arcueid_craftrecipes_trinket"
 local alchemyrecipes = GLOBAL.require "widgets/arcueid_craftrecipes_alchemy"
 local letter = GLOBAL.require "widgets/letter_normal"
 local erosion = GLOBAL.require "widgets/erosionbadge"
+local buffpanel = GLOBAL.require "widgets/buffpanel"
 
 --活力值
 AddClassPostConstruct("widgets/statusdisplays", function(self)
@@ -280,7 +294,7 @@ AddClassPostConstruct("widgets/statusdisplays", function(self)
 		local x3, y3, z3 = self.heart:GetPosition():Get()
 
 		if KnownModIndex:IsModEnabled("workshop-574636989") then
-			self.vigour_hud:SetPosition(self.stomach:GetPosition() + GLOBAL.Vector3(15, y2 - y1 - 10, 0))
+			self.vigour_hud:SetPosition(self.stomach:GetPosition() + GLOBAL.Vector3(-30, y2 - y1 - 10, 0))
 		else
 			self.vigour_hud:SetPosition(self.brain:GetPosition() + GLOBAL.Vector3(x1 - x3, 0, 0))
 		end
@@ -385,6 +399,19 @@ AddClassPostConstruct("widgets/controls", function(self)
 	-- controls.erosion:Show()
 end)
 
+--buff面板
+AddClassPostConstruct("widgets/controls", function(self)
+	local controls = self
+	if controls and GetPlayer().prefab == "arcueid" then
+		if controls.containerroot then
+			controls.buffpanel = controls.containerroot:AddChild(buffpanel(GetPlayer()))
+		end
+	else
+		return
+	end
+	-- controls.erosion:Show()
+end)
+
 
 --注入条件让Mouse强制时刻监视到Arc
 AddComponentPostInit("playeractionpicker", function(PlayerActionPicker)
@@ -468,6 +495,8 @@ local EDIT_ANCHOR = GLOBAL.Action({})
 local DESTINATION = GLOBAL.Action({})
 local TOUCH_BOTTLE = GLOBAL.Action({})
 local READLETTER = GLOBAL.Action({ mount_enabled = true })
+local FERTILIZE_PSIONIC = GLOBAL.Action({})
+local PLANT_PSIONIC = GLOBAL.Action({})
 
 --上爪动画
 SHARPCLAW_EQUIP.id = "SHARPCLAW_EQUIP"
@@ -490,6 +519,14 @@ TOUCH_BOTTLE.str = "接触"
 --读信
 READLETTER.id = "READLETTER"
 READLETTER.str = "阅读"
+--栽种
+-- FERTILIZE_PSIONIC.id = "FERTILIZE_PSIONIC"
+-- FERTILIZE_PSIONIC.str = "??"
+--栽种_seed
+PLANT_PSIONIC.id = "PLANT_PSIONIC"
+PLANT_PSIONIC.str = "布植"
+
+
 
 -- 动作触发的函数。传入一个BufferedAction对象。(target,doer)
 -- 可以通过它直接调用动作的执行者，目标，具体的动作内容等等，详情请查看bufferedaction.lua文件
@@ -501,8 +538,21 @@ SHARPCLAW_EQUIP.fn = function(act)
 end
 
 EQUIP_LI.fn = function(act)
-	local dress = SpawnPrefab("dress_ice")
-	GetPlayer().components.inventory:Equip(dress)
+	local dress
+	local player = GetPlayer()
+	if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+		and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_sacrificeknife" then
+		local old = player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+		old:DoTaskInTime(0, old.Remove)
+		dress = SpawnPrefab("dress_redmoon")
+			
+	end
+
+	if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+		and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_icecrystal" then
+		dress = SpawnPrefab("dress_ice")
+	end
+	player.components.inventory:Equip(dress)
 	return true
 end
 
@@ -544,6 +594,89 @@ READLETTER.fn = function(act)
 	return true
 end
 
+-- FERTILIZE_PSIONIC.fn = function(act)
+-- 	if not act.target and act.doer:HasTag("healonfertilize") and act.invobject then
+
+-- 		if  act.doer.components.health then
+-- 		    act.doer.components.health:DoDelta(2,false,"fertilize")
+
+-- 		    if act.invobject.components.stackable and act.invobject.components.stackable.stacksize > 1 then
+-- 		        act.invobject.components.stackable:Get():Remove()
+-- 		    else
+-- 		    	if act.invobject.components.finiteuses then
+-- 		    		act.invobject.components.finiteuses:Use(2)
+-- 		    	else
+-- 		        	act.invobject:Remove()
+-- 		    	end
+-- 		    end
+
+-- 		    return true
+-- 		end
+
+-- 	elseif act.invobject and act.invobject.components.fertilizer then
+-- 		print(act.invobject.prefab)
+-- 		print("-------------")
+-- 		print(act.target)
+-- 		if act.target and act.target.components.crop and not act.target.components.crop:IsReadyForHarvest() and not act.target.components.crop:IsWithered() then
+-- 			local obj = act.invobject
+
+-- 			if act.target.components.crop:Fertilize(obj) then
+-- 				return true
+-- 			else
+-- 				return false
+-- 			end
+-- 		elseif act.target.components.grower and act.target.components.grower:IsEmpty() then
+-- 			local obj = act.invobject
+-- 			act.target.components.grower:Fertilize(obj)
+-- 			return true
+-- 		elseif act.target.components.pickable and act.target.components.pickable:CanBeFertilized() then
+
+-- 			if act.target.components.pickable and act.target.components.pickable.pickydirt then
+-- 				local pt = Vector3(act.target.Transform:GetWorldPosition())
+-- 				local tile = GetWorld().Map:GetTileAtPoint(pt.x, pt.y, pt.z)
+-- 				local okdirt = false
+-- 				for i,tiletype in ipairs(act.target.components.pickable.pickydirt)do
+-- 					if tile == tiletype then
+-- 						okdirt = true
+-- 					end
+-- 				end
+-- 				if not okdirt then
+-- 					return false, "WRONGDIRT"
+-- 				end
+-- 			end
+
+-- 			local obj = act.invobject
+-- 			act.target.components.pickable:Fertilize(obj, act.doer)
+-- 			return true		
+-- 		elseif act.target.components.hackable and act.target.components.hackable:CanBeFertilized() then
+-- 			local obj = act.invobject
+-- 			act.target.components.hackable:Fertilize(obj)
+-- 			return true
+-- 		end
+-- 	end
+-- 	print(act.invobject.prefab)
+-- end
+
+PLANT_PSIONIC.fn = function(act)
+	if act.doer.components.inventory then
+		local seed = act.doer.components.inventory:RemoveItem(act.invobject)
+		if seed then
+			if act.target.components.grower_psionic and act.target.components.grower_psionic:PlantItem(seed) then
+				if act.doer:HasTag("plantkin") then
+					if act.doer.growplantfn then
+						act.doer.growplantfn(act.doer)
+					end
+				end
+				return true
+			elseif act.target.components.breeder and act.target.components.breeder:Seed(seed) then
+				return true
+			else
+				act.doer.components.inventory:GiveItem(seed)
+			end
+		end
+	end
+end
+
 AddAction(SHARPCLAW_EQUIP)
 AddAction(EQUIP_LI)
 AddAction(REMOVE_LI)
@@ -551,6 +684,8 @@ AddAction(DESTINATION)
 AddAction(EDIT_ANCHOR)
 AddAction(TOUCH_BOTTLE)
 AddAction(READLETTER)
+-- AddAction(FERTILIZE_PSIONIC)
+AddAction(PLANT_PSIONIC)
 
 --[[通过在组件中定义类的函数来搜集组件动作。
 CollectSceneActions，CollectUseActions，CollectPointActions，CollectEquippedActions，CollectInventoryActions这五个函数，
@@ -566,6 +701,8 @@ AddStategraphActionHandler("wilson", ActionHandler(DESTINATION, "give"))
 AddStategraphActionHandler("wilson", ActionHandler(EDIT_ANCHOR, "lizhuang"))
 AddStategraphActionHandler("wilson", ActionHandler(TOUCH_BOTTLE, "lizhuang"))
 AddStategraphActionHandler("wilson", ActionHandler(READLETTER, "readletter"))
+-- AddStategraphActionHandler("wilson", ActionHandler(FERTILIZE_PSIONIC, "give"))
+AddStategraphActionHandler("wilson", ActionHandler(PLANT_PSIONIC, "give"))
 -----------自定义动作
 
 --监听键盘事件,shift切换潜行
@@ -666,7 +803,7 @@ AddPrefabPostInit("torchfire", function(inst)
 	inst.Light:SetRadius(2 * TUNING.TORCHRADIUSRATE)
 end)
 
---侵蚀度影响月相
+-- 侵蚀度影响月相
 AddComponentPostInit("clock", function(Clock)
 	local rmoonphases = {}
 	rmoonphases["new"] = 1
@@ -675,11 +812,12 @@ AddComponentPostInit("clock", function(Clock)
 	rmoonphases["threequarter"] = 4
 	rmoonphases["full"] = 5
 	local moonphases = { "new", "quarter", "half", "threequarter", "full", }
-	if GetPlayer().prefab == "arcueid" then
-		local oldmoon = Clock:GetMoonPhase()
-		function Clock:GetMoonPhase()
+	local oldmoon = Clock.GetMoonPhase
+	function Clock:GetMoonPhase()
+		local oldmoonres = oldmoon(self)
+		if GetPlayer() and GetPlayer().prefab == "arcueid" then
 			local erosion = GetPlayer().components.arcueidstate.nightmarerosion
-			local index = rmoonphases[oldmoon]
+			local index = rmoonphases[oldmoonres]
 			if erosion >= 180 and erosion < 240 then
 				index = (index % 3) + 1
 				return moonphases[index]
@@ -688,6 +826,132 @@ AddComponentPostInit("clock", function(Clock)
 				return moonphases[index]
 			elseif erosion == 360 then
 				return "new"
+			end
+		end
+		return oldmoonres
+	end
+end)
+
+-- 修改种植模块
+AddComponentPostInit("crop", function(Crop)
+	function Crop:Harvest(harvester)
+		print('Yes,Harvest')
+		if self.matured or self.withered then
+			local product = nil
+			if self.grower and self.grower:HasTag("fire") or self.inst:HasTag("fire") then
+				local temp = SpawnPrefab(self.product_prefab)
+				if temp.components.cookable and temp.components.cookable.product then
+					product = SpawnPrefab(temp.components.cookable.product)
+				else
+					product = SpawnPrefab("seeds_cooked")
+				end
+				temp:Remove()
+			else
+				product = SpawnPrefab(self.product_prefab)
+			end
+
+			if product then
+				self.inst:ApplyInheritedMoisture(product)
+			end
+			harvester.components.inventory:GiveItem(product, nil,
+				Vector3(TheSim:GetScreenPos(self.inst.Transform:GetWorldPosition())))
+			ProfileStatsAdd("grown_" .. product.prefab)
+
+			self.matured = false
+			self.withered = false
+			self.inst:RemoveTag("withered")
+			self.growthpercent = 0
+			self.product_prefab = nil
+
+			--改动了
+			if self.grower and self.grower.components.grower then
+				self.grower.components.grower:RemoveCrop(self.inst)
+				self.grower = nil
+			elseif self.grower and self.grower.components.grower_psionic then
+				self.grower.components.grower_psionic:RemoveCrop(self.inst)
+				self.grower = nil
+			else
+				self.inst:Remove()
+			end
+
+
+			return true
+		end
+	end
+
+	function Crop:ForceHarvest(harvester)
+		print('Yes,FHarvest')
+		if self.matured or self.withered then
+			local product = nil
+			if self.grower and self.grower:HasTag("fire") or self.inst:HasTag("fire") then
+				local temp = SpawnPrefab(self.product_prefab)
+				if temp.components.cookable and temp.components.cookable.product then
+					product = SpawnPrefab(temp.components.cookable.product)
+				else
+					product = SpawnPrefab("seeds_cooked")
+				end
+				temp:Remove()
+			else
+				product = SpawnPrefab(self.product_prefab)
+			end
+
+			if product then
+				self.inst:ApplyInheritedMoisture(product)
+			end
+
+			local tookProduct = false
+			if harvester and harvester.components.inventory then
+				harvester.components.inventory:GiveItem(product)
+				tookProduct = true
+			else
+				if self.grower and self.grower:IsValid() then
+					product.Transform:SetPosition(self.grower.Transform:GetWorldPosition())
+					if product.components.inventoryitem then
+						product.components.inventoryitem:OnDropped(true)
+					end
+					tookProduct = true
+				end
+			end
+			if not tookProduct then
+				-- nothing to do with our product. What a waste
+				product:Remove()
+			end
+
+			self.matured = false
+			self.withered = false
+			self.inst:RemoveTag("withered")
+			self.growthpercent = 0
+			self.product_prefab = nil
+
+			--改动了
+			if self.grower then
+				if self.grower.components.grower then
+					self.grower.components.grower:RemoveCrop(self.inst)
+				elseif self.grower.components.grower_psionic then
+					self.grower.components.grower_psionic:RemoveCrop(self.inst)
+				else
+					self.inst:Remove()
+				end
+				self.grower = nil
+			else
+				self.inst:Remove()
+			end
+
+			return true
+		else
+			-- nothing to give up, but pretend we did
+			--改动了
+			if self.grower then
+				if self.grower.components.grower then
+					self.grower.components.grower:RemoveCrop(self.inst)
+				elseif self.grower.components.grower_psionic then
+					self.grower.components.grower_psionic:RemoveCrop(self.inst)
+				else
+					self.inst:Remove()
+				end
+				self.grower = nil
+			else
+				self.inst:Remove()
 			end
 		end
 	end
@@ -754,12 +1018,22 @@ AddComponentPostInit("combat", function(Combat)
 				end
 				local damage = self:CalcDamage(targ, weapon, mult)
 
+				--临时，影怪+侵蚀度
+				if targ.prefab == "swimminghorror" 
+				or targ.prefab == "terrorbeak" 
+				or targ.prefab == "crawlinghorror" 
+				then
+					if targ.components.health.currenthealth < damage then
+						GetPlayer().components.arcueidstate:DoDeltaForErosion_TEMP(1.5)
+					end
+				end
+
 
 				--先知之眼->.35概率暴击（升变后合成直死魔眼）
 				if self.inst.prefab == "arcueid"
 					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
 					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye"
-					and math.random < .35
+					and math.random() < .35
 				then
 					damage = damage * 2
 				end
@@ -826,8 +1100,6 @@ AddComponentPostInit("combat", function(Combat)
 					and self.inst.components.follower.leader == GetPlayer() then
 					FightStat_AttackByFollower(targ, weapon, projectile, damage)
 				end
-
-
 
 				if weapon then
 					weapon.components.weapon:OnAttack(self.inst, targ, projectile)
