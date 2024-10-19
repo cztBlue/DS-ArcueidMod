@@ -38,8 +38,6 @@ local assets = {
 local prefabs = {}
 local start_inv = {}
 
---监视时间改变伤害
---满月无敌+高速+活力buff
 --伤害和速度与活力,时间，月相挂钩
 local staticmoon = ""
 local function updatepower(inst)
@@ -185,18 +183,18 @@ local function arcueid_recipes()
     building_alchemydesk.image = "alchemydesk.tex"
     --奇迹煮锅
     local building_miraclecookpot = Recipe("building_miraclecookpot", {
-        Ingredient("redgem", 4),
-        Ingredient("base_moonrock_nugget", 5, atlas_base_moonrock_nugget),
-    },
-    RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_miraclecookpot_placer", 2)
+            Ingredient("redgem", 4),
+            Ingredient("base_moonrock_nugget", 5, atlas_base_moonrock_nugget),
+        },
+        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_miraclecookpot_placer", 2)
     building_miraclecookpot.atlas = "images/map_icons/miraclecookpot.xml"
     building_miraclecookpot.image = "miraclecookpot.tex"
     --映月台
     local building_moondial = Recipe("building_moondial", {
-        Ingredient("base_moonglass", 1, atlas_base_moonglass),
-        Ingredient("base_moonrock_nugget", 8, atlas_base_moonrock_nugget),
-    },
-    RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_moondial_placer", 2)
+            Ingredient("base_moonglass", 1, atlas_base_moonglass),
+            Ingredient("base_moonrock_nugget", 8, atlas_base_moonrock_nugget),
+        },
+        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_moondial_placer", 2)
     building_moondial.atlas = "images/map_icons/mapicon.xml"
     building_moondial.image = "moondial.tex"
 
@@ -206,8 +204,8 @@ local function arcueid_recipes()
             Ingredient("base_polishgem", 1, atlas_base_polishgem),
             Ingredient("base_moonrock_nugget", 9), },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_gemicebox_placer", 2)
-        building_roombox.atlas = "images/map_icons/mapicon.xml"
-        building_roombox.image = "roombox.tex"
+    building_roombox.atlas = "images/map_icons/mapicon.xml"
+    building_roombox.image = "roombox.tex"
     --宝石冰箱
     local building_gemicebox = Recipe("building_gemicebox", {
             Ingredient("base_polishgem", 2, atlas_base_polishgem),
@@ -248,7 +246,7 @@ local function arcueid_recipes()
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_spatialanchor_placer", 2)
     building_spatialanchor.atlas = "images/map_icons/spatialanchor.xml"
     building_spatialanchor.image = "spatialanchor.tex"
-    
+
     --魔术炮塔
     local building_guard = Recipe("building_guard", {
             Ingredient("base_puregem", 1, atlas_base_puregem),
@@ -392,8 +390,33 @@ local fn = function(inst)
     GetWorld():AddComponent("darkwave")
 
     updatepower(inst)
-    -- inst:ListenForEvent("arrive", function() updatepower(inst) end, GetWorld())  --Sadly only SW and HAM having this
     inst:ListenForEvent("vigour_change", function() updatepower(inst) end, GetWorld())
+    -- 击杀奖励
+    inst:ListenForEvent("killed", function(inst, data)
+        if inst.prefab == "arcueid"
+            and data.victim
+            and data.victim:HasTag("monster")
+        then
+            local dice1 = math.random(99999999)
+            local dice2 = math.random(99999999)
+            --献祭小刀奖励
+            if inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+            and inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_sacrificeknife" 
+            then
+                if dice1 % 100 + 1 <= 33 then
+                    inst.components.inventory:GiveItem(SpawnPrefab("base_moonglass"))
+                end
+
+                if dice2 % 100 + 1 <= 5 then
+                    inst.components.inventory:GiveItem(SpawnPrefab("arcueid_consume_luckybag"))
+                end
+            end
+            --一般击杀奖励
+            if TUNING.SHADOWCREATURE[data.victim.prefab] then
+                inst.components.vigour:DoDelta(20,inst,"KILLSHADOW")
+            end
+        end
+    end, inst)
 
     local adjust = 0
     local curtrinket
@@ -444,14 +467,6 @@ local fn = function(inst)
             inst.components.inventory:Equip(weapon)
         end
     end)
-
-    -- debug
-    -- inst:ListenForEvent( "dusktime", function()
-    --  end , GetWorld())
-
-    -- inst:ListenForEvent( "vigour_change", function()
-    --     print(GetPlayer().components.vigour.currentvigour)
-    --  end , GetWorld())
 end
 
 return MakePlayerCharacter("arcueid", prefabs, assets, fn, start_inv)

@@ -20,11 +20,11 @@ PrefabFiles = {
 	"arcueid_efficacy",
 	"arcueid_shadowcreature",
 	"arcueid_letter",
-	-- "arcueid_acidrain",
 	"arcueid_acidraindrop",
 	"arcueid_potion",
 	"psionic_farm",
 	"psionic_item",
+	"arcueid_consume",
 }
 
 Assets = {
@@ -84,6 +84,8 @@ Assets = {
 	Asset("IMAGE", "images/arcueid_gui/num_bg.tex"),
 	Asset("IMAGE", "images/arcueid_gui/transframe_1.tex"),
 	Asset("ATLAS", "images/arcueid_gui/transframe_1.xml"),
+	Asset("IMAGE", "images/arcueid_gui/arcueid_ui.tex"),
+	Asset("ATLAS", "images/arcueid_gui/arcueid_ui.xml"),
 	Asset("IMAGE", "images/trinketslot.tex"),
 	Asset("ATLAS", "images/trinketslot.xml"),
 	Asset("IMAGE", "images/clear.tex"),
@@ -103,6 +105,10 @@ GLOBAL.setmetatable(env, { __index = function(t, k) return GLOBAL.rawget(GLOBAL,
 --写成表的形式会有调用上的bug，不知道为什么
 TUNING.ARCUEID_MAXVIGOUR = 360
 TUNING.ARCUEID_MAXEROSION = 360
+
+TUNING.ARCUEID_VIGOUR_HUGE = 240
+TUNING.ARCUEID_VIGOUR_MIDDLE = 120
+TUNING.ARCUEID_VIGOUR_SMALL = 60
 
 TUNING.ARCUEID_DAY_DAMAGEMULTIPLIER = -0.1
 TUNING.ARCUEID_DUSK_DAMAGEMULTIPLIER = 0.5
@@ -130,7 +136,6 @@ TUNING.GEMGENERATOR_FUEL_MAX = 90
 TUNING.MARTYRSEAL_HUGHLIGHT_TIME = 3.0333
 TUNING.ICESKILL_COOLDOWN = 10.5
 
-
 TUNING.ARCUEID_FOOD_VALUE_E = { 7, 7, 7, 14 }
 TUNING.ARCUEID_FOOD_VALUE_D = { 18, 18, 18, 36 }
 TUNING.ARCUEID_FOOD_VALUE_C = { 22, 22, 22, 46 }
@@ -146,6 +151,20 @@ TUNING.ARCUEID_VIGOURBUFF_C = .14
 --影刀类比.33
 TUNING.ARCUEID_VIGOURBUFF_B = .45
 TUNING.ARCUEID_VIGOURBUFF_A = 1
+
+--花环类比.023
+TUNING.ARCUEID_VIGOURBUFF_E = .034
+--高礼帽类比.05
+TUNING.ARCUEID_VIGOURBUFF_D = .068
+--贝雷帽类比.11
+TUNING.ARCUEID_VIGOURBUFF_C = .14
+--影刀类比.33
+
+-- buff面板用 (每秒)
+TUNING.ARCUEID_BUFFTINY = .05
+TUNING.ARCUEID_BUFFSMALL = .1
+TUNING.ARCUEID_BUFFMIDDLE = .25
+TUNING.ARCUEID_BUFFLARGE = .4
 
 --概率控制
 TUNING.ARCUEID_PROBABILITY =
@@ -170,7 +189,6 @@ TUNING.ARCUEID_PROBABILITY =
 	COMMON_NIGHTMARE_DISABILITY = .6,
 
 }
-
 
 --科技树
 TUNING.PROTOTYPER_TREES.MOONMAGIC_ONE =
@@ -204,6 +222,15 @@ TUNING.SHADOW_KNIGHT =
 	ATTACK_RANGE = 2.3,   -- levels are procedural
 	ATTACK_RANGE_LONG = 4.5, -- levels are procedural
 	RETARGET_DIST = 15,
+}
+
+--暗影生物
+TUNING.SHADOWCREATURE = {
+	['crawlinghorror'] = true, -- 大肥只
+	['crawlingnightmare'] = true, -- 大肥只遗迹
+	['terrorbeak'] = true, -- 大瘦只
+	['nightmarebeak'] = true, -- 大瘦只遗迹
+	['swimminghorror'] = true, --海上游的
 }
 
 TUNING.SHADOW_CHESSPIECE_EPICSCARE_RANGE = 10
@@ -284,6 +311,7 @@ local alchemyrecipes = GLOBAL.require "widgets/arcueid_craftrecipes_alchemy"
 local letter = GLOBAL.require "widgets/letter_normal"
 local erosion = GLOBAL.require "widgets/erosionbadge"
 local buffpanel = GLOBAL.require "widgets/buffpanel"
+local gempanel = GLOBAL.require "widgets/arcueid_gemgeneratorpanel"
 
 --活力值
 AddClassPostConstruct("widgets/statusdisplays", function(self)
@@ -308,7 +336,6 @@ AddClassPostConstruct("widgets/controls", function(self, owner)
 	self.bloodscreen = self:AddChild(bloodscreen(self.owner))
 	self.Blindscreen = self:AddChild(blindscreen(self.owner))
 	GetPlayer():ListenForEvent("sanitydelta", function()
-		-- self.Icescreen:OnUpdate()
 		self.Blindscreen:OnUpdate()
 	end, inst)
 
@@ -396,7 +423,6 @@ AddClassPostConstruct("widgets/controls", function(self)
 	else
 		return
 	end
-	-- controls.erosion:Show()
 end)
 
 --buff面板
@@ -409,7 +435,18 @@ AddClassPostConstruct("widgets/controls", function(self)
 	else
 		return
 	end
-	-- controls.erosion:Show()
+end)
+
+--gem面板
+AddClassPostConstruct("widgets/controls", function(self)
+	local controls = self
+	if controls and GetPlayer().prefab == "arcueid" then
+		if controls.containerroot then
+			controls.gempanel = controls.containerroot:AddChild(gempanel())
+		end
+	else
+		return
+	end
 end)
 
 
@@ -497,7 +534,11 @@ local TOUCH_BOTTLE = GLOBAL.Action({})
 local READLETTER = GLOBAL.Action({ mount_enabled = true })
 local FERTILIZE_PSIONIC = GLOBAL.Action({})
 local PLANT_PSIONIC = GLOBAL.Action({})
+local ARCUEID_NORMAL = GLOBAL.Action({})
 
+--一般动作，仅用于绑定组件
+ARCUEID_NORMAL.id = "ARCUEID_NORMAL"
+ARCUEID_NORMAL.str = "使用"
 --上爪动画
 SHARPCLAW_EQUIP.id = "SHARPCLAW_EQUIP"
 SHARPCLAW_EQUIP.str = "伸出"
@@ -519,13 +560,9 @@ TOUCH_BOTTLE.str = "接触"
 --读信
 READLETTER.id = "READLETTER"
 READLETTER.str = "阅读"
---栽种
--- FERTILIZE_PSIONIC.id = "FERTILIZE_PSIONIC"
--- FERTILIZE_PSIONIC.str = "??"
 --栽种_seed
 PLANT_PSIONIC.id = "PLANT_PSIONIC"
 PLANT_PSIONIC.str = "布植"
-
 
 
 -- 动作触发的函数。传入一个BufferedAction对象。(target,doer)
@@ -545,7 +582,6 @@ EQUIP_LI.fn = function(act)
 		local old = player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
 		old:DoTaskInTime(0, old.Remove)
 		dress = SpawnPrefab("dress_redmoon")
-			
 	end
 
 	if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
@@ -586,77 +622,6 @@ TOUCH_BOTTLE.fn = function(act)
 	return true
 end
 
-READLETTER.fn = function(act)
-	local targ = act.target or act.invobject
-	if targ and targ.components.book and act.doer and act.doer.components.reader then
-		return act.doer.components.reader:Read(targ)
-	end
-	return true
-end
-
--- FERTILIZE_PSIONIC.fn = function(act)
--- 	if not act.target and act.doer:HasTag("healonfertilize") and act.invobject then
-
--- 		if  act.doer.components.health then
--- 		    act.doer.components.health:DoDelta(2,false,"fertilize")
-
--- 		    if act.invobject.components.stackable and act.invobject.components.stackable.stacksize > 1 then
--- 		        act.invobject.components.stackable:Get():Remove()
--- 		    else
--- 		    	if act.invobject.components.finiteuses then
--- 		    		act.invobject.components.finiteuses:Use(2)
--- 		    	else
--- 		        	act.invobject:Remove()
--- 		    	end
--- 		    end
-
--- 		    return true
--- 		end
-
--- 	elseif act.invobject and act.invobject.components.fertilizer then
--- 		print(act.invobject.prefab)
--- 		print("-------------")
--- 		print(act.target)
--- 		if act.target and act.target.components.crop and not act.target.components.crop:IsReadyForHarvest() and not act.target.components.crop:IsWithered() then
--- 			local obj = act.invobject
-
--- 			if act.target.components.crop:Fertilize(obj) then
--- 				return true
--- 			else
--- 				return false
--- 			end
--- 		elseif act.target.components.grower and act.target.components.grower:IsEmpty() then
--- 			local obj = act.invobject
--- 			act.target.components.grower:Fertilize(obj)
--- 			return true
--- 		elseif act.target.components.pickable and act.target.components.pickable:CanBeFertilized() then
-
--- 			if act.target.components.pickable and act.target.components.pickable.pickydirt then
--- 				local pt = Vector3(act.target.Transform:GetWorldPosition())
--- 				local tile = GetWorld().Map:GetTileAtPoint(pt.x, pt.y, pt.z)
--- 				local okdirt = false
--- 				for i,tiletype in ipairs(act.target.components.pickable.pickydirt)do
--- 					if tile == tiletype then
--- 						okdirt = true
--- 					end
--- 				end
--- 				if not okdirt then
--- 					return false, "WRONGDIRT"
--- 				end
--- 			end
-
--- 			local obj = act.invobject
--- 			act.target.components.pickable:Fertilize(obj, act.doer)
--- 			return true		
--- 		elseif act.target.components.hackable and act.target.components.hackable:CanBeFertilized() then
--- 			local obj = act.invobject
--- 			act.target.components.hackable:Fertilize(obj)
--- 			return true
--- 		end
--- 	end
--- 	print(act.invobject.prefab)
--- end
-
 PLANT_PSIONIC.fn = function(act)
 	if act.doer.components.inventory then
 		local seed = act.doer.components.inventory:RemoveItem(act.invobject)
@@ -677,6 +642,23 @@ PLANT_PSIONIC.fn = function(act)
 	end
 end
 
+READLETTER.fn = function(act)
+	local targ = act.target or act.invobject
+	if targ and targ.components.book and act.doer and act.doer.components.reader then
+		return act.doer.components.reader:Read(targ)
+	end
+	return true
+end
+
+--normalactionfn的唯一一个参数是传入被使用物
+ARCUEID_NORMAL.fn = function(act)
+	local targ = act.target or act.invobject
+	if targ and targ.normalactionfn then
+		targ.normalactionfn(targ)
+	end
+	return true
+end
+
 AddAction(SHARPCLAW_EQUIP)
 AddAction(EQUIP_LI)
 AddAction(REMOVE_LI)
@@ -684,8 +666,8 @@ AddAction(DESTINATION)
 AddAction(EDIT_ANCHOR)
 AddAction(TOUCH_BOTTLE)
 AddAction(READLETTER)
--- AddAction(FERTILIZE_PSIONIC)
 AddAction(PLANT_PSIONIC)
+AddAction(ARCUEID_NORMAL)
 
 --[[通过在组件中定义类的函数来搜集组件动作。
 CollectSceneActions，CollectUseActions，CollectPointActions，CollectEquippedActions，CollectInventoryActions这五个函数，
@@ -695,14 +677,14 @@ CollectSceneActions，CollectUseActions，CollectPointActions，CollectEquippedA
 一个状态图的动作处理器就可以搭建起一个简单的动作触发器，实现通过外部输入来触发函数的目的。--]]
 
 AddStategraphActionHandler("wilson", ActionHandler(SHARPCLAW_EQUIP, "quicktele"))
-AddStategraphActionHandler("wilson", ActionHandler(EQUIP_LI, "lizhuang"))
-AddStategraphActionHandler("wilson", ActionHandler(REMOVE_LI, "lizhuang"))
+AddStategraphActionHandler("wilson", ActionHandler(EQUIP_LI, "normalaction"))
+AddStategraphActionHandler("wilson", ActionHandler(REMOVE_LI, "normalaction"))
 AddStategraphActionHandler("wilson", ActionHandler(DESTINATION, "give"))
-AddStategraphActionHandler("wilson", ActionHandler(EDIT_ANCHOR, "lizhuang"))
-AddStategraphActionHandler("wilson", ActionHandler(TOUCH_BOTTLE, "lizhuang"))
+AddStategraphActionHandler("wilson", ActionHandler(EDIT_ANCHOR, "normalaction"))
+AddStategraphActionHandler("wilson", ActionHandler(TOUCH_BOTTLE, "normalaction"))
 AddStategraphActionHandler("wilson", ActionHandler(READLETTER, "readletter"))
--- AddStategraphActionHandler("wilson", ActionHandler(FERTILIZE_PSIONIC, "give"))
 AddStategraphActionHandler("wilson", ActionHandler(PLANT_PSIONIC, "give"))
+AddStategraphActionHandler("wilson", ActionHandler(ARCUEID_NORMAL, "normalaction"))
 -----------自定义动作
 
 --监听键盘事件,shift切换潜行
@@ -801,6 +783,67 @@ end)
 --修改火把范围
 AddPrefabPostInit("torchfire", function(inst)
 	inst.Light:SetRadius(2 * TUNING.TORCHRADIUSRATE)
+end)
+
+--添加睡眠Add活力值机制
+--帐篷
+AddPrefabPostInit("tent", function(inst)
+	if inst and inst.components.sleepingbag then
+		local oldonsleep = inst.components.sleepingbag.onsleep
+		local newsleepfn = function(inst, sleeper)
+			local res = oldonsleep(inst, sleeper)
+			if sleeper and sleeper.prefab == "arcueid" then
+				sleeper.components.vigour:DoDelta(TUNING.ARCUEID_VIGOUR_HUGE, sleeper, "sleeprecover")
+			end
+			return res
+		end
+		inst.components.sleepingbag.onsleep = newsleepfn
+	end
+end)
+
+--毛毯
+AddPrefabPostInit("bedroll_furry", function(inst)
+	if inst and inst.components.sleepingbag then
+		local oldonsleep = inst.components.sleepingbag.onsleep
+		local newsleepfn = function(inst, sleeper)
+			local res = oldonsleep(inst, sleeper)
+			if sleeper and sleeper.prefab == "arcueid" then
+				sleeper.components.vigour:DoDelta(TUNING.ARCUEID_VIGOUR_MIDDLE, sleeper, "sleeprecover")
+			end
+			return res
+		end
+		inst.components.sleepingbag.onsleep = newsleepfn
+	end
+end)
+
+--草席
+AddPrefabPostInit("bedroll_straw", function(inst)
+	if inst and inst.components.sleepingbag then
+		local oldonsleep = inst.components.sleepingbag.onsleep
+		local newsleepfn = function(inst, sleeper)
+			local res = oldonsleep(inst, sleeper)
+			if sleeper and sleeper.prefab == "arcueid" then
+				sleeper.components.vigour:DoDelta(TUNING.ARCUEID_VIGOUR_SMALL, sleeper, "sleeprecover")
+			end
+			return res
+		end
+		inst.components.sleepingbag.onsleep = newsleepfn
+	end
+end)
+
+--木棚
+AddPrefabPostInit("siestahut", function(inst)
+	if inst and inst.components.sleepingbag then
+		local oldonsleep = inst.components.sleepingbag.onsleep
+		local newsleepfn = function(inst, sleeper)
+			local res = oldonsleep(inst, sleeper)
+			if sleeper and sleeper.prefab == "arcueid" then
+				sleeper.components.vigour:DoDelta(TUNING.ARCUEID_VIGOUR_HUGE, sleeper, "sleeprecover")
+			end
+			return res
+		end
+		inst.components.sleepingbag.onsleep = newsleepfn
+	end
 end)
 
 -- 侵蚀度影响月相
@@ -957,13 +1000,89 @@ AddComponentPostInit("crop", function(Crop)
 	end
 end)
 
+local clumdmage = 0
+-- 注入饰品和一些需要计算伤害的机制
+AddComponentPostInit("combat", function(Combat)
+	local old_caldamage = Combat.CalcDamage
+	function Combat:CalcDamage(target, weapon, multiplier)
+		--olddamage 伤害没有护甲补正
+		local olddamage = old_caldamage(self, target, weapon, multiplier)
+
+		local targ = target
+		local damage = olddamage
+
+		--减枝优化
+		if self.inst.prefab == "arcueid"
+			or targ.prefab == "arcueid" then
+			--临时，影怪+侵蚀度
+			if self.inst.prefab == "arcueid"
+				and TUNING.SHADOWCREATURE[targ.prefab]
+			then
+				if targ.components.health.currenthealth < damage then
+					self.inst.components.arcueidstate:DoDeltaForErosion_TEMP(1.5)
+				end
+			end
+
+			--先知之眼->.35概率暴击
+			if self.inst.prefab == "arcueid"
+				and self.inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+				and self.inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye"
+				and math.random() < .35
+			then
+				damage = damage * 2
+			end
+
+			--翡翠之刃
+			if self.inst.prefab == "arcueid"
+				and self.inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+				and self.inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_jadeblade"
+			then
+				damage = damage * 1.15
+			end
+
+			--第一圣典
+			if self.inst.prefab == "arcueid"
+				and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+				and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_firstcanon"
+				and (TUNING.SHADOWCREATURE[targ.prefab] or targ.prefab == "ghost")
+			then
+				damage = damage * 1.5
+			end
+
+			--身缠冰河的数值
+			if targ.prefab == "arcueid"
+				and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY) ~= nil
+				and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY).prefab == "dress_ice"
+				and targ.components.vigour.currentvigour > 10 
+			then
+				targ.components.vigour:DoDelta(-damage * .05, nil, "ice_defense")
+				damage = damage * .08
+			end
+
+			--赴死者勋
+			if targ.prefab == "arcueid"
+				and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
+				and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_martyrseal"
+				and targ.components.health.currenthealth < damage then
+				if targ.components.arcueidstate.martyrseal_cooldown <= 0 then
+					targ.components.arcueidstate.martyrseal_highlight = TUNING.MARTYRSEAL_HUGHLIGHT_TIME
+					targ.components.vigour:DoDelta(-damage)
+					damage = 0
+					targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET):PushEvent("activeforcefield")
+				elseif targ.components.arcueidstate.martyrseal_highlight > 0 then
+					damage = 0
+				end
+			end
+		end
+		return damage
+	end
+end)
+
 --战斗机制改动
 AddComponentPostInit("combat", function(Combat)
+	local oldDoAttack = Combat.DoAttack
 	function Combat:DoAttack(target_override, weapon, projectile, stimuli, instancemult)
-		local targ = target_override or self.target
-		local weapon = weapon or self:GetWeapon()
 		if self:CanHitTarget(targ, weapon) then
-			--改动了：
 			if (self.inst.prefab == "crawlinghorror"
 					or self.inst.prefab == "terrorbeak"
 					or self.inst.prefab == "swimminghorror"
@@ -985,136 +1104,186 @@ AddComponentPostInit("combat", function(Combat)
 					targ.components.health:DoDelta(-18, nil, "nightattack")
 				end
 			end
-			--
-			self.inst:PushEvent("onattackother",
-				{ target = targ, weapon = weapon, projectile = projectile, stimuli = stimuli })
-			if weapon and weapon.components.projectile and not projectile then
-				local projectile = self.inst.components.inventory:DropItem(weapon, false, nil, nil, true)
-				if projectile then
-					projectile.components.projectile:Throw(self.inst, targ)
-				end
-			elseif weapon and weapon.components.complexprojectile and not projectile then
-				local projectile = self.inst.components.inventory:DropItem(weapon, false, nil, nil, true)
-				if projectile then
-					local targetPos = targ:GetPosition()
-					projectile.components.complexprojectile:Launch(targetPos)
-				end
-			elseif weapon and weapon.components.weapon:CanRangedAttack() and not projectile then
-				weapon.components.weapon:LaunchProjectile(self.inst, targ)
-			else
-				local mult = 1
-				if stimuli == "electric" or (weapon and weapon.components.weapon and weapon.components.weapon.stimuli == "electric") then
-					if not targ:HasTag("electricdamageimmune") and (not targ.components.inventory or (targ.components.inventory and not targ.components.inventory:IsInsulated())) then
-						mult = TUNING.ELECTRIC_DAMAGE_MULT
-						if targ.components.moisture then
-							mult = mult +
-								(TUNING.ELECTRIC_WET_DAMAGE_MULT * targ.components.moisture:GetMoisturePercent())
-						elseif targ.components.moisturelistener and targ.components.moisturelistener:IsWet() then
-							mult = mult + TUNING.ELECTRIC_WET_DAMAGE_MULT
-						elseif GetWorld() and GetWorld().components.moisturemanager and GetWorld().components.moisturemanager:IsEntityWet(targ) then
-							mult = mult + TUNING.ELECTRIC_WET_DAMAGE_MULT
-						end
-					end
-				end
-				local damage = self:CalcDamage(targ, weapon, mult)
-
-				--临时，影怪+侵蚀度
-				if targ.prefab == "swimminghorror" 
-				or targ.prefab == "terrorbeak" 
-				or targ.prefab == "crawlinghorror" 
-				then
-					if targ.components.health.currenthealth < damage then
-						GetPlayer().components.arcueidstate:DoDeltaForErosion_TEMP(1.5)
-					end
-				end
-
-
-				--先知之眼->.35概率暴击（升变后合成直死魔眼）
-				if self.inst.prefab == "arcueid"
-					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
-					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye"
-					and math.random() < .35
-				then
-					damage = damage * 2
-				end
-
-				--翡翠之刃
-				if self.inst.prefab == "arcueid"
-					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
-					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_jadeblade"
-				then
-					damage = damage * 1.15
-				end
-
-				--第一圣典
-				if self.inst.prefab == "arcueid"
-					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
-					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_firstcanon"
-					and (targ.prefab == "crawlinghorror"
-						or targ.prefab == "terrorbeak"
-						or targ.prefab == "swimminghorror"
-						or targ.prefab == "crawlingnightmare"
-						or targ.prefab == "nightmarebeak"
-						or targ.prefab == "ghost") then
-					damage = damage * 1.5
-				end
-
-				--身缠冰河的数值
-				if targ.prefab == "arcueid"
-					and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY) ~= nil
-					and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY).prefab == "dress_ice"
-					and targ.components.vigour.currentvigour > 10 then
-					targ.components.vigour:DoDelta(-damage * .05, nil, "ice_defense")
-					damage = damage * .08
-				end
-
-				if instancemult then damage = damage * instancemult end
-
-				--赴死者勋
-				if targ.prefab == "arcueid"
-					and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
-					and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_martyrseal"
-					and targ.components.health.currenthealth < damage then
-					if targ.components.arcueidstate.martyrseal_cooldown <= 0 then
-						targ.components.arcueidstate.martyrseal_highlight = TUNING.MARTYRSEAL_HUGHLIGHT_TIME
-						targ.components.vigour:DoDelta(-damage)
-						damage = 0
-						targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET):PushEvent("activeforcefield")
-					elseif targ.components.arcueidstate.martyrseal_highlight > 0 then
-						print(targ.components.arcueidstate.martyrseal_highlight)
-						damage = 0
-					end
-				end
-
-				if targ.components.combat then targ.components.combat:GetAttacked(self.inst, damage, weapon, stimuli) end
-
-				if METRICS_ENABLED and self.inst:HasTag("player") then
-					ProfileStatsAdd("hitson_" .. targ.prefab, math.floor(damage))
-					FightStat_Attack(targ, weapon, projectile, damage)
-
-					if self.inst.prefab == "crawlinghorror" then
-						target_override.components.health:DoDelta(-20, nil, "nightattack")
-					end
-				end
-				if METRICS_ENABLED and self.inst.components.follower
-					and self.inst.components.follower.leader == GetPlayer() then
-					FightStat_AttackByFollower(targ, weapon, projectile, damage)
-				end
-
-				if weapon then
-					weapon.components.weapon:OnAttack(self.inst, targ, projectile)
-				end
-				if self.areahitrange then
-					self:DoAreaAttack(targ, self.areahitrange, weapon, nil, stimuli)
-				end
-				self.lastdoattacktime = GetTime()
-			end
-		else
-			self.inst:PushEvent("onmissother", { target = targ, weapon = weapon })
-			if self.areahitrange then
-				local epicentre = projectile or self.inst
-				self:DoAreaAttack(epicentre, self.areahitrange, weapon, nil, stimuli)
-			end
 		end
+
+		local oldresatt = oldDoAttack(self, target_override, weapon, projectile, stimuli, instancemult)
+		return oldresatt
 	end
 end)
+
+--实现饱食度恢复活力值特性(1/10)
+AddComponentPostInit("eater", function(Eater)
+	local oldEat = Eater.Eat
+	function Eater:Eat(food)
+		local oldres = oldEat(self, food)
+		if self.inst and self.inst.prefab == "arcueid" and oldres then
+			local hvalue = food.components.edible:GetHunger(self.inst) * (self.hungerabsorption or 1)
+			if hvalue > 0 then
+				self.inst.components.vigour:DoDelta(hvalue / 10, self.inst, "foodadd")
+			end
+		end
+		return oldres
+	end
+end)
+
+--战斗机制改动
+-- AddComponentPostInit("combat", function(Combat)
+-- 	function Combat:DoAttack(target_override, weapon, projectile, stimuli, instancemult)
+-- 		local targ = target_override or self.target
+-- 		local weapon = weapon or self:GetWeapon()
+-- 		if self:CanHitTarget(targ, weapon) then
+-- 			--改动了：
+-- 			if (self.inst.prefab == "crawlinghorror"
+-- 					or self.inst.prefab == "terrorbeak"
+-- 					or self.inst.prefab == "swimminghorror"
+-- 					or self.inst.prefab == "crawlingnightmare"
+-- 					or self.inst.prefab == "nightmarebeak")
+-- 				and targ.prefab == "arcueid" then
+-- 				--影怪.6致残
+-- 				if math.random() < .6 then
+-- 					targ.components.arcueidbuff:AddArcueidBuff("buff_disability")
+-- 				end
+
+-- 				--月亮吊坠抵消真伤	
+-- 				if targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+-- 					and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_moonamulet" then
+-- 					targ.components.health:DoDelta(-6, nil, "nightattack")
+-- 					targ.components.vigour:DoDelta(-12, nil, "nightattack")
+-- 				else
+-- 					--被影怪击中固定真实伤害18点
+-- 					targ.components.health:DoDelta(-18, nil, "nightattack")
+-- 				end
+-- 			end
+-- 			--
+-- 			self.inst:PushEvent("onattackother",
+-- 				{ target = targ, weapon = weapon, projectile = projectile, stimuli = stimuli })
+
+-- 			if weapon and weapon.components.projectile and not projectile then
+-- 				local projectile = self.inst.components.inventory:DropItem(weapon, false, nil, nil, true)
+-- 				if projectile then
+-- 					projectile.components.projectile:Throw(self.inst, targ)
+-- 				end
+-- 			elseif weapon and weapon.components.complexprojectile and not projectile then
+-- 				local projectile = self.inst.components.inventory:DropItem(weapon, false, nil, nil, true)
+-- 				if projectile then
+-- 					local targetPos = targ:GetPosition()
+-- 					projectile.components.complexprojectile:Launch(targetPos)
+-- 				end
+-- 			elseif weapon and weapon.components.weapon:CanRangedAttack() and not projectile then
+-- 				weapon.components.weapon:LaunchProjectile(self.inst, targ)
+-- 			else
+-- 				local mult = 1
+-- 				if stimuli == "electric" or (weapon and weapon.components.weapon and weapon.components.weapon.stimuli == "electric") then
+-- 					if not targ:HasTag("electricdamageimmune") and (not targ.components.inventory or (targ.components.inventory and not targ.components.inventory:IsInsulated())) then
+-- 						mult = TUNING.ELECTRIC_DAMAGE_MULT
+-- 						if targ.components.moisture then
+-- 							mult = mult +
+-- 								(TUNING.ELECTRIC_WET_DAMAGE_MULT * targ.components.moisture:GetMoisturePercent())
+-- 						elseif targ.components.moisturelistener and targ.components.moisturelistener:IsWet() then
+-- 							mult = mult + TUNING.ELECTRIC_WET_DAMAGE_MULT
+-- 						elseif GetWorld() and GetWorld().components.moisturemanager and GetWorld().components.moisturemanager:IsEntityWet(targ) then
+-- 							mult = mult + TUNING.ELECTRIC_WET_DAMAGE_MULT
+-- 						end
+-- 					end
+-- 				end
+-- 				local damage = self:CalcDamage(targ, weapon, mult)
+
+-- 				--临时，影怪+侵蚀度
+-- 				if targ.prefab == "swimminghorror"
+-- 					or targ.prefab == "terrorbeak"
+-- 					or targ.prefab == "crawlinghorror"
+-- 				then
+-- 					if targ.components.health.currenthealth < damage then
+-- 						GetPlayer().components.arcueidstate:DoDeltaForErosion_TEMP(1.5)
+-- 					end
+-- 				end
+
+-- 				--先知之眼->.35概率暴击
+-- 				if self.inst.prefab == "arcueid"
+-- 					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+-- 					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye"
+-- 					and math.random() < .35
+-- 				then
+-- 					damage = damage * 2
+-- 				end
+
+-- 				--翡翠之刃
+-- 				if self.inst.prefab == "arcueid"
+-- 					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+-- 					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_jadeblade"
+-- 				then
+-- 					damage = damage * 1.15
+-- 				end
+
+-- 				--第一圣典
+-- 				if self.inst.prefab == "arcueid"
+-- 					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+-- 					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_firstcanon"
+-- 					and (targ.prefab == "crawlinghorror"
+-- 						or targ.prefab == "terrorbeak"
+-- 						or targ.prefab == "swimminghorror"
+-- 						or targ.prefab == "crawlingnightmare"
+-- 						or targ.prefab == "nightmarebeak"
+-- 						or targ.prefab == "ghost") then
+-- 					damage = damage * 1.5
+-- 				end
+
+-- 				--身缠冰河的数值
+-- 				if targ.prefab == "arcueid"
+-- 					and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY) ~= nil
+-- 					and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY).prefab == "dress_ice"
+-- 					and targ.components.vigour.currentvigour > 10 then
+-- 					targ.components.vigour:DoDelta(-damage * .05, nil, "ice_defense")
+-- 					damage = damage * .08
+-- 				end
+
+-- 				if instancemult then damage = damage * instancemult end
+
+-- 				--赴死者勋
+-- 				if targ.prefab == "arcueid"
+-- 					and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
+-- 					and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_martyrseal"
+-- 					and targ.components.health.currenthealth < damage then
+-- 					if targ.components.arcueidstate.martyrseal_cooldown <= 0 then
+-- 						targ.components.arcueidstate.martyrseal_highlight = TUNING.MARTYRSEAL_HUGHLIGHT_TIME
+-- 						targ.components.vigour:DoDelta(-damage)
+-- 						damage = 0
+-- 						targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET):PushEvent("activeforcefield")
+-- 					elseif targ.components.arcueidstate.martyrseal_highlight > 0 then
+-- 						print(targ.components.arcueidstate.martyrseal_highlight)
+-- 						damage = 0
+-- 					end
+-- 				end
+
+-- 				if targ.components.combat then targ.components.combat:GetAttacked(self.inst, damage, weapon, stimuli) end
+
+-- 				if METRICS_ENABLED and self.inst:HasTag("player") then
+-- 					ProfileStatsAdd("hitson_" .. targ.prefab, math.floor(damage))
+-- 					FightStat_Attack(targ, weapon, projectile, damage)
+
+-- 					if self.inst.prefab == "crawlinghorror" then
+-- 						target_override.components.health:DoDelta(-20, nil, "nightattack")
+-- 					end
+-- 				end
+-- 				if METRICS_ENABLED and self.inst.components.follower
+-- 					and self.inst.components.follower.leader == GetPlayer() then
+-- 					FightStat_AttackByFollower(targ, weapon, projectile, damage)
+-- 				end
+
+-- 				if weapon then
+-- 					weapon.components.weapon:OnAttack(self.inst, targ, projectile)
+-- 				end
+-- 				if self.areahitrange then
+-- 					self:DoAreaAttack(targ, self.areahitrange, weapon, nil, stimuli)
+-- 				end
+-- 				self.lastdoattacktime = GetTime()
+-- 			end
+-- 		else
+-- 			self.inst:PushEvent("onmissother", { target = targ, weapon = weapon })
+-- 			if self.areahitrange then
+-- 				local epicentre = projectile or self.inst
+-- 				self:DoAreaAttack(epicentre, self.areahitrange, weapon, nil, stimuli)
+-- 			end
+-- 		end
+-- 	end
+-- end)

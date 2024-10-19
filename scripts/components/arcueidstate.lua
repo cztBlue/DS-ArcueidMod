@@ -174,6 +174,10 @@ function ArcueidState:GetErosionPercent()
 end
 
 function ArcueidState:OnUpdate(dt)
+    -- 不启用侵蚀
+    self.nightmarerosion = 0
+    self.nightmarerosion_deep = 0
+
     self:OnCarefulStateUpdate()
     if self.iceskill_cooldown >= 0 then self.iceskill_cooldown = self.iceskill_cooldown - dt end
     if self.martyrseal_cooldown >= 0 then self.martyrseal_cooldown = self.martyrseal_cooldown - dt end

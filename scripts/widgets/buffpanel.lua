@@ -6,25 +6,7 @@ local Text = require "widgets/text"
 local panelbg_x = 180
 local panelbg_y = -80
 
-local introduction = {
-    ['lbuff_recover'] = "【恢复】：持续恢复生命",
-    ['lbuff_pep'] = "【振奋】：持续恢复精神值",
-    ['lbuff_dehunger'] = "【饥饿】：持续消耗饥饿值",
-    ['lbuff_echou'] = "【恶臭】：被标记为怪物",
-
-    ['buff_recover'] = "【恢复】：持续恢复生命",
-    ['buff_pieInTheSky'] = "【画饼】：持续恢复饥饿值",
-    ['buff_pep'] = "【振奋】：持续恢复精神值",
-    ['buff_halo'] = "【光环】：照亮周围",
-    ['buff_bottlelight'] = "【小小精灵】：生成一个照明小精灵",
-    ['buff_rest'] = "【休憩】：恢复活力值",
-    ['buff_restore'] = "【舒适】：小幅度恢复三维",
-    ['buff_nightVision'] = "【夜视】：提供视野",
-    --debuff
-    ['buff_disability'] = "【残疾】：临时扣除血量上限",
-    ['buff_hatred'] = "【敌视】：被标记为怪物",
-    ['buff_blindness'] = "【盲视】：视野遮蔽",
-}
+local introduction
 
 --buff图标资源检索
 local iconexistlist = 
@@ -50,7 +32,7 @@ local buff = Class(Widget, function(self, name ,parent, pos, lasttime)
     end
     self.img = self:AddChild(Image("images/bufficon.xml", nonprefixname..".tex"))
     self.introductionbg = self:AddChild(Image("images/arcueid_gui/num_bg.xml", "num_bg.tex"))
-    self.introduction = self:AddChild(Text(NUMBERFONT, 24, "120", { 255, 0, 0, 1 }))
+    self.introduction = self:AddChild(Text(NUMBERFONT, 24, " ", { 255, 0, 0, 1 }))
     
     self.introductionbg:SetVAnchor(ANCHOR_TOP)
     self.introductionbg:SetHAnchor(ANCHOR_MIDDLE)
@@ -60,7 +42,6 @@ local buff = Class(Widget, function(self, name ,parent, pos, lasttime)
     self.introduction:SetVAnchor(ANCHOR_TOP)
     self.introduction:SetHAnchor(ANCHOR_MIDDLE)
     self.introduction:SetPosition(self.parent.panelbg:GetPosition() + Vector3(5, -200, 0))
-
     self.img:SetScale(1.5, 1.5, 1.5)
     self.img:Show()
     self.introductionbg:Hide()
@@ -79,7 +60,10 @@ local Buffpanel = Class(Widget, function(self, owner)
     self.panelbg:SetHAnchor(ANCHOR_MIDDLE)
     self.panelbg:SetScale(.8, .35, .4)
     self.panelbg:SetPosition(panelbg_x, panelbg_y, 0)
-
+    if owner and owner.prefab == "arcueid" then
+        introduction = owner.components.arcueidbuff.allbuffinfo["INTRODUCTION"]
+    end
+    
     self.panelbg:Show()
     self:StartUpdating()
 end)
@@ -97,6 +81,10 @@ function buff:OnLoseFocus()
 end
 
 function buff:recal()
+    if introduction == nil then
+        return
+    end
+
     if self.lasttime ~= nil then
         self.introduction:SetString(introduction[self.name].." 持续时间："..self.lasttime)
     else 

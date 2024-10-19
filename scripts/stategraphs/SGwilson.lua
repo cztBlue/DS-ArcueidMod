@@ -899,7 +899,7 @@ local states =
 {
     --改动了：自写状态在这里
     State {
-        name = "lizhuang",
+        name = "normalaction",
         tags = { "canrotate", "idle" },
 
         onenter = function(inst)

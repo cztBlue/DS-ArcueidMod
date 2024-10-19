@@ -99,6 +99,9 @@ return
         POTION_HOLYWATER = "坏女人身上特有的香水味。",
         PSIONIC_MOONSEED = "是妙蛙种子。",
 
+        --消耗品
+        ARCUEID_CONSUME_LUCKYBAG = "里面会是什么呢？",
+
         --食物效果
         FOOD_EFFECT =
         {

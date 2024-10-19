@@ -25,6 +25,7 @@ local assets =
 	Asset("ANIM", "anim/ui_chest_5x8.zip"),
 	Asset("ANIM", "anim/ui_chest_5x12.zip"),
 	Asset("ANIM", "anim/ui_chest_5x16.zip"),
+	Asset("ANIM", "anim/ui_darkbox_4x5.zip"),
 }
 
 local prefabs = {}
@@ -69,6 +70,19 @@ local function CanMakeAndResult(inst, Recipe)
 					return true, k1
 				end
 			end
+		end
+	end
+	return false
+end
+
+local function ValueInTable(obj, tab)
+	if obj == nil or tab == nil then
+		return false
+	end
+
+	for key, value in pairs(tab) do
+		if obj == value then
+			return true
 		end
 	end
 	return false
@@ -427,95 +441,267 @@ local function immortallight(Sim)
 end
 
 --宝石发生器
-local gemtable = { "bluegem", "redgem", "purplegem", "orangegem", "yellowgem", "greengem" }
-local gemtype = 0
+local gemtable = {
+	-- .4,.4,.2
+	{ "bluegem", "redgem", "purplegem" },
+	-- .47,.47,.02,.02,.02
+	{ "bluegem", "redgem", "orangegem", "yellowgem", "greengem" },
+	-- .25,.25,.1,.03,.03,.04,.2,.1
+	{ "bluegem", "redgem", "purplegem", "orangegem",
+		"yellowgem", "greengem", "base_gemfragment", "base_gemblock" } }
+local gemprobability = {
+	{ 40, 80, 100 },
+	{ 47, 94, 96, 98, 100 },
+	{ 25, 50, 60, 63, 66, 70, 90, 100 },
+}
+local gemcomsume = {
+	['bluegem'] = {2,1},['redgem'] = {2,1},
+	['purplegem']={2,2},['orangegem']={5,5},
+	['yellowgem']={5,5},['greengem']={5,5},
+	['base_gemfragment']={4,2},['base_gemblock']={6,2}
+}
+
 --blue,purple,red,orange,yellow,green,(opalpreciousgem?还没做)
 local function gemgenerator(Sim)
 	local inst = commonfn("gemgenerator")
-
 	--碰撞箱
 	MakeObstaclePhysics(inst, .1)
 
-	inst:AddComponent("fueled")
-	inst.components.fueled.maxfuel = TUNING.GEMGENERATOR_FUEL_MAX
-	inst.components.fueled.accepting = true
-	inst.components.fueled:SetSections(4)
-	inst.components.fueled.ontakefuelfn = function(inst)
-		inst.SoundEmitter:PlaySound("dontstarve_DLC001/common/machine_fuel")
-		inst.components.fueled:StartConsuming()
+	local tepmap = { {}, {} }
+	local slotpos_moondial = {
+		Vector3(80 * 0 - 230, 85 * 4 - 80 * 2 - 100, 0),
+		Vector3(80 * 1.3 - 235, 85 * 3.7 - 80 * 2 - 20, 0),
+		Vector3(80 * 2.3 - 235, 85 * 3.7 - 80 * 2 - 20, 0),
+		Vector3(80 * 1.3 - 235, 85 * 2.7 - 80 * 2 - 20, 0),
+		Vector3(80 * 2.3 - 235, 85 * 2.7 - 80 * 2 - 20, 0),
+	}
+	for y = 1, 0, -1 do
+		for x = 0, 3 do
+			table.insert(slotpos_moondial, Vector3(80 * x - 245, 85 * y - 80 * 2 - 20, 0))
+		end
 	end
-
-	inst.components.fueled:SetUpdateFn(function(inst, dt)
-		-- TODO: summer season rate adjustment?
-		inst.components.fueled.rate = 1
-	end)
-
-	inst.components.fueled:SetSectionCallback(function(new, old, inst)
-		--OFF
-		if new == 0 and old > 0 then
-			inst.AnimState:PlayAnimation("proximity_pst")
-			inst.AnimState:PushAnimation("idle", true)
-			inst.SoundEmitter:KillSound("loop")
-			if inst.fueltask ~= nil then
-				inst.fueltask:Cancel()
-				inst.fueltask = nil
-			end
-			--ON
-		elseif new > 0 and old == 0 then
-			inst.AnimState:PlayAnimation("proximity_pre")
-			inst.AnimState:PushAnimation("proximity_loop", true)
-			if not inst.SoundEmitter:PlayingSound("loop") then
-				inst.SoundEmitter:PlaySound("dontstarve_DLC002/common/icemachine_lp", "loop")
-			end
-			if inst.fueltask == nil then
-				--inst.fueltask = inst:DoPeriodicTask(TUNING.ICEMAKER_SPAWN_TIME, function(inst)
-				inst.fueltask = inst:DoPeriodicTask(10, function(inst)
-					math.randomseed(os.time())
-					inst.AnimState:PlayAnimation("use")
-					inst.SoundEmitter:PlaySound("dontstarve_DLC002/common/icemachine_start")
-					inst.components.fueled:StopConsuming() -- temp pause fuel so we don't run out in the animation.
-					--inst:DoTaskInTime(inst.AnimState:GetCurrentAnimationLength(), function(inst)
-					inst:DoTaskInTime(1.3, function(inst)
-						local random = math.random()
-						if random < 0.8 then
-							if random < 0.8 * 2.5 / 6 then
-								gemtype = 1
-							elseif random < 0.8 * 5 / 6 and random > 0.8 * 2.5 / 6 then
-								gemtype = 2
-							elseif random < 0.8 and random > 0.8 * 5 / 6 then
-								gemtype = 3
-							end
-						else
-							if random < 0.8 + 0.2 / 3 then
-								gemtype = 4
-							elseif random < 0.8 + 0.2 * 2 / 3 and random > 0.8 + 0.2 / 3 then
-								gemtype = 5
-							elseif random < 1 and random > 0.8 + 0.2 * 2 / 3 then
-								gemtype = 6
-							end
-						end
-						local gem = SpawnPrefab(gemtable[gemtype])
-						local pt = Vector3(inst.Transform:GetWorldPosition()) + Vector3(0, 2, 0)
-						gem.Transform:SetPosition(pt:Get())
-						local down = TheCamera:GetDownVec()
-						local angle = math.atan2(down.z, down.x) + (math.random() * 60) * DEGREES
-						local sp = 3 + math.random()
-						gem.Physics:SetVel(sp * math.cos(angle), math.random() * 2 + 8, sp * math.sin(angle))
-						gem.components.inventoryitem:OnStartFalling()
-
-						--Machine should only ever be on after spawning an gem
-						inst.components.fueled:StartConsuming()
-						inst.AnimState:PlayAnimation("proximity_loop", true)
-					end)
-				end)
+	inst:AddComponent("container")
+	inst.components.container:SetNumSlots(#slotpos_moondial)
+	inst.components.container.widgetslotpos = slotpos_moondial
+	inst.components.container.widgetanimbank = "ui_darkbox_4x5"
+	inst.components.container.widgetanimbuild = "ui_darkbox_4x5"
+	inst.components.container.widgetpos = Vector3(-100, 100, 0)
+	inst.components.container.side_align_tip = 100
+	inst.components.container.itemtestfn = function(inst, item, slot)
+		if slot and slot == 1
+		then
+			if (item.prefab == "trinket_twelvedice") then
+				return true
 			end
 		end
-	end)
 
-	inst.components.fueled:InitializeFuelLevel(TUNING.GEMGENERATOR_FUEL_MAX / 2)
-	inst.components.fueled:StartConsuming()
+		if slot and (slot == 2 or slot == 3) then
+			if (item.prefab == "base_moonglass"
+					or item.prefab == "base_moonempyreality"
+					or item.prefab == "base_puremoonempyreality"
+					or item.prefab == "base_horrorfuel"
+					or item.prefab == "nightmarefuel") then
+				return true
+			end
+		end
 
-	--后注入覆盖
+		if slot and (slot == 4 or slot == 5)
+		then
+			if (item.prefab == "rocks"
+					or item.prefab == "flint"
+					or item.prefab == "goldnugget"
+					or item.prefab == "ice"
+					or item.prefab == "marble"
+					or item.prefab == "nitre") then
+				return true
+			end
+		end
+
+		if slot and (slot >= 5) then
+			return true
+		end
+	end
+	inst.moonvalue = 0
+	inst.marevalue = 0
+	inst.startcharge = false
+	inst.isreverse = false
+	inst.components.container.onopenfn = function(inst) GetPlayer():PushEvent("OpenGemPanel", { generator = inst }) end
+	inst.components.container.onclosefn = function(inst) GetPlayer():PushEvent("CloseGemPanel", { generator = inst }) end
+
+	--随机宝石算法
+	inst.getgemrandom = function(probabilitytable, gemtable)
+		local dice = math.random(999999) % 100 + 1
+		for i = 1, #probabilitytable, 1 do
+			if dice <= probabilitytable[i] then
+				return gemtable[i]
+			end
+		end
+		-- 意外
+		return "bluegem"
+	end
+
+	inst.turn = function(inst)
+		inst.gemproducetask = inst:DoPeriodicTask(7, function(inst)
+			--每个period出货概率
+			local factor = 0.3
+			local item_ma
+			local canproduct = false
+			local productype = 1
+			for i = 4, 5 do
+				if inst.components.container:GetItemInSlot(i) then
+					item_ma = inst.components.container:GetItemInSlot(i)
+					break
+				end
+			end
+
+			if item_ma
+				and inst.marevalue + inst.moonvalue > 120
+			then
+				canproduct = true
+				-- 暗影条>月化条 产出红蓝紫宝石
+				if inst.marevalue > inst.moonvalue then
+					productype = 1
+				end
+
+				-- 暗影条>月化条 产出红蓝宝石+稀有宝石（7%）
+				if inst.marevalue < inst.moonvalue then
+					productype = 2
+				end
+
+				-- 暗影条>100 and 月化条>140 产出宝石碎片(20%) 宝石块（10%）
+				if inst.marevalue > 140 and inst.moonvalue > 140 then
+					productype = 3
+				end
+			else
+				return
+			end
+
+			local tubenumber = math.random()
+
+			-- 出货
+			if canproduct and tubenumber > 0.5 + factor and tubenumber > 0.5 then
+				local firstemptyslot = nil
+				local item_out
+				local gemprefab = inst.getgemrandom(gemprobability[productype], gemtable[productype])
+
+				for i = 6, 13 do
+					if firstemptyslot == nil and inst.components.container:GetItemInSlot(i) == nil then
+						firstemptyslot = i
+					end
+
+					if inst.components.container:GetItemInSlot(i)
+						and inst.components.container:GetItemInSlot(i).prefab == gemprefab
+					then
+						item_out = inst.components.container:GetItemInSlot(i)
+						if item_out.components.stackable:IsFull() == false then
+							inst.components.container:ConsumeByName(item_ma.prefab, 1)
+							item_out.components.stackable:SetStackSize(item_out.components.stackable.stacksize + 1)
+							inst.moonvalue = inst.moonvalue - gemcomsume[gemprefab][1]
+							inst.marevalue = inst.marevalue - gemcomsume[gemprefab][2]
+							break
+						end
+					end
+
+					--最后一个格子也没有叠上
+					if i == 13 and firstemptyslot then
+						inst.components.container:ConsumeByName(item_ma.prefab, 1)
+						inst.components.container:GiveItem(SpawnPrefab(gemprefab), firstemptyslot)
+						inst.moonvalue = inst.moonvalue - gemcomsume[gemprefab][1]
+						inst.marevalue = inst.marevalue - gemcomsume[gemprefab][2]
+						break
+					end
+				end
+			end
+		end)
+		--充能
+		inst.gemchargetask = inst:DoPeriodicTask(1.5, function()
+			if inst.components.container:GetItemInSlot(1) 
+			and inst.isreverse == false 
+			and inst.components.container:GetItemInSlot(1).prefab == "trinket_twelvedice" then
+				local t = inst.moonvalue
+				inst.moonvalue = inst.marevalue
+				inst.marevalue = t
+				inst.isreverse = true
+			end
+
+			if inst.components.container:GetItemInSlot(1) == nil 
+			and inst.isreverse == true  then
+				local t = inst.moonvalue
+				inst.moonvalue = inst.marevalue
+				inst.marevalue = t
+				inst.isreverse = false
+			end
+
+			if inst.startcharge == false then
+				return
+			end
+			local fuel = {
+				['base_moonglass'] = 5,
+				['base_moonempyreality'] = 15,
+				['base_horrorfuel'] = 20,
+				['nightmarefuel'] = 5
+			}
+
+			local fueltype = {
+				['base_moonglass'] = 1,
+				['base_moonempyreality'] = 1,
+				['base_horrorfuel'] = 2,
+				['nightmarefuel'] = 2
+			}
+			local item_battle_1 = inst.components.container:GetItemInSlot(2)
+			local item_battle_2 = inst.components.container:GetItemInSlot(3)
+
+			if item_battle_1 then
+				if fueltype[item_battle_1.prefab] == 1 
+				and inst.moonvalue + fuel[item_battle_1.prefab] < 200
+				then
+					inst.components.container:ConsumeByName(item_battle_1.prefab, 1)
+					if inst.isreverse == false then
+						inst.moonvalue = inst.moonvalue + fuel[item_battle_1.prefab]
+					else
+						inst.marevalue = inst.marevalue + fuel[item_battle_1.prefab]
+					end
+					
+				end
+
+				if fueltype[item_battle_1.prefab] == 2 
+				and inst.marevalue + fuel[item_battle_1.prefab] < 200
+				then
+					inst.components.container:ConsumeByName(item_battle_1.prefab, 1)
+					if inst.isreverse == false then
+						inst.marevalue = inst.marevalue + fuel[item_battle_1.prefab]
+					else
+						inst.moonvalue = inst.moonvalue + fuel[item_battle_1.prefab]
+					end
+					
+				end
+			end
+
+			if item_battle_2 then
+				if fueltype[item_battle_2.prefab] == 1 
+				and inst.moonvalue + fuel[item_battle_2.prefab] < 200 then
+					inst.components.container:ConsumeByName(item_battle_2.prefab, 1)
+					if inst.isreverse == false then
+						inst.moonvalue = inst.moonvalue + fuel[item_battle_2.prefab]
+					else
+						inst.marevalue = inst.marevalue + fuel[item_battle_2.prefab]
+					end
+				end
+
+				if fueltype[item_battle_2.prefab] == 2 
+				and inst.marevalue + fuel[item_battle_2.prefab] < 200
+				then
+					inst.components.container:ConsumeByName(item_battle_2.prefab, 1)
+					if inst.isreverse == false then
+						inst.marevalue = inst.marevalue + fuel[item_battle_2.prefab]
+					else
+						inst.moonvalue = inst.moonvalue + fuel[item_battle_2.prefab]
+					end
+				end
+			end
+		end)
+	end
+
 	--onhammered
 	inst.components.workable:SetOnFinishCallback(function(inst, worker)
 		inst.SoundEmitter:PlaySound("dontstarve/common/destroy_wood")
@@ -533,10 +719,16 @@ local function gemgenerator(Sim)
 	end)
 
 	inst.OnSave = function(inst, data)
+		data.marevalue = inst.marevalue
+		data.moonvalue = inst.moonvalue
+		data.startcharge = inst.startcharge
 	end
 
-	--onload
-	inst.OnLoad = function(inst, data)
+	inst.OnLoad = function(inst,data)
+		inst.marevalue = data.marevalue or 0
+		inst.moonvalue = data.moonvalue or 0
+		inst.startcharge = data.startcharge or false
+		inst.turn(inst)
 	end
 
 	return inst
@@ -599,7 +791,7 @@ local function miraclecookpot(Sim)
 	inst.Light:SetIntensity(.5)
 	inst.Light:SetColour(235 / 255, 62 / 255, 12 / 255)
 
-	
+
 
 	local widgetbuttoninfo = {
 		text = "投入",
@@ -607,7 +799,7 @@ local function miraclecookpot(Sim)
 		fn = function(inst)
 			local opener = inst.components.container.opener or GetPlayer()
 			--这里可优化
-			local res,currecipe = CanMakeAndResult(inst, TUNING.ARCUEID_FOODRECIPES)
+			local res, currecipe = CanMakeAndResult(inst, TUNING.ARCUEID_FOODRECIPES)
 			for i = 1, 9 do
 				local curitem = inst.components.container:GetItemInSlot(i)
 				if curitem and not curitem:HasTag("maketool") then
@@ -621,7 +813,7 @@ local function miraclecookpot(Sim)
 			opener.components.inventory:GiveItem(SpawnPrefab(currecipe))
 		end,
 		validfn = function(inst)
-			local res= CanMakeAndResult(inst, TUNING.ARCUEID_FOODRECIPES)
+			local res = CanMakeAndResult(inst, TUNING.ARCUEID_FOODRECIPES)
 			return res
 		end
 	}
@@ -857,9 +1049,9 @@ local recycletable = {
 	--紫宝石5->1碎片，50%纯粹恐惧
 	["purplegem"] = { 5, { "base_gemfragment", 1 }, { "base_horrorfuel", .5 }, },
 	["redgem"] = { 15, { "base_gemfragment", 1 }, },
-	["orangegem"] = { 2, { "base_gemfragment", 3 }, { "base_moonempyreality",1 }, 1 },
-	["yellowgem"] = { 2, { "base_gemfragment", 3 }, { "base_moonempyreality",1 }, 1 },
-	["greengem"] = { 2, { "base_gemfragment", 3 }, { "base_moonempyreality",1 }, 1 },
+	["orangegem"] = { 2, { "base_gemfragment", 3 }, { "base_moonempyreality", 1 }, 1 },
+	["yellowgem"] = { 2, { "base_gemfragment", 3 }, { "base_moonempyreality", 1 }, 1 },
+	["greengem"] = { 2, { "base_gemfragment", 3 }, { "base_moonempyreality", 1 }, 1 },
 	--月亮
 	["base_moonrock_nugget"] = { 10, { "rocks", 10 }, { "base_moonempyreality", 1 }, },
 	["base_moonglass"] = { 3, { "base_gemfragment", 3 }, { "base_moonempyreality", 1 }, },
@@ -1085,7 +1277,7 @@ local function trinketworkshop(Sim)
 		fn = function(inst)
 			local opener = inst.components.container.opener or GetPlayer()
 			--这里可优化
-			local res,currecipe = CanMakeAndResult(inst, TUNING.ARCUEID_TRINKETRECIPES)
+			local res, currecipe = CanMakeAndResult(inst, TUNING.ARCUEID_TRINKETRECIPES)
 			for i = 1, 9 do
 				local curitem = inst.components.container:GetItemInSlot(i)
 				if curitem and not curitem:HasTag("maketool") then
@@ -1099,7 +1291,7 @@ local function trinketworkshop(Sim)
 			opener.components.inventory:GiveItem(SpawnPrefab(currecipe))
 		end,
 		validfn = function(inst)
-			local res= CanMakeAndResult(inst, TUNING.ARCUEID_TRINKETRECIPES)
+			local res = CanMakeAndResult(inst, TUNING.ARCUEID_TRINKETRECIPES)
 			return res
 		end
 	}
@@ -1153,7 +1345,7 @@ local function alchemydesk(Sim)
 		fn = function(inst)
 			local opener = inst.components.container.opener or GetPlayer()
 			--这里可优化
-			local res,currecipe = CanMakeAndResult(inst, TUNING.ARCUEID_ALCHEMYRECIPES)
+			local res, currecipe = CanMakeAndResult(inst, TUNING.ARCUEID_ALCHEMYRECIPES)
 			for i = 1, 9 do
 				local curitem = inst.components.container:GetItemInSlot(i)
 				if not curitem:HasTag("maketool") then
@@ -1167,7 +1359,7 @@ local function alchemydesk(Sim)
 			opener.components.inventory:GiveItem(SpawnPrefab(currecipe))
 		end,
 		validfn = function(inst)
-			local res= CanMakeAndResult(inst, TUNING.ARCUEID_ALCHEMYRECIPES)
+			local res = CanMakeAndResult(inst, TUNING.ARCUEID_ALCHEMYRECIPES)
 			return res
 		end
 	}
@@ -1213,9 +1405,9 @@ end
 --映月台
 function onmoonphasechagned(inst)
 	local phase = GetClock():GetMoonPhase()
-    if phase ~= nil then
-        inst.sg:GoToState("next")
-    end
+	if phase ~= nil then
+		inst.sg:GoToState("next")
+	end
 end
 
 local function moondial(Sim)
@@ -1224,10 +1416,106 @@ local function moondial(Sim)
 	MakeObstaclePhysics(inst, .2)
 	inst.AnimState:PlayAnimation("idle_new")
 	onmoonphasechagned(inst)
-	inst:ListenForEvent("moonphaseschange",onmoonphasechagned(inst),GetWorld())
-	
-	inst.OnSave = function(inst, data)end
-	inst.OnLoad = function(inst, data)end
+
+	local slotpos_moondial = {}
+	for y = 4, 0, -1 do
+		if y ~= 2 then
+			for x = 0, 3 do
+				table.insert(slotpos_moondial, Vector3(80 * x - 245, 85 * y - 80 * 2 - 20, 0))
+			end
+		end
+	end
+
+	inst:AddComponent("container")
+	inst.components.container:SetNumSlots(#slotpos_moondial)
+	inst.components.container.widgetslotpos = slotpos_moondial
+	inst.components.container.widgetanimbank = "ui_darkbox_4x5"
+	inst.components.container.widgetanimbuild = "ui_darkbox_4x5"
+	inst.components.container.widgetpos = Vector3(-100, 100, 0)
+	inst.components.container.side_align_tip = 100
+	inst.components.container.itemtestfn = function(inst, item, slot)
+		if slot and slot <= 8 and (item.prefab == "rocks" or item.prefab == "flint") then return true end
+		if slot and slot > 8 then return true end
+		return true
+	end
+	inst.components.container.onopenfn = function(inst) end
+	inst.components.container.onclosefn = function(inst) end
+
+	inst.turn = function(inst)
+		local moon_fac =
+		{
+			["base"] = 1 / 18, -- 每秒出货概率
+			["full"] = 2, -- 月相倍率
+			["quarter"] = 0.5,
+			["new"] = 0,
+			["threequarter"] = 1.5,
+			["half"] = 1,
+		}
+
+		local typemap =
+		{
+			['rocks'] = 'base_moonrock_nugget',
+			['flint'] = 'base_moonglass'
+		}
+		local clock = GetClock()
+		if clock:IsNight() then
+			inst.moonical = inst:DoPeriodicTask(1, function(inst)
+				local item
+				for i = 1, 8 do
+					if inst.components.container:GetItemInSlot(i) then
+						item = inst.components.container:GetItemInSlot(i)
+						break
+					end
+				end
+
+				if item then
+					for i = 9, 16 do
+						local item_out = inst.components.container:GetItemInSlot(i)
+						-- continue
+						if item_out == nil then
+							local r = math.random()
+							if moon_fac[clock:GetMoonPhase()] and .5 < r and r < (.5 + moon_fac['base'] * moon_fac[clock:GetMoonPhase()]) then
+								inst.components.container:ConsumeByName(item.prefab, 1)
+								inst.components.container:GiveItem(SpawnPrefab(typemap[item.prefab]), i)
+							end
+							break;
+						end
+
+						if item_out and item_out.components.stackable:IsFull() == false then
+							if typemap[item.prefab] == item_out.prefab then
+								local r = math.random()
+								if moon_fac[clock:GetMoonPhase()] and .5 < r and r < (.5 + moon_fac['base'] * moon_fac[clock:GetMoonPhase()]) then
+									inst.components.container:ConsumeByName(item.prefab, 1)
+									item_out.components.stackable:SetStackSize(item_out.components.stackable.stacksize +
+										1)
+								end
+								break;
+							end
+						end
+					end
+				end
+			end)
+		end
+		if clock:IsNight() == false and inst.moonical then
+			inst.moonical:Cancel()
+			inst.moonical = nil
+		end
+	end
+
+	inst:ListenForEvent("daysegschanged",
+		function()
+			inst.turn(inst)
+			if GetClock():IsNight() == false and inst.moonical then
+				inst.moonical:Cancel()
+				inst.moonical = nil
+			end
+		end
+		, GetWorld())
+
+	inst.OnSave = function(inst, data) end
+	inst.OnLoad = function(inst, data)
+		inst.turn(inst)
+	end
 
 	return inst
 end
@@ -1235,7 +1523,7 @@ end
 local slotpos_roombox = {}
 for y = 4, 0, -1 do
 	for x = 0, 11 do
-		table.insert(slotpos_roombox, Vector3(80*x-346*2+98, 80*y-100*2+42,0))
+		table.insert(slotpos_roombox, Vector3(80 * x - 346 * 2 + 98, 80 * y - 100 * 2 + 42, 0))
 	end
 end
 --空间箱
@@ -1254,8 +1542,8 @@ local function roombox(Sim)
 	end
 
 	MakeObstaclePhysics(inst, .2)
-	inst.OnSave = function(inst, data)end
-	inst.OnLoad = function(inst, data)end
+	inst.OnSave = function(inst, data) end
+	inst.OnLoad = function(inst, data) end
 	return inst
 end
 
@@ -1274,8 +1562,8 @@ return
 	Prefab("common/objects/building_rottenform", rottenform, assets, prefabs),        --腐败滋生术式
 	Prefab("common/objects/building_trinketworkshop", trinketworkshop, assets, prefabs), --饰品作坊
 	Prefab("common/objects/building_alchemydesk", alchemydesk, assets, prefabs),      --炼金台
-	Prefab("common/objects/building_moondial", moondial, assets, prefabs),      --映月台
-	Prefab("common/objects/building_roombox", roombox, assets, prefabs),      --映月台
+	Prefab("common/objects/building_moondial", moondial, assets, prefabs),            --映月台
+	Prefab("common/objects/building_roombox", roombox, assets, prefabs),              --映月台
 	MakePlacer("common/building_mooncirleform_placer", "building_mooncirleform", "building_mooncirleform", "idle"),
 	MakePlacer("common/building_gemicebox_placer", "building_gemicebox", "building_gemicebox", "closed"),
 	MakePlacer("common/building_travellerbox_placer", "building_travellerbox", "building_travellerbox", "closed"),
