@@ -1,6 +1,0 @@
-<Atlas>
-    <Texture filename="buff_bleed.tex" />
-    <Elements>
-        <Element name="buff_bleed.tex" u1="0.015625" v1="0.265625" u2="0.734375" v2="0.984375" />
-    </Elements>
-</Atlas>

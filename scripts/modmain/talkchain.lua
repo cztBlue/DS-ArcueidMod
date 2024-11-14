@@ -1,3 +1,4 @@
+-- 早期代码
 -- local function IsChainHead(inst, str)
 -- 	local result = false
 -- 	if inst.prefab == "pigman_farmer" and (str == "你有草吗？" or str == "别碰我农场里的东西") then

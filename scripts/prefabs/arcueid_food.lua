@@ -48,9 +48,11 @@ local function commonfn(foodname)
 	inst:AddComponent("stackable")
 
 	inst.components.edible.foodtype = "VEGGIE"
+	inst.components.edible.foodstate = "PREPARED"
 	inst.components.inventoryitem.imagename = foodname
 	inst.components.inventoryitem.atlasname = "images/inventoryimages/" .. foodname .. ".xml"
 	inst.components.stackable.maxsize = TUNING.STACK_SIZE_MEDITEM
+	inst:AddTag("preparedfood")
 
 	inst.arc_hea = 0
 	inst.arc_hun = 0

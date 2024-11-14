@@ -20,7 +20,6 @@ PrefabFiles = {
 	"arcueid_efficacy",
 	"arcueid_shadowcreature",
 	"arcueid_letter",
-	"arcueid_acidraindrop",
 	"arcueid_potion",
 	"psionic_farm",
 	"psionic_item",
@@ -208,9 +207,9 @@ TECH.MOONMAGIC_ONE = { MOONMAGIC = 1 }
 --饰品栏标识
 EQUIPSLOTS.TRINKET = "trinket"
 --营火火焰半径削减
-TUNING.FIRERADIUSRATE = 0.42
+TUNING.FIRERADIUSRATE = 0.2
 --火把火焰半径削减
-TUNING.TORCHRADIUSRATE = .65
+TUNING.TORCHRADIUSRATE = .35
 --暗影骑士数值
 TUNING.SHADOW_KNIGHT =
 {
@@ -228,8 +227,8 @@ TUNING.SHADOW_KNIGHT =
 TUNING.SHADOWCREATURE = {
 	['crawlinghorror'] = true, -- 大肥只
 	['crawlingnightmare'] = true, -- 大肥只遗迹
-	['terrorbeak'] = true, -- 大瘦只
-	['nightmarebeak'] = true, -- 大瘦只遗迹
+	['terrorbeak'] = true,     -- 大瘦只
+	['nightmarebeak'] = true,  -- 大瘦只遗迹
 	['swimminghorror'] = true, --海上游的
 }
 
@@ -241,7 +240,6 @@ TUNING.SANITY_DAY_GAIN = -0.04166
 TUNING.SANITY_NIGHT_LIGHT = 0.0233
 TUNING.SANITY_NIGHT_MID = 0.0433
 TUNING.SANITY_NIGHT_DARK = -1
-TUNING.ARCUEID_HUNGER_RATE = 0.2 --0.15625->0.2
 
 --人物信息
 STRINGS.CHARACTER_TITLES.arcueid = "稀世明珠般的公主大人"
@@ -253,23 +251,10 @@ STRINGS.CHARACTERS.ARCUEID = require "speech_arcueid"
 
 --小地图插入map_icons
 AddMinimapAtlas("images/map_icons/mapicon.xml")
-AddMinimapAtlas("images/map_icons/mooncirleform.xml")
-AddMinimapAtlas("images/map_icons/arcueid.xml")
-AddMinimapAtlas("images/map_icons/rottenform.xml")
-AddMinimapAtlas("images/map_icons/recycleform.xml")
-AddMinimapAtlas("images/map_icons/guard.xml")
-AddMinimapAtlas("images/map_icons/miraclecookpot.xml")
-AddMinimapAtlas("images/map_icons/spatialanchor.xml")
-AddMinimapAtlas("images/map_icons/gemgenerator.xml")
-AddMinimapAtlas("images/map_icons/immortallight.xml")
-AddMinimapAtlas("images/map_icons/travellerbox.xml")
-AddMinimapAtlas("images/map_icons/gemicebox.xml")
-AddMinimapAtlas("images/map_icons/trinketworkshop.xml")
-AddMinimapAtlas("images/map_icons/alchemydesk.xml")
 
-modimport("scripts/modmain/name_list.lua")
+--拼接脚本导入
+modimport("scripts/modmain/itemnamedescription.lua")
 modimport("scripts/modmain/foodscript.lua")
-modimport("scripts/modmain/talkchain.lua")
 modimport("scripts/modmain/arcueid_lootdropper.lua")
 modimport("scripts/modmain/ninetabRecipe.lua")
 AddModCharacter("arcueid")
@@ -459,7 +444,7 @@ AddComponentPostInit("playeractionpicker", function(PlayerActionPicker)
 
 		--if true then return end
 		local target = TheInput:GetHUDEntityUnderMouse()
-
+		
 
 		if not target then
 			local ents = TheInput:GetAllEntitiesUnderMouse()
@@ -486,6 +471,7 @@ AddComponentPostInit("playeractionpicker", function(PlayerActionPicker)
 				ignore_player = false
 			end
 
+			-- 改动了
 			if self.inst:HasTag("Arcueid") then
 				ignore_player = false
 			end
@@ -498,6 +484,11 @@ AddComponentPostInit("playeractionpicker", function(PlayerActionPicker)
 				end
 			end
 		end
+
+		-- 调试用
+		-- if target then
+		-- 	print(target.prefab)
+		-- end
 
 		local target_in_light = target and target:IsValid() and target.Transform and
 			TheSim:GetLightAtPoint(target.Transform:GetWorldPosition()) > TUNING.DARK_CUTOFF
@@ -532,7 +523,6 @@ local EDIT_ANCHOR = GLOBAL.Action({})
 local DESTINATION = GLOBAL.Action({})
 local TOUCH_BOTTLE = GLOBAL.Action({})
 local READLETTER = GLOBAL.Action({ mount_enabled = true })
-local FERTILIZE_PSIONIC = GLOBAL.Action({})
 local PLANT_PSIONIC = GLOBAL.Action({})
 local ARCUEID_NORMAL = GLOBAL.Action({})
 
@@ -562,7 +552,7 @@ READLETTER.id = "READLETTER"
 READLETTER.str = "阅读"
 --栽种_seed
 PLANT_PSIONIC.id = "PLANT_PSIONIC"
-PLANT_PSIONIC.str = "布植"
+PLANT_PSIONIC.str = "埋入"
 
 
 -- 动作触发的函数。传入一个BufferedAction对象。(target,doer)
@@ -626,14 +616,7 @@ PLANT_PSIONIC.fn = function(act)
 	if act.doer.components.inventory then
 		local seed = act.doer.components.inventory:RemoveItem(act.invobject)
 		if seed then
-			if act.target.components.grower_psionic and act.target.components.grower_psionic:PlantItem(seed) then
-				if act.doer:HasTag("plantkin") then
-					if act.doer.growplantfn then
-						act.doer.growplantfn(act.doer)
-					end
-				end
-				return true
-			elseif act.target.components.breeder and act.target.components.breeder:Seed(seed) then
+			if act.target.components.grower_psionic:PlantItem(seed) then
 				return true
 			else
 				act.doer.components.inventory:GiveItem(seed)
@@ -741,50 +724,6 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
 	end
 end)
 
---修改火焰范围
-AddComponentPostInit("firefx", function(FireFX)
-	if GetPlayer().prefab == "arcueid" then
-		local gettime = GetTime
-		local clock = GetClock()
-		local oldUpdateRadius = FireFX.UpdateRadius
-		local oldSetLevel = FireFX.SetLevel
-		function FireFX:OnUpdate(dt)
-			local time = gettime() * 30
-			local flicker = (math.sin(time) + math.sin(time + 2) + math.sin(time + 0.7777)) / 2.0 -- range = [-1 , 1]
-			flicker = (1.0 + flicker) / 2.0                                              -- range = 0:1
-			local rad = self.current_radius + flicker * .05
-			rad = rad * TUNING.FIRERADIUSRATE
-			self.inst.Light:SetRadius(rad)
-
-			if self.usedayparamforsound then
-				local isday = clock:IsDay()
-				if isday ~= self.isday then
-					self.isday = isday
-					local val = isday and 1 or 2
-					self.inst.SoundEmitter:SetParameter("fire", "daytime", val)
-				end
-			end
-		end
-
-		function FireFX:UpdateRadius()
-			oldUpdateRadius(self)
-			self.inst.Light:SetRadius(self.current_radius * TUNING.FIRERADIUSRATE)
-		end
-
-		function FireFX:SetLevel(lev, immediate)
-			oldSetLevel(self, lev, immediate)
-			if self.levels[self.level] and self.inst.Light then
-				self.inst.Light:SetRadius(self.levels[self.level].radius * TUNING.FIRERADIUSRATE)
-			end
-		end
-	end
-end)
-
---修改火把范围
-AddPrefabPostInit("torchfire", function(inst)
-	inst.Light:SetRadius(2 * TUNING.TORCHRADIUSRATE)
-end)
-
 --添加睡眠Add活力值机制
 --帐篷
 AddPrefabPostInit("tent", function(inst)
@@ -846,6 +785,37 @@ AddPrefabPostInit("siestahut", function(inst)
 	end
 end)
 
+-- 侵蚀度影响火焰范围
+AddComponentPostInit("firefx", function(FireFX)
+	-- SetLevel->SetPercentInLevel->UpdateRadius
+	if GetPlayer().prefab == "arcueid" then
+		local oldSetLevel = FireFX.SetLevel
+		local oldUpdateRadius = FireFX.UpdateRadius
+
+		function FireFX:SetLevel(lev, immediate)
+			local ores = oldSetLevel(self, lev, immediate)
+			if self.levels[self.level] and self.inst.Light then
+				local flu = -GetPlayer().components.arcueidstate:GetErosionPercent() * (1 - TUNING.FIRERADIUSRATE) + 1
+				self.inst.Light:SetRadius(self.levels[self.level].radius * flu)
+			end
+			return ores
+		end
+
+		function FireFX:UpdateRadius()
+			local ores = oldUpdateRadius(self)
+			local flu = -GetPlayer().components.arcueidstate:GetErosionPercent() * (1 - TUNING.FIRERADIUSRATE) + 1
+			self.inst.Light:SetRadius(self.current_radius * flu)
+			return ores
+		end
+	end
+end)
+
+-- 侵蚀度影响火把范围
+AddPrefabPostInit("torchfire", function(inst)
+	local flu = -GetPlayer().components.arcueidstate:GetErosionPercent() * (1 - TUNING.TORCHRADIUSRATE) + 1
+	inst.Light:SetRadius(2 * flu)
+end)
+
 -- 侵蚀度影响月相
 AddComponentPostInit("clock", function(Clock)
 	local rmoonphases = {}
@@ -876,9 +846,10 @@ AddComponentPostInit("clock", function(Clock)
 end)
 
 -- 修改种植模块
+-- 处理种了一次就不能种的农场,这是因为plant_normal的crop组件在收获的时候写死了作物的农场对象必须有grower组件
+-- 我做了自己的grower_psionic组件，就调用不到RemoveCrop()
 AddComponentPostInit("crop", function(Crop)
 	function Crop:Harvest(harvester)
-		print('Yes,Harvest')
 		if self.matured or self.withered then
 			local product = nil
 			if self.grower and self.grower:HasTag("fire") or self.inst:HasTag("fire") then
@@ -907,23 +878,31 @@ AddComponentPostInit("crop", function(Crop)
 			self.product_prefab = nil
 
 			--改动了
-			if self.grower and self.grower.components.grower then
-				self.grower.components.grower:RemoveCrop(self.inst)
-				self.grower = nil
-			elseif self.grower and self.grower.components.grower_psionic then
-				self.grower.components.grower_psionic:RemoveCrop(self.inst)
-				self.grower = nil
+			if GetPlayer() and GetPlayer().prefab == "arcueid" then
+				if self.grower and self.grower.components.grower then
+					self.grower.components.grower:RemoveCrop(self.inst)
+					self.grower = nil
+				elseif self.grower and self.grower.components.grower_psionic then
+					self.grower.components.grower_psionic:RemoveCrop(self.inst)
+					self.grower = nil
+				else
+					self.inst:Remove()
+				end
 			else
-				self.inst:Remove()
+				-- 原本的逻辑
+				if self.grower and self.grower.components.grower then
+					self.grower.components.grower:RemoveCrop(self.inst)
+					self.grower = nil
+				else
+					self.inst:Remove()
+				end
 			end
 
 
 			return true
 		end
 	end
-
 	function Crop:ForceHarvest(harvester)
-		print('Yes,FHarvest')
 		if self.matured or self.withered then
 			local product = nil
 			if self.grower and self.grower:HasTag("fire") or self.inst:HasTag("fire") then
@@ -967,35 +946,65 @@ AddComponentPostInit("crop", function(Crop)
 			self.product_prefab = nil
 
 			--改动了
-			if self.grower then
-				if self.grower.components.grower then
-					self.grower.components.grower:RemoveCrop(self.inst)
-				elseif self.grower.components.grower_psionic then
-					self.grower.components.grower_psionic:RemoveCrop(self.inst)
+			if GetPlayer() and GetPlayer().prefab == "arcueid" then
+				if self.grower then
+					if self.grower.components.grower then
+						self.grower.components.grower:RemoveCrop(self.inst)
+					elseif self.grower.components.grower_psionic then
+						self.grower.components.grower_psionic:RemoveCrop(self.inst)
+					else
+						self.inst:Remove()
+					end
+					self.grower = nil
 				else
 					self.inst:Remove()
 				end
-				self.grower = nil
 			else
-				self.inst:Remove()
+				-- 原本的逻辑
+				if self.grower then
+					if self.grower.components.grower then
+						self.grower.components.grower:RemoveCrop(self.inst)            
+					else
+					   self.inst:Remove()
+					end
+					self.grower = nil
+				else 
+					self.inst:Remove()
+				end
 			end
+			
 
 			return true
 		else
 			-- nothing to give up, but pretend we did
 			--改动了
-			if self.grower then
-				if self.grower.components.grower then
-					self.grower.components.grower:RemoveCrop(self.inst)
-				elseif self.grower.components.grower_psionic then
-					self.grower.components.grower_psionic:RemoveCrop(self.inst)
+			if GetPlayer() and GetPlayer().prefab == "arcueid" then
+				if self.grower then
+					if self.grower.components.grower then
+						self.grower.components.grower:RemoveCrop(self.inst)
+					elseif self.grower.components.grower_psionic then
+						self.grower.components.grower_psionic:RemoveCrop(self.inst)
+					else
+						self.inst:Remove()
+					end
+					self.grower = nil
 				else
 					self.inst:Remove()
 				end
-				self.grower = nil
 			else
-				self.inst:Remove()
+				-- 原本的逻辑
+				if self.grower then
+					if self.grower.components.grower then
+						self.grower.components.grower:RemoveCrop(self.inst)            
+					else
+					self.inst:Remove()
+					end
+					self.grower = nil
+				else 
+					self.inst:Remove()
+				end
 			end
+			
 		end
 	end
 end)
@@ -1053,7 +1062,7 @@ AddComponentPostInit("combat", function(Combat)
 			if targ.prefab == "arcueid"
 				and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY) ~= nil
 				and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY).prefab == "dress_ice"
-				and targ.components.vigour.currentvigour > 10 
+				and targ.components.vigour.currentvigour > 10
 			then
 				targ.components.vigour:DoDelta(-damage * .05, nil, "ice_defense")
 				damage = damage * .08
@@ -1111,7 +1120,7 @@ AddComponentPostInit("combat", function(Combat)
 	end
 end)
 
---实现饱食度恢复活力值特性(1/10)
+--实现饱食度恢复活力值特性(1:10)
 AddComponentPostInit("eater", function(Eater)
 	local oldEat = Eater.Eat
 	function Eater:Eat(food)
@@ -1125,6 +1134,269 @@ AddComponentPostInit("eater", function(Eater)
 		return oldres
 	end
 end)
+
+--实现月球科技
+AddComponentPostInit("builder", function(Builder)
+	Builder.moonmagic_bonus = 0
+	if GetPlayer() and GetPlayer().prefab == "arcueid" then
+		function Builder:EvaluateTechTrees()
+			local pos = self.inst:GetPosition()
+
+			local ents = TheSim:FindEntities(pos.x, pos.y, pos.z, TUNING.RESEARCH_MACHINE_DIST, { "prototyper" },
+				{ "INTERIOR_LIMBO" })
+
+			local interiorSpawner = GetWorld().components.interiorspawner
+
+			-- insert our home prototyper in the list since we don't carry it around (and potentially wouldn't hit the radius for FindEntities)
+			if interiorSpawner then
+				table.insert(ents, interiorSpawner.homeprototyper)
+			end
+
+			-- TheSim:FindEntities is failing to find the key in the backpack sometimes, for whatever reason...
+			local key_to_city = self.inst.components.inventory
+				and self.inst.components.inventory:FindItem(function(item) return item.prefab == "key_to_city" end)
+
+			if key_to_city and not table.contains(ents, key_to_city) then
+				table.insert(ents, key_to_city)
+			end
+
+			local old_accessible_tech_trees = deepcopy(self.accessible_tech_trees or TECH.NONE)
+			local old_prototyper = self.current_prototyper
+			local old_craftingstation = self.current_craftingstation
+			self.current_prototyper = nil
+
+			local prototyper_active = false
+			local craftingstation_active = false
+			local allprototypers = {}
+
+			for k, v in pairs(ents) do
+				if v.components.prototyper and v.components.prototyper:CanCurrentlyPrototype() then
+					-- the nearest prototyper and the nearest crafting station
+					local enabled = false
+					if not v.components.prototyper:GetIsDisabled() then
+						if v.components.prototyper.craftingstation then
+							if not craftingstation_active then
+								craftingstation_active = true
+								enabled = true
+							end
+						else
+							if not prototyper_active then
+								prototyper_active = true
+								enabled = true
+							end
+						end
+					end
+					allprototypers[v] = enabled
+				end
+			end
+
+			self.accessible_tech_trees = {}
+			--add any character specific bonuses to your current tech levels.
+			self.accessible_tech_trees.SCIENCE = self.science_bonus
+			self.accessible_tech_trees.MAGIC = self.magic_bonus
+			self.accessible_tech_trees.ANCIENT = self.ancient_bonus
+			self.accessible_tech_trees.OBSIDIAN = self.obsidian_bonus
+			self.accessible_tech_trees.HOME = self.home_bonus
+			self.accessible_tech_trees.CITY = self.city_bonus
+			self.accessible_tech_trees.LOST = 0
+			--改动了
+			self.accessible_tech_trees.MOONMAGIC = 0
+
+			for entity, enabled in pairs(allprototypers) do
+				if enabled then
+					self:MergeAccessibleTechTrees(entity.components.prototyper:GetTechTrees())
+					if entity.components.prototyper.craftingstation then
+						self.current_craftingstation = entity
+					else
+						self.current_prototyper = entity
+					end
+					entity.components.prototyper:TurnOn()
+				else
+					entity.components.prototyper:TurnOff()
+				end
+			end
+
+			local trees_changed = false
+
+			for k, v in pairs(old_accessible_tech_trees) do
+				if v ~= self.accessible_tech_trees[k] then
+					trees_changed = true
+					break
+				end
+			end
+			if not trees_changed then
+				for k, v in pairs(self.accessible_tech_trees) do
+					if v ~= old_accessible_tech_trees[k] then
+						trees_changed = true
+						break
+					end
+				end
+			end
+
+			if old_prototyper and old_prototyper.components.prototyper and old_prototyper:IsValid() and old_prototyper ~= self.current_prototyper then
+				old_prototyper.components.prototyper:TurnOff()
+			end
+			if old_craftingstation and old_craftingstation.components.prototyper and old_craftingstation:IsValid() and old_craftingstation ~= self.current_craftingstation then
+				old_craftingstation.components.prototyper:TurnOff()
+			end
+
+			if trees_changed then
+				self.inst:PushEvent("techtreechange", { level = self.accessible_tech_trees })
+			end
+		end
+
+		function Builder:KnowsRecipeWithoutJellyBrainHat(recname)
+			local recipe = GetRecipe(recname)
+			--改动了:判断之前先注入recipe.level
+			if recipe and recipe.level.MOONMAGIC == nil then
+				recipe.level.MOONMAGIC = 0
+			end
+
+
+			if recipe
+				and recipe.level.ANCIENT <= self.ancient_bonus
+				and recipe.level.MAGIC <= self.magic_bonus
+				and recipe.level.SCIENCE <= self.science_bonus
+				and recipe.level.OBSIDIAN <= self.obsidian_bonus
+				and recipe.level.HOME <= self.home_bonus
+				and recipe.level.CITY <= self.city_bonus
+				and recipe.level.LOST <= self.lost_bonus
+				--添加了MOONMAGIC的判别
+				and recipe.level.MOONMAGIC <= self.moonmagic_bonus
+			then
+				return true
+			end
+
+			-- if the recipe is from a crafting station, but player is not at the crafting station, cut it out.
+			local crafting_station_pass = true
+			if recipe then
+				for i, level in pairs(recipe.level) do
+					if RECIPETABS[i] and RECIPETABS[i].crafting_station and level > 0 then
+						if self.accessible_tech_trees[i] == 0 then
+							crafting_station_pass = false
+						end
+					end
+				end
+			end
+
+			return self.freebuildmode or
+				(self:IsBuildBuffered(recname) or table.contains(self.recipes, recname) and crafting_station_pass)
+		end
+	end
+end)
+
+--注入做饭失败的逻辑(.6)
+AddComponentPostInit("stewer", function(Stewer)
+	local cooking = require("cooking")
+	-- 做饭50%失败
+	if GetPlayer() and GetPlayer().prefab == "arcueid" then
+		function Stewer:StartCooking()
+			if not self.done and not self.cooking then
+				if self.inst.components.container then
+					self.done = nil
+					self.cooking = true
+
+					if self.onstartcooking then
+						self.onstartcooking(self.inst)
+					end
+
+					local spoilage_total = 0
+					local spoilage_n = 0
+					local ings = {}
+					for k, v in pairs(self.inst.components.container.slots) do
+						table.insert(ings, v.prefab)
+						if v.components.perishable then
+							spoilage_n = spoilage_n + 1
+							spoilage_total = spoilage_total + v.components.perishable:GetPercent()
+						end
+					end
+					self.product_spoilage = 1
+					if spoilage_total > 0 then
+						self.product_spoilage = spoilage_total / spoilage_n
+						self.product_spoilage = 1 - (1 - self.product_spoilage) * .5
+					end
+
+					local foundthespecial = false
+					local cooktime = 1
+					if self.specialcookername then
+						-- check special first
+						if cooking.ValidRecipe(self.specialcookername, ings) then
+							self.product, cooktime = cooking.CalculateRecipe(self.specialcookername, ings)
+							self.productcooker = self.specialcookername
+							foundthespecial = true
+						end
+					end
+
+					if not foundthespecial then
+						-- fallback to regular cooking
+						local cooker = self.cookername or self.inst.prefab
+						self.product, cooktime = cooking.CalculateRecipe(cooker, ings)
+						self.productcooker = cooker
+					end
+
+					--改动了
+					local prob = math.random()
+					local trinket = GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+					if prob < .6 and (trinket == nil or (trinket and trinket.prefab ~= "trinket_seasoningbottle")) then
+						self.product = "wetgoop"
+					elseif prob < .6 and trinket and trinket.prefab == "trinket_seasoningbottle" then
+						trinket.components.finiteuses:Use(2)
+					end
+
+
+					local grow_time = TUNING.BASE_COOK_TIME * cooktime
+					self.targettime = GetTime() + grow_time
+					self.task = self.inst:DoTaskInTime(grow_time, function(inst)
+						inst.components.stewer.task = nil
+						if inst.components.stewer.ondonecooking then
+							inst.components.stewer.ondonecooking(inst)
+						end
+						inst.components.stewer.done = true
+						inst.components.stewer.cooking = nil
+					end, "stew")
+
+					self.inst.components.container:Close()
+					self.inst.components.container:DestroyContents()
+					self.inst.components.container.canbeopened = false
+				end
+			end
+		end
+	end
+end)
+
+--注入烤东西失败的逻辑 (.4)
+AddComponentPostInit("cooker", function(Cooker)
+	if GetPlayer().prefab == "arcueid" then
+		function Cooker:CookItem(item, chef)
+			if item and item.components.cookable then
+				local prob = math.random()
+				local trinket = GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+				if prob < .4 and (trinket == nil or (trinket and trinket.prefab ~= "trinket_seasoningbottle")) then
+					item:Remove()
+					return SpawnPrefab("wetgoop")
+				elseif prob < .6 and trinket and trinket.prefab == "trinket_seasoningbottle" then
+					trinket.components.finiteuses:Use()
+				end
+
+				local newitem = item.components.cookable:Cook(self.inst, chef)
+				ProfileStatsAdd("cooked_" .. item.prefab)
+
+				if self.oncookitem then
+					self.oncookitem(item, newitem)
+				end
+
+				if self.inst.SoundEmitter then
+					self.inst.SoundEmitter:PlaySound("dontstarve/wilson/cook")
+				end
+
+				item:Remove()
+				print(newitem.prefab)
+				return newitem
+			end
+		end
+	end
+end)
+
 
 --战斗机制改动
 -- AddComponentPostInit("combat", function(Combat)

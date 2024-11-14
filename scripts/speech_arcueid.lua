@@ -14,6 +14,8 @@ return
         SILK = "bui~bui~", --蜘蛛丝
         DECIDUOUS_ROOT = "白桦树下刻着两个人的名字♪\n他们发誓相爱用尽这一生♪",
         DECIDUOUSTREE = "白桦树下刻着两个人的名字♪\n他们发誓相爱用尽这一生♪", --桦树
+        SAND = "呃，这沙子真粘手.", --沙子
+        SEWING_KIT = "用它修补破损的东西",--针线包
 
 
         --mod物品
@@ -98,6 +100,8 @@ return
         PSIONIC_LIQUID = "看起来好恶心。",
         POTION_HOLYWATER = "坏女人身上特有的香水味。",
         PSIONIC_MOONSEED = "是妙蛙种子。",
+        POTION_THIRSTYFRUIT = "哇，好恶心。",
+        PSIONIC_GORYPETAL = "看起来不要触碰为好。",
 
         --消耗品
         ARCUEID_CONSUME_LUCKYBAG = "里面会是什么呢？",

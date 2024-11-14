@@ -37,7 +37,7 @@ CraftRecipesFood = Class(Widget, function(self, owner)
 	--格子
 	self.gezi5 = self.image2:AddChild(Image("images/hud.xml", "inv_slot.tex"))
 	self.gezi5:SetPosition(-100, -65, 0)
-	self.gezi5:SetScale(0.7, 0.7, 0)
+	self.gezi5:SetScale(0.7, 0.7, 1)
 
 	self.gezi1 = self.gezi5:AddChild(Image("images/hud.xml", "inv_slot.tex"))
 	self.gezi1:SetPosition(-70, 70, 0)
@@ -70,14 +70,6 @@ CraftRecipesFood = Class(Widget, function(self, owner)
 	self.gezi9 = self.gezi5:AddChild(Image("images/hud.xml", "inv_slot.tex"))
 	self.gezi9:SetPosition(70, -70, 0)
 	--self.gezi9:SetScale(0.7, 0.7, 0)
-	--关闭
-	self.closebutton = self:AddChild(ImageButton())
-	--self.closebutton:SetText(STRINGS.DAIMIAO_CLOSE)
-	self.closebutton:SetPosition(860, 150, 0)
-	self.closebutton:SetOnClick(
-		function()
-			self:Close()
-		end)
 	--翻页
 
 	self.arrow_l = self.image:AddChild(ImageButton("images/arcueid_gui/turnarrow_icon.xml", "turnarrow_icon.tex")) --上一页

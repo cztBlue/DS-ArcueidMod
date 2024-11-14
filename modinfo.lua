@@ -1,7 +1,7 @@
 name = "Arcueid_dev"
 description = "Arc迷迷糊糊遇险中..."
 author = "cztBlue"
-version = "0.371"
+version = "0.510"
 forumthread = ""
 
 api_version = 6

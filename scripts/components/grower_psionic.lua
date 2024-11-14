@@ -1,3 +1,4 @@
+-- 农场组件，灵化农场专用
 local Grower = Class(function(self, inst)
     self.inst = inst
     self.crops = {}
@@ -15,6 +16,7 @@ end)
 function Grower:IsEmpty()
     return self.isempty
 end
+
 function Grower:IsFullFertile()
 	return self.cycles_left >= self.max_cycles_left
 end
@@ -26,7 +28,6 @@ end
 function Grower:IsFertile()
 	return self.cycles_left > 0
 end
-
 
 function Grower:OnSave()
     local data = {crops = {}}
@@ -83,7 +84,6 @@ function Grower:OnLoad(data, newents)
   
 end
 
-
 function Grower:PlantItem(item)
     if not item.components.plantable_psionic or item.components.plantable_psionic.minlevel > self.level then
         return false
@@ -93,9 +93,9 @@ function Grower:PlantItem(item)
     
     local prefab = nil
     if item.components.plantable_psionic.product and type(item.components.plantable_psionic.product) == "function" then
-		prefab = item.components.plantable_psionic.product(item)
+		prefab = item.components.plantable_psionic.product()
     else
-		prefab = item.components.plantable_psionic.product or item.prefab
+		prefab = "carrot"
 	end
     
 	for k,v in ipairs(self.croppoints) do
@@ -103,18 +103,10 @@ function Grower:PlantItem(item)
 		local plant1 = SpawnPrefab("plant_normal")
 		plant1.persists = false
 		self.inst:AddTag("NOCLICK")
-        if self.inst:HasTag("hydrofarm") then
-            plant1:AddTag("hydrofarm")
-        end
 	    
-		plant1.components.crop:StartGrowing(prefab, item.components.plantable_psionic.growtime*self.growrate, self.inst)
+		plant1.components.crop:StartGrowing(prefab, item.components.plantable_psionic.growtime * self.growrate, self.inst)
 		local pos = Vector3(self.inst.Transform:GetWorldPosition()) + v
 		plant1.Transform:SetPosition(pos:Get())
-	    
-        if self.inst.components.citypossession then
-            plant1:AddComponent("citypossession")
-            plant1.components.citypossession:SetCity(self.inst.components.citypossession.cityID)
-        end
 
 		self.crops[plant1] = true
 	end
@@ -180,6 +172,5 @@ function Grower:Reset(reason)
     end
     self.crops = {}
 end
-
 
 return Grower

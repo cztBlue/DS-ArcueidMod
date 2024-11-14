@@ -45,6 +45,8 @@ local function updatepower(inst)
     local Isbelow70per
     local Isbelow35per
     local moon = GetClock():GetMoonPhase()
+
+    ---------------------------条件获取-------------------------
     if staticmoon == nil or staticmoon == "" then
         staticmoon = GetClock():GetMoonPhase()
     elseif moon ~= staticmoon then
@@ -75,7 +77,14 @@ local function updatepower(inst)
         Isbelow35per = true
     end
 
-    -- if  IsSW or IsHAM then
+    -------------------------数值注入------------------------
+
+    -- 重置modifiers
+    inst.components.combat.attack_damage_modifiers["fullmoon_damage"] = nil
+    inst.components.combat.attack_damage_modifiers["day_damage"] = nil
+    inst.components.combat.attack_damage_modifiers["night_damage"] = nil
+    inst.components.combat.attack_damage_modifiers["dusk_damage"] = nil
+
     --满月相
     if moon == "full" and (timestr == "dusk" or timestr == "night") then
         inst.components.health.invincible = true
@@ -83,30 +92,40 @@ local function updatepower(inst)
         inst.components.locomotor.walkspeed = TUNING.ARCUEID_FULLMOON_WALKSPEED
         inst.components.locomotor.runspeed = TUNING.ARCUEID_FULLMOON_RUNSPEED
         return
-        --inst.components.talker:Say("啊,感觉今晚会比较有力气。")
     end
 
     if Isbelow70per == false and Isbelow35per == false then
-        inst.components.combat.attack_damage_modifiers = {}
         inst.components.combat:AddDamageModifier(string.lower(timestr) .. "_damage",
             TUNING["ARCUEID_" .. timestr .. "_DAMAGEMULTIPLIER"])
         inst.components.locomotor.walkspeed = TUNING["ARCUEID_" .. timestr .. "_WALKSPEED"]
         inst.components.locomotor.runspeed = TUNING["ARCUEID_" .. timestr .. "_RUNSPEED"]
     elseif Isbelow70per == true and Isbelow35per == false then
-        inst.components.combat.attack_damage_modifiers = {}
         inst.components.combat:AddDamageModifier(string.lower(timestr) .. "_damage",
             TUNING["ARCUEID_" .. timestr .. "_DAMAGEMULTIPLIER"] * (inst.components.vigour.currentvigour / 252))
         inst.components.locomotor.walkspeed = TUNING["ARCUEID_" .. timestr .. "_WALKSPEED"] *
             (inst.components.vigour.currentvigour / 252)
         inst.components.locomotor.runspeed = TUNING["ARCUEID_" .. timestr .. "_RUNSPEED"] *
             (inst.components.vigour.currentvigour / 252)
-    elseif Isbelow70per == true and Isbelow35per == true then
-        inst.components.combat.attack_damage_modifiers = {}
+    elseif Isbelow35per == true then
         inst.components.combat:AddDamageModifier(string.lower(timestr) .. "_damage",
             TUNING["ARCUEID_" .. timestr .. "_DAMAGEMULTIPLIER"] * (inst.components.vigour.currentvigour / 252))
         inst.components.locomotor.walkspeed = TUNING["ARCUEID_" .. timestr .. "_WALKSPEED"] * 0.35
         inst.components.locomotor.runspeed = TUNING["ARCUEID_" .. timestr .. "_RUNSPEED"] * 0.35
     end
+
+    
+    local influencebytm = {["fullmoon_damage"]=true,["night_damage"]=true,["day_damage"]=true,["dusk_damage"]=true}
+    local mod_ = 1
+	for k,v in pairs(inst.components.combat.attack_damage_modifiers) do
+        if influencebytm[k] then
+            mod_ = mod_ + v
+        end
+	end
+    inst.components.arcueidstate.displaymultiplier["walkspeed"] = inst.components.locomotor.walkspeed/TUNING.WILSON_WALK_SPEED
+    inst.components.arcueidstate.displaymultiplier["damage"] = mod_
+    
+    
+
 
     --侵蚀削弱
     local esrosionper = inst.components.arcueidstate:GetErosionPercent()
@@ -153,7 +172,7 @@ local function arcueid_recipes()
             Ingredient("ice", 3),
             Ingredient("bluegem", 1) },
         RECIPETABS.MOONMAGIC, TECH.MAGIC_THREE, nil, "building_mooncirleform_placer", 2)
-    building_mooncirleform.atlas = "images/map_icons/mooncirleform.xml"
+    building_mooncirleform.atlas = "images/map_icons/mapicon.xml"
     building_mooncirleform.image = "mooncirleform.tex"
     --第二分解术式
     local building_recycleform = Recipe("building_recycleform", {
@@ -162,7 +181,7 @@ local function arcueid_recipes()
             Ingredient("bluegem", 2),
         },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_recycleform_placer", 2)
-    building_recycleform.atlas = "images/map_icons/recycleform.xml"
+    building_recycleform.atlas = "images/map_icons/mapicon.xml"
     building_recycleform.image = "recycleform.tex"
     --饰品作坊
     local building_trinketworkshop = Recipe("building_trinketworkshop", {
@@ -171,7 +190,7 @@ local function arcueid_recipes()
             Ingredient("goldnugget", 2),
         },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_trinketworkshop_placer", 2)
-    building_trinketworkshop.atlas = "images/map_icons/trinketworkshop.xml"
+    building_trinketworkshop.atlas = "images/map_icons/mapicon.xml"
     building_trinketworkshop.image = "trinketworkshop.tex"
     --炼金台
     local building_alchemydesk = Recipe("building_alchemydesk", {
@@ -179,7 +198,7 @@ local function arcueid_recipes()
             Ingredient("livinglog", 4),
         },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_alchemydesk_placer", 2)
-    building_alchemydesk.atlas = "images/map_icons/alchemydesk.xml"
+    building_alchemydesk.atlas = "images/map_icons/mapicon.xml"
     building_alchemydesk.image = "alchemydesk.tex"
     --奇迹煮锅
     local building_miraclecookpot = Recipe("building_miraclecookpot", {
@@ -187,7 +206,7 @@ local function arcueid_recipes()
             Ingredient("base_moonrock_nugget", 5, atlas_base_moonrock_nugget),
         },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_miraclecookpot_placer", 2)
-    building_miraclecookpot.atlas = "images/map_icons/miraclecookpot.xml"
+    building_miraclecookpot.atlas = "images/map_icons/mapicon.xml"
     building_miraclecookpot.image = "miraclecookpot.tex"
     --映月台
     local building_moondial = Recipe("building_moondial", {
@@ -203,7 +222,7 @@ local function arcueid_recipes()
     local building_roombox = Recipe("building_roombox", {
             Ingredient("base_polishgem", 1, atlas_base_polishgem),
             Ingredient("base_moonrock_nugget", 9), },
-        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_gemicebox_placer", 2)
+        RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_roombox_placer", 2)
     building_roombox.atlas = "images/map_icons/mapicon.xml"
     building_roombox.image = "roombox.tex"
     --宝石冰箱
@@ -211,7 +230,7 @@ local function arcueid_recipes()
             Ingredient("base_polishgem", 2, atlas_base_polishgem),
             Ingredient("bluegem", 8), },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_gemicebox_placer", 2)
-    building_gemicebox.atlas = "images/map_icons/gemicebox.xml"
+    building_gemicebox.atlas = "images/map_icons/mapicon.xml"
     building_gemicebox.image = "gemicebox.tex"
     --旅行者时空箱
     local building_travellerbox = Recipe("building_travellerbox", {
@@ -219,7 +238,7 @@ local function arcueid_recipes()
             Ingredient("boards", 2),
             Ingredient("orangegem", 2), },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_travellerbox_placer", 2)
-    building_travellerbox.atlas = "images/map_icons/travellerbox.xml"
+    building_travellerbox.atlas = "images/map_icons/mapicon.xml"
     building_travellerbox.image = "travellerbox.tex"
     --永恒魔术灯
     local building_immortallight = Recipe("building_immortallight", {
@@ -227,7 +246,7 @@ local function arcueid_recipes()
             Ingredient("base_moonrock_nugget", 10, atlas_base_moonrock_nugget),
             Ingredient("base_gemblock", 2, atlas_base_gemblock), },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_immortallight_placer", 2)
-    building_immortallight.atlas = "images/map_icons/immortallight.xml"
+    building_immortallight.atlas = "images/map_icons/mapicon.xml"
     building_immortallight.image = "immortallight.tex"
     --宝石发生器
     local building_gemgenerator = Recipe("building_gemgenerator", {
@@ -235,7 +254,7 @@ local function arcueid_recipes()
             Ingredient("base_gemblock", 1, atlas_base_gemblock),
             Ingredient("base_horrorfuel", 2, atlas_base_horrorfuel), },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_gemgenerator_placer", 2)
-    building_gemgenerator.atlas = "images/map_icons/gemgenerator.xml"
+    building_gemgenerator.atlas = "images/map_icons/mapicon.xml"
     building_gemgenerator.image = "gemgenerator.tex"
     --空间锚定仪
     local building_spatialanchor = Recipe("building_spatialanchor", {
@@ -244,7 +263,7 @@ local function arcueid_recipes()
             Ingredient("base_moonrock_nugget", 10, atlas_base_moonrock_nugget),
         },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_spatialanchor_placer", 2)
-    building_spatialanchor.atlas = "images/map_icons/spatialanchor.xml"
+    building_spatialanchor.atlas = "images/map_icons/mapicon.xml"
     building_spatialanchor.image = "spatialanchor.tex"
 
     --魔术炮塔
@@ -253,7 +272,7 @@ local function arcueid_recipes()
             Ingredient("base_moonrock_nugget", 20, atlas_base_moonrock_nugget),
         },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_guard_placer", 2)
-    building_guard.atlas = "images/map_icons/guard.xml"
+    building_guard.atlas = "images/map_icons/mapicon.xml"
     building_guard.image = "guard.tex"
     --Infinitas箱
     local building_infinitas = Recipe("building_infinitas", {
@@ -269,7 +288,7 @@ local function arcueid_recipes()
             Ingredient("base_horrorfuel", 5, atlas_base_horrorfuel),
         },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_rottenform_placer", 2)
-    building_rottenform.atlas = "images/map_icons/rottenform.xml"
+    building_rottenform.atlas = "images/map_icons/mapicon.xml"
     building_rottenform.image = "rottenform.tex"
 
     ---------------------【灵化】-------------------
@@ -288,8 +307,8 @@ local function arcueid_recipes()
             Ingredient("psionic_soil", 3, atlas_psionic_soil),
         },
         RECIPETABS.MOONMAGIC, TECH.MOONMAGIC_ONE, nil, "building_psionic_farm_placer", 2)
-    psionic_farm.atlas = "images/map_icons/building_psionic_farm.xml"
-    psionic_farm.image = "building_psionic_farm.tex"
+    psionic_farm.atlas = "images/map_icons/mapicon.xml"
+    psionic_farm.image = "psionic_farm.tex"
 
     --灵化土壤
     local psionic_farm = Recipe("psionic_soil", {
@@ -361,7 +380,7 @@ local fn = function(inst)
     inst.components.combat.damagemultiplier = TUNING.ARCUEID_DAY_DAMAGEMULTIPLIER
 
     -- 饥饿速率
-    inst.components.hunger.hungerrate = TUNING.ARCUEID_HUNGER_RATE
+    inst.components.hunger.hungerrate = TUNING.WILSON_HUNGER_RATE
 
     -- 行走速度(初始)
     inst.components.locomotor.walkspeed = 4

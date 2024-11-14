@@ -22,7 +22,10 @@ end
 
 --每次攻击活力值减3
 local function onattack(inst, attacker, target)
-    attacker.components.vigour:DoDelta(-3,attacker,"clawattack")
+    if attacker and attacker.prefab == "arcueid" 
+    and attacker.components.arcueidbuff.islastbuffactive["lbuff_blightedbody"] == true then
+        attacker.components.vigour:DoDelta(-3,attacker,"clawattack")
+    end
     local slash = SpawnPrefab("ef_darkscar")
     local pt = Vector3(target.Transform:GetWorldPosition()) + Vector3(math.random() * 2 - 1, 1 + math.random() * 2 - 1, 0.5)
     slash.Transform:SetPosition(pt:Get())

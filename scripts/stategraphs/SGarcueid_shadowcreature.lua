@@ -17,6 +17,7 @@ local events =
     CommonHandlers.OnLocomote(false, true),
 }
 
+
 local function GetSanity(inst)
     local player = GetPlayer()
     local sanity_level = 1

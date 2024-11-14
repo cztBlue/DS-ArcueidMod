@@ -1,3 +1,4 @@
+-- 根箱组件重写
 local RootTrunkInventory = Class(function(self, inst)
 	self.inst = inst
 	self.inst:DoTaskInTime(0,function() self:SpawnTrunk() end)

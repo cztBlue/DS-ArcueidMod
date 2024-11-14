@@ -10,6 +10,9 @@ local ArcueidState = Class(function(self, inst)
     self.nightmarerosion_deep = 0
     self.erosion_deep_count = 10 --防止连续下弦累加
     self.seasontoggle = 3
+    self.foodhealth = 0
+    self.bleedhealth = 0
+    self.displaymultiplier = {}
     
     self.inst:ListenForEvent("daytime", function(inst, data)
         if self.seasontoggle then
@@ -88,6 +91,7 @@ function ArcueidState:ToggleSeason()
 
     
 end
+
 --暗灾时祸
 function ArcueidState:CalSegment()
     local clock = GetClock()
@@ -173,10 +177,35 @@ function ArcueidState:GetErosionPercent()
     return (self.nightmarerosion /TUNING.ARCUEID_MAXEROSION )
 end
 
+function ArcueidState:AddFoodHealth(value)
+    if self.foodhealth == nil then
+        self.foodhealth = 0
+    end
+    self.foodhealth = self.foodhealth + (value or 0)
+end
+
+function ArcueidState:AddBleedHealth(value)
+    print("wwwww2"..value)
+    if self.bleedhealth == nil then
+        self.bleedhealth = 0
+    end
+    self.bleedhealth = self.bleedhealth + (value or 0)
+end
+
+local setcountbysecond = 0
 function ArcueidState:OnUpdate(dt)
     -- 不启用侵蚀
-    self.nightmarerosion = 0
+    self.nightmarerosion_temp = 0
     self.nightmarerosion_deep = 0
+    self.nightmarerosion = 0
+
+    -- 差分优化
+    if setcountbysecond >= 1 then
+        setcountbysecond = 0
+        self:UpdateBySecond()
+    else
+        setcountbysecond = setcountbysecond + dt
+    end
 
     self:OnCarefulStateUpdate()
     if self.iceskill_cooldown >= 0 then self.iceskill_cooldown = self.iceskill_cooldown - dt end
@@ -203,28 +232,58 @@ function ArcueidState:OnUpdate(dt)
     end
 end
 
---记住配方次数
+function ArcueidState:UpdateBySecond()
+    local healthdelta = 0
+
+    -- foodhealth增益
+    -- 80/480s,上限100
+    if self.foodhealth == nil then
+        self.foodhealth = 0
+    elseif self.foodhealth >= 100 then
+        self.foodhealth = 100
+    end
+
+    if self.foodhealth >= 0 then
+        healthdelta = healthdelta + 8/48
+        self.foodhealth = self.foodhealth - 8/48
+    end
+
+    -- bleedhealth增益
+    -- 200/480s,上限350
+    if self.bleedhealth == nil then
+        self.bleedhealth = 0
+    elseif self.bleedhealth >= 350 then
+        self.bleedhealth = 350
+    end
+
+    if self.bleedhealth >= 0 then
+        healthdelta = healthdelta - 20/48
+        self.bleedhealth = self.bleedhealth - 20/48
+    end
+
+    self.inst.components.health:DoDelta(healthdelta)
+
+end
+
 function ArcueidState:OnSave()
     local data = {}
     data.recipeunlock = self.recipeunlock
     data.nightmarerosion = self.nightmarerosion
     data.nightmarerosion_deep = self.nightmarerosion_deep
     data.erosion_deep_count = self.erosion_deep_count
+    data.foodhealth =  self.foodhealth or 0
+    data.bleedhealth =  self.bleedhealth or 0
     return data
 end
 
 function ArcueidState:OnLoad(data)
     self.recipeunlock = data.recipeunlock
-    self.nightmarerosion = data.nightmarerosion
-    self.nightmarerosion_deep = data.nightmarerosion_deep
+    self.nightmarerosion = data.nightmarerosion or 0
+    self.nightmarerosion_deep = data.nightmarerosion_deep or 0
     self.erosion_deep_count = data.erosion_deep_count
+    self.foodhealth =  data.foodhealth or 0
+    self.bleedhealth =  data.bleedhealth or 0
 
-    if not self.nightmarerosion then
-        self.nightmarerosion = 0
-    end
-    if not self.nightmarerosion_deep then
-        self.nightmarerosion_deep = 0
-    end
     self:CalSegment()
 end
 

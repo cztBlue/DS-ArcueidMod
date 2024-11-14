@@ -1,6 +1,7 @@
 <Atlas>
     <Texture filename="arcueid_ui.tex" />
     <Elements>
-        <Element name="arcueid_panel.tex" u1="0.0009765625" v1="0.0009765625" u2="0.9990234375" v2="0.9990234375" />
+        <Element name="arcueid_panel.tex" u1="0.00048828125" v1="0.0009765625" u2="0.49951171875" v2="0.9990234375" />
+        <Element name="arcueid_introbgl.tex" u1="0.50048828125" v1="0.3388671875" u2="0.95947265625" v2="0.9990234375" />
     </Elements>
 </Atlas>

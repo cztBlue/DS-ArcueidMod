@@ -16,8 +16,7 @@ local assets={
 }
 
 local prefabs = 
-{
-}
+{}
 
 local function commonfn(str)
 	local inst = CreateEntity()
@@ -27,10 +26,6 @@ local function commonfn(str)
 
     --物品栏类型的物理碰撞
     MakeInventoryPhysics(inst)
-	
-	-- if IsDLCEnabled(CAPY_DLC) then
-	-- 	MakeInventoryFloatable(inst, "idle_water", "idle")
-	-- end
 
 	inst.AnimState:SetBank("psionic_"..str)
     inst.AnimState:SetBuild("psionic_"..str)
@@ -53,7 +48,6 @@ local function moonseed()
 	local inst = commonfn("moonseed")
     inst:AddComponent("plantable_psionic")
     inst:AddComponent("tradable")
-    inst:AddTag("lettervalue")
 	inst.components.tradable.goldvalue = 1
 	return inst
 end
@@ -82,13 +76,13 @@ local function holypetal()
 	return inst
 end
 
---腥
+--血涎
 local function gorypetal()
 	local inst = commonfn("gorypetal")
 	return inst
 end
 
---嗜
+--血嗜
 local function thirstyfruit()
 	local inst = commonfn("thirstyfruit")
 	return inst

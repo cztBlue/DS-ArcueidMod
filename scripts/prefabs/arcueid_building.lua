@@ -455,10 +455,14 @@ local gemprobability = {
 	{ 25, 50, 60, 63, 66, 70, 90, 100 },
 }
 local gemcomsume = {
-	['bluegem'] = {2,1},['redgem'] = {2,1},
-	['purplegem']={2,2},['orangegem']={5,5},
-	['yellowgem']={5,5},['greengem']={5,5},
-	['base_gemfragment']={4,2},['base_gemblock']={6,2}
+	['bluegem'] = { 2, 1 },
+	['redgem'] = { 2, 1 },
+	['purplegem'] = { 2, 2 },
+	['orangegem'] = { 5, 5 },
+	['yellowgem'] = { 5, 5 },
+	['greengem'] = { 5, 5 },
+	['base_gemfragment'] = { 4, 2 },
+	['base_gemblock'] = { 6, 2 }
 }
 
 --blue,purple,red,orange,yellow,green,(opalpreciousgem?还没做)
@@ -482,12 +486,12 @@ local function gemgenerator(Sim)
 	end
 	inst:AddComponent("container")
 	inst.components.container:SetNumSlots(#slotpos_moondial)
-	inst.components.container.widgetslotpos = slotpos_moondial
-	inst.components.container.widgetanimbank = "ui_darkbox_4x5"
+	inst.components.container.widgetslotpos   = slotpos_moondial
+	inst.components.container.widgetanimbank  = "ui_darkbox_4x5"
 	inst.components.container.widgetanimbuild = "ui_darkbox_4x5"
-	inst.components.container.widgetpos = Vector3(-100, 100, 0)
-	inst.components.container.side_align_tip = 100
-	inst.components.container.itemtestfn = function(inst, item, slot)
+	inst.components.container.widgetpos       = Vector3(-100, 100, 0)
+	inst.components.container.side_align_tip  = 100
+	inst.components.container.itemtestfn      = function(inst, item, slot)
 		if slot and slot == 1
 		then
 			if (item.prefab == "trinket_twelvedice") then
@@ -505,8 +509,7 @@ local function gemgenerator(Sim)
 			end
 		end
 
-		if slot and (slot == 4 or slot == 5)
-		then
+		if slot and (slot == 4 or slot == 5) then
 			if (item.prefab == "rocks"
 					or item.prefab == "flint"
 					or item.prefab == "goldnugget"
@@ -521,15 +524,20 @@ local function gemgenerator(Sim)
 			return true
 		end
 	end
-	inst.moonvalue = 0
-	inst.marevalue = 0
-	inst.startcharge = false
-	inst.isreverse = false
-	inst.components.container.onopenfn = function(inst) GetPlayer():PushEvent("OpenGemPanel", { generator = inst }) end
-	inst.components.container.onclosefn = function(inst) GetPlayer():PushEvent("CloseGemPanel", { generator = inst }) end
+
+	inst.start = false
+	inst.moonvalue                            = 0
+	inst.marevalue                            = 0
+	inst.startcharge                          = false
+	inst.canproduct_                          = false
+	inst.isreverse                            = false
+	inst.des                                  = "--停止产出: 制动--\n提示:可以使用【十二面骰子】\n翻转能量条"
+	inst.components.container.onopenfn        = function(inst) GetPlayer():PushEvent("OpenGemPanel", { generator = inst }) end
+	inst.components.container.onclosefn       = function(inst) GetPlayer():PushEvent("CloseGemPanel",
+			{ generator = inst }) end
 
 	--随机宝石算法
-	inst.getgemrandom = function(probabilitytable, gemtable)
+	inst.getgemrandom                         = function(probabilitytable, gemtable)
 		local dice = math.random(999999) % 100 + 1
 		for i = 1, #probabilitytable, 1 do
 			if dice <= probabilitytable[i] then
@@ -540,13 +548,26 @@ local function gemgenerator(Sim)
 		return "bluegem"
 	end
 
-	inst.turn = function(inst)
-		inst.gemproducetask = inst:DoPeriodicTask(7, function(inst)
-			--每个period出货概率
+	inst.turn                                 = function(inst)
+		--生产
+		inst.gemproducetask = inst:DoPeriodicTask(10, function(inst)
+			--每个period出货概率[<.5]
 			local factor = 0.3
 			local item_ma
 			local canproduct = false
 			local productype = 1
+
+			-- 用户控制
+			if inst.canproduct_ == false then
+				inst.des = "--停止产出: 制动--\n提示:可以使用【十二面骰子】\n翻转能量条"
+				return
+			end
+
+			if inst.marevalue + inst.moonvalue < 120 then
+				inst.des = "--停止产出: 能量不足--\n提示:暗 + 月 > 120 \n进入下阶段"
+				return
+			end
+
 			for i = 4, 5 do
 				if inst.components.container:GetItemInSlot(i) then
 					item_ma = inst.components.container:GetItemInSlot(i)
@@ -554,25 +575,27 @@ local function gemgenerator(Sim)
 				end
 			end
 
-			if item_ma
-				and inst.marevalue + inst.moonvalue > 120
-			then
+			if item_ma then
 				canproduct = true
 				-- 暗影条>月化条 产出红蓝紫宝石
 				if inst.marevalue > inst.moonvalue then
+					inst.des = "产出阶段1: 红/蓝:47%, 紫:20%\n提示: 月 > 暗进入下一阶段"
 					productype = 1
 				end
 
 				-- 暗影条>月化条 产出红蓝宝石+稀有宝石（7%）
 				if inst.marevalue < inst.moonvalue then
+					inst.des = "产出阶段2: 红/蓝: 47%, 异色: 2%\n提示: 月 > 140, 暗 > 100\n进入下一阶段"
 					productype = 2
 				end
 
 				-- 暗影条>100 and 月化条>140 产出宝石碎片(20%) 宝石块（10%）
 				if inst.marevalue > 140 and inst.moonvalue > 140 then
+					inst.des = "产出阶段3: 红/蓝:25%, 紫: 10%, \n异色: 3%, 碎片: 20%, 块: 10%"
 					productype = 3
 				end
 			else
+				inst.des = "--停止产出: 材料不足--\n提示: 放入石头,燧石等作为材料"
 				return
 			end
 
@@ -598,6 +621,12 @@ local function gemgenerator(Sim)
 							item_out.components.stackable:SetStackSize(item_out.components.stackable.stacksize + 1)
 							inst.moonvalue = inst.moonvalue - gemcomsume[gemprefab][1]
 							inst.marevalue = inst.marevalue - gemcomsume[gemprefab][2]
+
+							-- 消耗骰子
+							local dice = inst.components.container:GetItemInSlot(1)
+							if dice and dice.prefab == "trinket_twelvedice" then
+								dice.components.finiteuses:Use()
+							end
 							break
 						end
 					end
@@ -608,24 +637,41 @@ local function gemgenerator(Sim)
 						inst.components.container:GiveItem(SpawnPrefab(gemprefab), firstemptyslot)
 						inst.moonvalue = inst.moonvalue - gemcomsume[gemprefab][1]
 						inst.marevalue = inst.marevalue - gemcomsume[gemprefab][2]
+
+						-- 消耗骰子
+						local dice = inst.components.container:GetItemInSlot(1)
+						if dice and dice.prefab == "trinket_twelvedice" then
+							dice.components.finiteuses:Use()
+						end
 						break
 					end
 				end
 			end
 		end)
+
 		--充能
 		inst.gemchargetask = inst:DoPeriodicTask(1.5, function()
-			if inst.components.container:GetItemInSlot(1) 
-			and inst.isreverse == false 
-			and inst.components.container:GetItemInSlot(1).prefab == "trinket_twelvedice" then
+			if inst.moonvalue > 200 then
+				inst.moonvalue = 200
+				return
+			end
+
+			if inst.marevalue > 200 then
+				inst.marevalue = 200
+				return
+			end
+
+			if inst.components.container:GetItemInSlot(1)
+				and inst.isreverse == false
+				and inst.components.container:GetItemInSlot(1).prefab == "trinket_twelvedice" then
 				local t = inst.moonvalue
 				inst.moonvalue = inst.marevalue
 				inst.marevalue = t
 				inst.isreverse = true
 			end
 
-			if inst.components.container:GetItemInSlot(1) == nil 
-			and inst.isreverse == true  then
+			if inst.components.container:GetItemInSlot(1) == nil
+				and inst.isreverse == true then
 				local t = inst.moonvalue
 				inst.moonvalue = inst.marevalue
 				inst.marevalue = t
@@ -635,6 +681,7 @@ local function gemgenerator(Sim)
 			if inst.startcharge == false then
 				return
 			end
+
 			local fuel = {
 				['base_moonglass'] = 5,
 				['base_moonempyreality'] = 15,
@@ -652,8 +699,8 @@ local function gemgenerator(Sim)
 			local item_battle_2 = inst.components.container:GetItemInSlot(3)
 
 			if item_battle_1 then
-				if fueltype[item_battle_1.prefab] == 1 
-				and inst.moonvalue + fuel[item_battle_1.prefab] < 200
+				if fueltype[item_battle_1.prefab] == 1
+					and inst.moonvalue + fuel[item_battle_1.prefab] < 200
 				then
 					inst.components.container:ConsumeByName(item_battle_1.prefab, 1)
 					if inst.isreverse == false then
@@ -661,11 +708,10 @@ local function gemgenerator(Sim)
 					else
 						inst.marevalue = inst.marevalue + fuel[item_battle_1.prefab]
 					end
-					
 				end
 
-				if fueltype[item_battle_1.prefab] == 2 
-				and inst.marevalue + fuel[item_battle_1.prefab] < 200
+				if fueltype[item_battle_1.prefab] == 2
+					and inst.marevalue + fuel[item_battle_1.prefab] < 200
 				then
 					inst.components.container:ConsumeByName(item_battle_1.prefab, 1)
 					if inst.isreverse == false then
@@ -673,13 +719,12 @@ local function gemgenerator(Sim)
 					else
 						inst.moonvalue = inst.moonvalue + fuel[item_battle_1.prefab]
 					end
-					
 				end
 			end
 
 			if item_battle_2 then
-				if fueltype[item_battle_2.prefab] == 1 
-				and inst.moonvalue + fuel[item_battle_2.prefab] < 200 then
+				if fueltype[item_battle_2.prefab] == 1
+					and inst.moonvalue + fuel[item_battle_2.prefab] < 200 then
 					inst.components.container:ConsumeByName(item_battle_2.prefab, 1)
 					if inst.isreverse == false then
 						inst.moonvalue = inst.moonvalue + fuel[item_battle_2.prefab]
@@ -688,8 +733,8 @@ local function gemgenerator(Sim)
 					end
 				end
 
-				if fueltype[item_battle_2.prefab] == 2 
-				and inst.marevalue + fuel[item_battle_2.prefab] < 200
+				if fueltype[item_battle_2.prefab] == 2
+					and inst.marevalue + fuel[item_battle_2.prefab] < 200
 				then
 					inst.components.container:ConsumeByName(item_battle_2.prefab, 1)
 					if inst.isreverse == false then
@@ -718,17 +763,32 @@ local function gemgenerator(Sim)
 		inst.SoundEmitter:PlaySound("dontstarve_DLC002/common/icemaker_place")
 	end)
 
+	if inst.start == false then
+		inst.turn(inst)
+		inst.start = true
+	end
+
+
 	inst.OnSave = function(inst, data)
 		data.marevalue = inst.marevalue
 		data.moonvalue = inst.moonvalue
 		data.startcharge = inst.startcharge
+		data.canproduct_ = inst.canproduct_
+		data.isreverse = inst.isreverse
+		data.des = inst.des
 	end
 
-	inst.OnLoad = function(inst,data)
-		inst.marevalue = data.marevalue or 0
-		inst.moonvalue = data.moonvalue or 0
+	inst.OnLoad = function(inst, data)
+		inst.marevalue   = data.marevalue or 0
+		inst.moonvalue   = data.moonvalue or 0
 		inst.startcharge = data.startcharge or false
-		inst.turn(inst)
+		inst.canproduct_ = data.canproduct_
+		inst.isreverse   = data.isreverse
+		inst.des         = data.des
+		if inst.start == false then
+			inst.turn(inst)
+			inst.start = true
+		end
 	end
 
 	return inst
@@ -791,8 +851,6 @@ local function miraclecookpot(Sim)
 	inst.Light:SetIntensity(.5)
 	inst.Light:SetColour(235 / 255, 62 / 255, 12 / 255)
 
-
-
 	local widgetbuttoninfo = {
 		text = "投入",
 		position = Vector3(0, -165, 0),
@@ -800,6 +858,7 @@ local function miraclecookpot(Sim)
 			local opener = inst.components.container.opener or GetPlayer()
 			--这里可优化
 			local res, currecipe = CanMakeAndResult(inst, TUNING.ARCUEID_FOODRECIPES)
+			local tool
 			for i = 1, 9 do
 				local curitem = inst.components.container:GetItemInSlot(i)
 				if curitem and not curitem:HasTag("maketool") then
@@ -808,8 +867,13 @@ local function miraclecookpot(Sim)
 					else
 						curitem:Remove()
 					end
+
+					if curitem.prefab == "trinket_seasoningbottle" then
+						tool = curitem
+					end
 				end
 			end
+			tool.components.finiteuses:Use()
 			opener.components.inventory:GiveItem(SpawnPrefab(currecipe))
 		end,
 		validfn = function(inst)
@@ -884,10 +948,6 @@ local function guard(Sim)
 				inst.components.combat:CanTarget(guy) and
 				(guy.components.combat.target == GetPlayer() or GetPlayer().components.combat.target == guy)
 		end, nil, { "eyeturret" })
-		-- print("YesTarget")
-		-- if newtarget then
-		-- 	print(newtarget.prefab)
-		-- end
 		return newtarget
 	end)
 	inst.components.combat:SetKeepTargetFunction(function(inst, target)
@@ -1570,12 +1630,12 @@ return
 	MakePlacer("common/building_immortallight_placer", "building_immortallight", "building_immortallight", "idle"),
 	MakePlacer("common/building_gemgenerator_placer", "building_gemgenerator", "building_gemgenerator", "idle"),
 	MakePlacer("common/building_spatialanchor_placer", "building_spatialanchor", "building_spatialanchor", "idle1"),
-	MakePlacer("common/building_miraclecookpot_placer", "building_miraclecookpot", "building_miraclecookpot", "cook_pot"),
+	MakePlacer("common/building_miraclecookpot_placer", "building_miraclecookpot", "building_miraclecookpot", "idle"),
 	MakePlacer("common/building_guard_placer", "building_guard", "building_guard", "idle_on_loop"),
 	MakePlacer("common/building_infinitas_placer", "building_infinitas", "building_infinitas", "closed"),
 	MakePlacer("common/building_rottenform_placer", "building_rottenform", "building_rottenform", "idle"),
 	MakePlacer("common/building_recycleform_placer", "building_recycleform", "building_recycleform", "idle"),
 	MakePlacer("common/building_trinketworkshop_placer", "building_trinketworkshop", "building_trinketworkshop", "idle"),
 	MakePlacer("common/building_alchemydesk_placer", "building_alchemydesk", "building_alchemydesk", "idle"),
-	MakePlacer("common/building_moondial_placer", "building_moondial", "building_moondial", "idle"),
+	MakePlacer("common/building_moondial_placer", "building_moondial", "building_moondial", "idle_new"),
 	MakePlacer("common/building_roombox_placer", "building_roombox", "building_roombox", "idle")

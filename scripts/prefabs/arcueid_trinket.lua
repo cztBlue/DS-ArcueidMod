@@ -235,8 +235,13 @@ end
 --调料瓶
 local function seasoningbottle()
     local inst = commonfn("seasoningbottle")
-
     inst:AddTag("maketool")
+
+    inst:AddComponent("finiteuses")
+    inst.components.finiteuses:SetMaxUses(200)
+    inst.components.finiteuses:SetOnFinished(function (inst)
+        inst:Remove()
+    end)
 
     inst.components.equippable:SetOnEquip(function(inst, owner)
         if owner.prefab == "arcueid" then
@@ -257,7 +262,7 @@ end
 local function icecrystal()
     local inst = commonfn("icecrystal")
 
-    inst:AddComponent("lizhuang")
+    -- inst:AddComponent("lizhuang")
 
     --用耐久代替冷却系统？
     inst:AddComponent("finiteuses")
@@ -420,6 +425,12 @@ local function twelvedice()
     local inst = commonfn("twelvedice")
     inst.components.equippable.dapperness = TUNING.CRAZINESS_SMALL
 
+    inst:AddComponent("finiteuses")
+    inst.components.finiteuses:SetMaxUses(200)
+    inst.components.finiteuses:SetOnFinished(function (inst)
+        inst:Remove()
+    end)
+
     inst.components.equippable:SetOnEquip(function(inst, owner)
         if owner.prefab == "arcueid" then
             owner.components.vigour.trinketfactor = -TUNING.ARCUEID_VIGOURBUFF_D
@@ -501,7 +512,7 @@ end
 --献祭小刀
 local function sacrificeknife()
     local inst = commonfn("sacrificeknife")
-    inst:AddComponent("lizhuang")
+    -- inst:AddComponent("lizhuang")
     inst:AddTag("maketool")
 
     inst.components.equippable:SetOnEquip(function(inst, owner)
@@ -519,34 +530,6 @@ local function sacrificeknife()
     return inst
 end
 
-
-
-local function icecrystal()
-    local inst = commonfn("icecrystal")
-
-    inst:AddComponent("lizhuang")
-
-    --用耐久代替冷却系统？
-    inst:AddComponent("finiteuses")
-	inst.components.finiteuses:SetMaxUses(100)
-	inst.components.finiteuses:SetUses(100)
-	inst.components.finiteuses:SetOnFinished(function(inst)end)
-	--inst.components.finiteuses:SetConsumption(ACTIONS.CHOP, 99)
-
-    inst.components.equippable:SetOnEquip(function(inst, owner)
-        owner.components.vigour.trinketfactor = -TUNING.ARCUEID_VIGOURBUFF_E
-    end)
-
-    inst.components.equippable:SetOnUnequip(function(inst, owner)
-        if owner.prefab == "arcueid"
-            and owner.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY) ~= nil
-            and owner.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY).prefab == "dress_ice" then
-            owner.components.inventory:Unequip(EQUIPSLOTS.BODY)
-        end
-    end)
-
-    return inst
-end
 
 return
     Prefab("common/inventory/trinket_relaxationbook", relaxationbook, assets),
