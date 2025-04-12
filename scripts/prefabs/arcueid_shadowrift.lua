@@ -8,6 +8,13 @@ function CreateParticleFx(inst,ox)
     return ox
 end
 
+local function OnKilled(inst)
+    local sp = SpawnPrefab("arcueid_shadow_knight_3")
+    sp.Transform:SetPosition(inst.Transform:GetWorldPosition())
+    sp.components.combat:SetTarget(GetPlayer())
+    inst.store = inst.store - 1
+end
+
 local function rift_fn()
     local inst = CreateEntity()
 
@@ -43,6 +50,7 @@ local function rift_fn()
     inst.components.health:SetMaxHealth(1200)
     inst:AddComponent("combat")
     inst.components.combat:SetOnHit(function() end)
+    inst:ListenForEvent("death", OnKilled)
 
     inst._fx2:AddComponent("combat")
     inst._fx2.components.combat:SetOnHit(function() end)
@@ -85,7 +93,7 @@ local function rift_fn()
 
         -- 刷怪
         if dist and dist < 240 and inst.store > 0 then
-            local sp = SpawnPrefab("arcueid_shadow_rook_2")
+            local sp = SpawnPrefab("nightmarebeak")
             sp.Transform:SetPosition(inst.Transform:GetWorldPosition())
             sp.components.combat:SetTarget(GetPlayer())
             inst.store = inst.store - 1
