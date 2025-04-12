@@ -41,11 +41,13 @@ local function rift_fn()
 
     inst:AddComponent("health")
     inst.components.health:SetMaxHealth(1200)
+    inst:AddComponent("combat")
+    inst.components.combat:SetOnHit(function() end)
 
     inst._fx2:AddComponent("combat")
-    inst._fx2.components.combat:SetOnHit(function () end)
+    inst._fx2.components.combat:SetOnHit(function() end)
     inst._fx2.components.combat:SetRange(20)
-	inst._fx2.components.combat:SetDefaultDamage(1)
+	inst._fx2.components.combat:SetDefaultDamage(50)
 	inst._fx2.components.combat:SetAttackPeriod(2)
 
     inst._fx2:AddComponent("inventory")
@@ -54,7 +56,7 @@ local function rift_fn()
 			local weapon = CreateEntity()
 			weapon.entity:AddTransform()
 			weapon:AddComponent("weapon")
-			weapon.components.weapon:SetDamage(1)
+			weapon.components.weapon:SetDamage(50)
 			weapon.components.weapon:SetRange(8, 10)
 			weapon.components.weapon:SetProjectile("eye_charge")
 			weapon:AddComponent("inventoryitem")
@@ -83,10 +85,10 @@ local function rift_fn()
 
         -- 刷怪
         if dist and dist < 240 and inst.store > 0 then
-            -- local sp = SpawnPrefab("nightmarebeak")
-            -- sp.Transform:SetPosition(inst.Transform:GetWorldPosition())
-            -- sp.components.combat:SetTarget(GetPlayer())
-            -- inst.store = inst.store - 1
+            local sp = SpawnPrefab("arcueid_shadow_rook_2")
+            sp.Transform:SetPosition(inst.Transform:GetWorldPosition())
+            sp.components.combat:SetTarget(GetPlayer())
+            inst.store = inst.store - 1
         end
 
         -- 打炮
@@ -97,7 +99,7 @@ local function rift_fn()
             end
         end
 
-        if inst.diff % 15 == 0 and inst.store < 4 then
+        if inst.diff % 30 == 0 and inst.store < 4 then
             inst.store = inst.store + 1
         end
 
