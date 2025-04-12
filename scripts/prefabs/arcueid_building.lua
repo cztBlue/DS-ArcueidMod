@@ -867,13 +867,15 @@ local function miraclecookpot(Sim)
 					else
 						curitem:Remove()
 					end
+				end
 
-					if curitem.prefab == "trinket_seasoningbottle" then
-						tool = curitem
-					end
+				if curitem and curitem:HasTag("maketool") then
+					tool = curitem
 				end
 			end
-			tool.components.finiteuses:Use()
+			if tool then
+				tool.components.finiteuses:Use()
+			end
 			opener.components.inventory:GiveItem(SpawnPrefab(currecipe))
 		end,
 		validfn = function(inst)
@@ -1472,7 +1474,7 @@ end
 
 local function moondial(Sim)
 	local inst = commonfn("moondial")
-	inst:SetStateGraph("SGmoondial_")
+	inst:SetStateGraph("arc_SGmoondial")
 	MakeObstaclePhysics(inst, .2)
 	inst.AnimState:PlayAnimation("idle_new")
 	onmoonphasechagned(inst)
@@ -1495,6 +1497,11 @@ local function moondial(Sim)
 	inst.components.container.side_align_tip = 100
 	inst.components.container.itemtestfn = function(inst, item, slot)
 		if slot and slot <= 8 and (item.prefab == "rocks" or item.prefab == "flint") then return true end
+		if slot and slot <= 8  then
+			if not(item.prefab == "rocks" or item.prefab == "flint") then
+				return false
+			end
+		end
 		if slot and slot > 8 then return true end
 		return true
 	end

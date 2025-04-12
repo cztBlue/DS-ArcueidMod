@@ -28,6 +28,11 @@ local assets={
 	Asset("ATLAS", "images/inventoryimages/base_gemblock.xml"),
 	Asset("ATLAS", "images/inventoryimages/base_polishgem.xml"),
 	Asset("ATLAS", "images/inventoryimages/base_puremoonempyreality.xml"),
+
+	--dst
+	Asset("ANIM", "anim/shadowheart.zip"),
+    Asset("ATLAS", "images/inventoryimages/shadowheart.xml"),
+    Asset("IMAGE", "images/inventoryimages/shadowheart.tex"),
 }
 
 local prefabs = 
@@ -149,6 +154,32 @@ local function polishgem()
 	return inst
 end
 
+--打磨宝石
+local function shadowheart()
+	local inst = CreateEntity()
+	inst.entity:AddTransform()
+	inst.entity:AddAnimState()
+	MakeInventoryPhysics(inst)
+	
+	inst.AnimState:SetBuild("shadowheart")
+	inst.AnimState:SetBank("shadowheart")
+	inst.AnimState:PlayAnimation("idle")
+	
+	inst:AddComponent("edible")
+	inst.components.edible.healthvalue =  200
+	inst.components.edible.hungervalue =  300
+	inst.components.edible.sanityvalue =  -25
+	
+	inst:AddComponent("inspectable")
+	
+	inst:AddComponent("tradable")
+	
+	inst:AddComponent("inventoryitem")
+    inst.components.inventoryitem.imagename = "shadowheart"
+    inst.components.inventoryitem.atlasname = "images/inventoryimages/shadowheart.xml"
+	return inst
+end
+
 return 
 Prefab( "common/inventory/base_moonglass", moonglass, assets, prefabs),
 Prefab( "common/inventory/base_gemfragment", gemfragment, assets, prefabs),
@@ -158,4 +189,5 @@ Prefab( "common/inventory/base_puregem", puregem, assets, prefabs),
 Prefab( "common/inventory/base_moonempyreality", moonempyreality, assets, prefabs),
 Prefab( "common/inventory/base_gemblock", gemblock, assets, prefabs),
 Prefab( "common/inventory/base_polishgem", polishgem, assets, prefabs),
-Prefab( "common/inventory/base_puremoonempyreality", puremoonempyreality, assets, prefabs)
+Prefab( "common/inventory/base_puremoonempyreality", puremoonempyreality, assets, prefabs),
+Prefab( "common/inventory/base_shadowheart", shadowheart, assets, prefabs)

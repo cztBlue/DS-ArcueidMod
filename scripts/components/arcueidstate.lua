@@ -13,12 +13,30 @@ local ArcueidState = Class(function(self, inst)
     self.foodhealth = 0
     self.bleedhealth = 0
     self.displaymultiplier = {}
+    self.ldebuffstate = {
+        ['lbuff_prinsynd'] = true,
+        ['lbuff_blightedbody'] = true,
+        ['lbuff_forsasoul'] = true,
+        ['lbuff_awkheart'] = true,
+        ['lbuff_seleniclife'] = true,
+    } --肉体升变改这里  
+
+
     
+    self.abilityon = false --按下“G”
+    self.abilityselected = 0 --选择能力
+
+    self.resistance_mul = {} --承伤乘区 0.xx
+    self.damagerate_mul = {} -- 增伤的乘区 1.xx
+    self.critical_add = {} -- 暴击率加区 0.x
+    self.bloodthirst_add = {} -- 吸血加区 0.0x
+    self.speed_mul = {} --移速乘区
+
     self.inst:ListenForEvent("daytime", function(inst, data)
         if self.seasontoggle then
             self.seasontoggle = self.seasontoggle - 1
         else
-            self.seasontoggle = math.random(2,8)
+            self.seasontoggle = math.random(2, 8)
         end
 
         --新月+60事件
@@ -39,7 +57,7 @@ local ArcueidState = Class(function(self, inst)
 
     self.inst:ListenForEvent("dusktime", function(inst, data) self:CalSegment() end, GetWorld())
     self.inst:ListenForEvent("nighttime", function(inst, data) self:CalSegment() end, GetWorld())
-    
+
     self.inst:StartUpdatingComponent(self)
 end)
 
@@ -57,39 +75,57 @@ function ArcueidState:ToggleSeason()
     end
 
     if self.nightmarerosion > 240 and self.seasontoggle <= 0 then
-        local indexnum = math.random(1,2)
+        local indexnum = math.random(1, 2)
         if SaveGameIndex:IsModePorkland() then
-            if indexnum == 1 then GetSeasonManager():StartHumid()
-            elseif indexnum == 2 then GetSeasonManager():StartLush() end
+            if indexnum == 1 then
+                GetSeasonManager():StartHumid()
+            elseif indexnum == 2 then
+                GetSeasonManager():StartLush()
+            end
         elseif SaveGameIndex:IsModeShipwrecked() then
-            if indexnum == 1 then GetSeasonManager():StartWet()
-            elseif indexnum == 2 then GetSeasonManager():StartDry() end
+            if indexnum == 1 then
+                GetSeasonManager():StartWet()
+            elseif indexnum == 2 then
+                GetSeasonManager():StartDry()
+            end
         else
-            if indexnum == 1 then GetSeasonManager():StartWinter()
-            elseif indexnum == 2 then GetSeasonManager():StartSummer() end
+            if indexnum == 1 then
+                GetSeasonManager():StartWinter()
+            elseif indexnum == 2 then
+                GetSeasonManager():StartSummer()
+            end
         end
         return
     end
 
 
     if self.nightmarerosion > 180 and self.seasontoggle <= 0 then
-        local indexnum = math.random(1,3)
+        local indexnum = math.random(1, 3)
         if SaveGameIndex:IsModePorkland() then
-            if indexnum == 1 then GetSeasonManager():StartHumid()
-            elseif indexnum == 2 or indexnum == 3 then GetSeasonManager():StartLush() end
+            if indexnum == 1 then
+                GetSeasonManager():StartHumid()
+            elseif indexnum == 2 or indexnum == 3 then
+                GetSeasonManager():StartLush()
+            end
         elseif SaveGameIndex:IsModeShipwrecked() then
-            if indexnum == 1 then GetSeasonManager():StartWet()
-            elseif indexnum == 2 then GetSeasonManager():StartDry()
-            elseif indexnum == 3 then GetSeasonManager():StartGreen() end
+            if indexnum == 1 then
+                GetSeasonManager():StartWet()
+            elseif indexnum == 2 then
+                GetSeasonManager():StartDry()
+            elseif indexnum == 3 then
+                GetSeasonManager():StartGreen()
+            end
         else
-            if indexnum == 1 then GetSeasonManager():StartSpring()
-            elseif indexnum == 2 then GetSeasonManager():StartSummer()
-            elseif indexnum == 3 then GetSeasonManager():StartWinter() end
+            if indexnum == 1 then
+                GetSeasonManager():StartSpring()
+            elseif indexnum == 2 then
+                GetSeasonManager():StartSummer()
+            elseif indexnum == 3 then
+                GetSeasonManager():StartWinter()
+            end
         end
         return
     end
-
-    
 end
 
 --暗灾时祸
@@ -135,8 +171,8 @@ function ArcueidState:OnCarefulStateUpdate()
     end
 end
 
-function ArcueidState:DoDeltaForErosion_TEMP(value) 
-    local over =  self.nightmarerosion + value - TUNING.ARCUEID_MAXEROSION
+function ArcueidState:DoDeltaForErosion_TEMP(value)
+    local over = self.nightmarerosion + value - TUNING.ARCUEID_MAXEROSION
     if over <= 0 then
         if self.nightmarerosion_temp + value >= 0 then
             self.nightmarerosion_temp = self.nightmarerosion_temp + value
@@ -149,9 +185,9 @@ function ArcueidState:DoDeltaForErosion_TEMP(value)
 end
 
 function ArcueidState:DoDeltaForErosion_DEEP(value)
-    if self.nightmarerosion_deep + value >=  TUNING.ARCUEID_MAXEROSION then
+    if self.nightmarerosion_deep + value >= TUNING.ARCUEID_MAXEROSION then
         self.nightmarerosion_deep = TUNING.ARCUEID_MAXEROSION
-    elseif self.nightmarerosion_deep + value <=  0 then
+    elseif self.nightmarerosion_deep + value <= 0 then
         self.nightmarerosion_deep = 0
     else
         self.nightmarerosion_deep = self.nightmarerosion_deep + value
@@ -165,16 +201,16 @@ end
 function ArcueidState:DoDeltaForErosion_POTION(value)
     local dero = self.nightmarerosion_deep
     local tero = self.nightmarerosion_temp
-    if dero + value >= 0  then
+    if dero + value >= 0 then
         self:DoDeltaForErosion_DEEP(value)
     elseif dero + value <= 0 then
         self:DoDeltaForErosion_DEEP(-dero)
-        self:DoDeltaForErosion_TEMP(dero+value)
+        self:DoDeltaForErosion_TEMP(dero + value)
     end
 end
 
 function ArcueidState:GetErosionPercent()
-    return (self.nightmarerosion /TUNING.ARCUEID_MAXEROSION )
+    return (self.nightmarerosion / TUNING.ARCUEID_MAXEROSION)
 end
 
 function ArcueidState:AddFoodHealth(value)
@@ -185,11 +221,57 @@ function ArcueidState:AddFoodHealth(value)
 end
 
 function ArcueidState:AddBleedHealth(value)
-    print("wwwww2"..value)
     if self.bleedhealth == nil then
         self.bleedhealth = 0
     end
     self.bleedhealth = self.bleedhealth + (value or 0)
+end
+
+function ArcueidState:GetResistance()
+    local fac = 1
+
+    for _, f in pairs(self.resistance_mul) do
+        fac = fac * f
+    end
+    return 1 * fac
+end
+
+function ArcueidState:GetDamageRate()
+    local fac = 1
+
+    for _, f in pairs(self.damagerate_mul) do
+        fac = fac * f
+    end
+    return 1 * fac
+end
+
+function ArcueidState:GetCriticalRate()
+    local fac = 0
+
+    for _, f in pairs(self.critical_add) do
+        fac = fac + f
+    end
+    return fac
+
+end
+
+function ArcueidState:GetBloodRate()
+    local fac = 0
+
+    for _, f in pairs(self.bloodthirst_add) do
+        fac = fac + f
+    end
+    return fac < 1 and fac or 1
+
+end
+
+function ArcueidState:GetSpeedRate()
+    local fac = 1
+
+    for _, f in pairs(self.speed_mul) do
+        fac = fac * f
+    end
+    return fac 
 end
 
 local setcountbysecond = 0
@@ -207,6 +289,11 @@ function ArcueidState:OnUpdate(dt)
         setcountbysecond = setcountbysecond + dt
     end
 
+    --修正移速
+    local speedmul = self:GetSpeedRate()
+    self.inst.components.locomotor.walkspeed = TUNING.WILSON_WALK_SPEED * speedmul --4x
+    self.inst.components.locomotor.runspeed = TUNING.WILSON_RUN_SPEED * speedmul --6x
+
     self:OnCarefulStateUpdate()
     if self.iceskill_cooldown >= 0 then self.iceskill_cooldown = self.iceskill_cooldown - dt end
     if self.martyrseal_cooldown >= 0 then self.martyrseal_cooldown = self.martyrseal_cooldown - dt end
@@ -221,9 +308,9 @@ function ArcueidState:OnUpdate(dt)
         end
 
         if self.nightmarerosion > self.nightmarerosion_deep then
-            self:DoDeltaForErosion_TEMP(- 0.0013)
+            self:DoDeltaForErosion_TEMP(-0.0013)
         end
-        
+
         --检查溢出
         if self.nightmarerosion > TUNING.ARCUEID_MAXEROSION then
             self.nightmarerosion_temp = TUNING.ARCUEID_MAXEROSION - self.nightmarerosion_deep
@@ -244,8 +331,8 @@ function ArcueidState:UpdateBySecond()
     end
 
     if self.foodhealth >= 0 then
-        healthdelta = healthdelta + 8/48
-        self.foodhealth = self.foodhealth - 8/48
+        healthdelta = healthdelta + 8 / 48
+        self.foodhealth = self.foodhealth - 8 / 48
     end
 
     -- bleedhealth增益
@@ -257,12 +344,11 @@ function ArcueidState:UpdateBySecond()
     end
 
     if self.bleedhealth >= 0 then
-        healthdelta = healthdelta - 20/48
-        self.bleedhealth = self.bleedhealth - 20/48
+        healthdelta = healthdelta - 20 / 48
+        self.bleedhealth = self.bleedhealth - 20 / 48
     end
 
     self.inst.components.health:DoDelta(healthdelta)
-
 end
 
 function ArcueidState:OnSave()
@@ -271,8 +357,9 @@ function ArcueidState:OnSave()
     data.nightmarerosion = self.nightmarerosion
     data.nightmarerosion_deep = self.nightmarerosion_deep
     data.erosion_deep_count = self.erosion_deep_count
-    data.foodhealth =  self.foodhealth or 0
-    data.bleedhealth =  self.bleedhealth or 0
+    data.foodhealth = self.foodhealth or 0
+    data.bleedhealth = self.bleedhealth or 0
+    data.ldebuffstate = self.ldebuffstate or {}
     return data
 end
 
@@ -281,8 +368,9 @@ function ArcueidState:OnLoad(data)
     self.nightmarerosion = data.nightmarerosion or 0
     self.nightmarerosion_deep = data.nightmarerosion_deep or 0
     self.erosion_deep_count = data.erosion_deep_count
-    self.foodhealth =  data.foodhealth or 0
-    self.bleedhealth =  data.bleedhealth or 0
+    self.foodhealth = data.foodhealth or 0
+    self.bleedhealth = data.bleedhealth or 0
+    self.ldebuffstate = data.ldebuffstate or {}
 
     self:CalSegment()
 end

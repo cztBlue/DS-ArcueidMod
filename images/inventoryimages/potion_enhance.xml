@@ -1,0 +1,11 @@
+<Atlas>
+    <Texture filename="potion_enhance.tex" />
+    <Elements>
+        <Element name="potion_bloodthirst.tex" u1="0.001953125" v1="0.50390625" u2="0.248046875" v2="0.99609375" />
+        <Element name="potion_critical.tex" u1="0.251953125" v1="0.50390625" u2="0.498046875" v2="0.99609375" />
+        <Element name="potion_healing.tex" u1="0.501953125" v1="0.50390625" u2="0.748046875" v2="0.99609375" />
+        <Element name="potion_holywater.tex" u1="0.751953125" v1="0.50390625" u2="0.998046875" v2="0.99609375" />
+        <Element name="potion_resilience.tex" u1="0.001953125" v1="0.00390625" u2="0.248046875" v2="0.49609375" />
+        <Element name="potion_vigour.tex" u1="0.251953125" v1="0.00390625" u2="0.498046875" v2="0.49609375" />
+    </Elements>
+</Atlas>

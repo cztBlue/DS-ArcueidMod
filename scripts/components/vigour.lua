@@ -9,6 +9,7 @@ local Vigour = Class(function(self, inst)
     self.moonfactor = 0
     self.bodyequipfactor = 0
     self.trinketfactor = 0
+    self.vigourtr = 0 --转化能力
     self.rate = 0 --每秒x点
 
     self.careful = false
@@ -93,7 +94,7 @@ function Vigour:SetVal(val, cause,inst)
 end
 
 function Vigour:GetRate()
-    self.rate = self.moonfactor + self.trinketfactor + self.bodyequipfactor
+    self.rate = self.moonfactor + self.trinketfactor + self.bodyequipfactor + self.vigourtr
 	return self.rate
 end
 

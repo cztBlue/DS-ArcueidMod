@@ -91,18 +91,18 @@ local function relaxationbook()
     inst.components.equippable:SetOnEquip(function(inst, owner)
         if owner.prefab == "arcueid" then
             owner.components.vigour.trinketfactor = TUNING.ARCUEID_VIGOURBUFF_E
-            owner.components.arcueidbuff.islastbuffactive['lbuff_recover'] = true
-            owner.components.arcueidbuff.islastbuffactive['lbuff_dehunger'] = true
-            owner.components.arcueidbuff.islastbuffactive['lbuff_pep'] = true
+            owner.components.arcueidbuff:SetArcueidLastBuff('lbuff_pep',true)
+            owner.components.arcueidbuff:SetArcueidLastBuff('lbuff_dehunger',true)
+            owner.components.arcueidbuff:SetArcueidLastBuff('lbuff_recover',true)
         end
     end)
 
     inst.components.equippable:SetOnUnequip(function(inst, owner)
         if owner.prefab == "arcueid" then
             owner.components.vigour.trinketfactor = 0
-            owner.components.arcueidbuff.islastbuffactive['lbuff_recover'] = false
-            owner.components.arcueidbuff.islastbuffactive['lbuff_dehunger'] = false
-            owner.components.arcueidbuff.islastbuffactive['lbuff_pep'] = false
+            owner.components.arcueidbuff:SetArcueidLastBuff('lbuff_recover',false)
+            owner.components.arcueidbuff:SetArcueidLastBuff('lbuff_dehunger',false)
+            owner.components.arcueidbuff:SetArcueidLastBuff('lbuff_pep',false)
         end
         --owner.AnimState:ClearOverrideSymbol("swap_body")
     end)
@@ -238,7 +238,7 @@ local function seasoningbottle()
     inst:AddTag("maketool")
 
     inst:AddComponent("finiteuses")
-    inst.components.finiteuses:SetMaxUses(200)
+    inst.components.finiteuses:SetMaxUses(100)
     inst.components.finiteuses:SetOnFinished(function (inst)
         inst:Remove()
     end)
@@ -330,6 +330,7 @@ local function firstcanon()
     return inst
 end
 
+
 --翡翠之刃
 local function jadeblade()
     local inst = commonfn("jadeblade")
@@ -337,12 +338,14 @@ local function jadeblade()
     inst.components.equippable:SetOnEquip(function(inst, owner)
         if owner.prefab == "arcueid" then
             owner.components.vigour.trinketfactor = -TUNING.ARCUEID_VIGOURBUFF_D
+            owner.components.arcueidstate.damagerate_mul["JADE_BLADE"] = 1.15
         end
     end)
 
     inst.components.equippable:SetOnUnequip(function(inst, owner)
         if owner.prefab == "arcueid" then
             owner.components.vigour.trinketfactor = 0
+            owner.components.arcueidstate.damagerate_mul["JADE_BLADE"] = 1
         end
     end)
 
@@ -447,7 +450,7 @@ local function twelvedice()
 end
 
 --先知之眼
---洞察：概率暴击，1%必杀
+--洞察：概率暴击，1%必杀（？）
 --睿智：可解锁物品
 local function propheteye()
     local inst = commonfn("propheteye")
@@ -455,14 +458,14 @@ local function propheteye()
     inst.components.equippable:SetOnEquip(function(inst, owner)
         if owner.prefab == "arcueid" then
             owner.components.vigour.trinketfactor = -TUNING.ARCUEID_VIGOURBUFF_C
-            --owner.components.builder.ingredientmod = 1
+            owner.components.arcueidstate.critical_add["PROPHETEYE"] = .35
         end
     end)
 
     inst.components.equippable:SetOnUnequip(function(inst, owner)
         if owner.prefab == "arcueid" then
             owner.components.vigour.trinketfactor = 0
-            --owner.components.builder.ingredientmod = 1.5
+            owner.components.arcueidstate.critical_add["PROPHETEYE"] = .35
         end
     end)
 
@@ -531,6 +534,30 @@ local function sacrificeknife()
 end
 
 
+--肉体升变套装
+local function corpuselevatiotoolkit()
+    local inst = commonfn("sacrificeknife")
+
+    local debuffmap = {{"lbuff_prinsynd"},{"lbuff_blightedbody"},
+    {"lbuff_forsasoul"},{"lbuff_awkheart"},{"lbuff_seleniclife"}}
+    inst.components.equippable:SetOnEquip(function(inst, owner)
+        if owner.prefab == "arcueid" then
+            GetPlayer():PushEvent("death", {cause="corpuselevatio"})
+            --test
+            owner.components.arcueidstate.ldebuffstate[debuffmap[1][1]] = false
+        end
+    end)
+
+    inst.components.equippable:SetOnUnequip(function(inst, owner)
+        if owner.prefab == "arcueid" then
+            
+        end
+    end)
+
+    return inst
+end
+
+
 return
     Prefab("common/inventory/trinket_relaxationbook", relaxationbook, assets),
     Prefab("common/inventory/trinket_mooncloak", mooncloak, assets),
@@ -548,4 +575,5 @@ return
     Prefab("common/inventory/trinket_jadeblade", jadeblade, assets),
     Prefab("common/inventory/trinket_jadestar", jadestar, assets),
     Prefab("common/inventory/trinket_firstcanon", firstcanon, assets),
-    Prefab("common/inventory/trinket_sacrificeknife", sacrificeknife, assets)
+    Prefab("common/inventory/trinket_sacrificeknife", sacrificeknife, assets),
+    Prefab("common/inventory/trinket_corpuselevatiotoolkit", corpuselevatiotoolkit, assets)

@@ -18,12 +18,14 @@ PrefabFiles = {
 	"arcueid_trinket",
 	"arcueid_baseitem",
 	"arcueid_efficacy",
-	"arcueid_shadowcreature",
 	"arcueid_letter",
 	"arcueid_potion",
 	"psionic_farm",
 	"psionic_item",
 	"arcueid_consume",
+	"arcueid_dector",
+	"arcueid_shadow_pieces",
+	"arcueid_shadowrift",
 }
 
 Assets = {
@@ -68,6 +70,8 @@ Assets = {
 	Asset("IMAGE", "images/map_icons/trinketworkshop.tex"),
 	Asset("ATLAS", "images/map_icons/building_psionic_farm.xml"),
 	Asset("IMAGE", "images/map_icons/building_psionic_farm.tex"),
+	Asset("ATLAS", "images/map_icons/arcueid_shadow_rift.xml"),
+	Asset("IMAGE", "images/map_icons/arcueid_shadow_rift.tex"),
 
 	--ui
 	Asset("ANIM", "anim/vigour.zip"),
@@ -96,6 +100,11 @@ Assets = {
 	Asset("IMAGE", "images/bloodscreen.tex"),
 	Asset("ATLAS", "images/bloodscreen.xml"),
 
+	--sound
+	Asset("SOUNDPACKAGE", "sound/bgm_haru.fev"),
+	Asset("SOUND", "sound/bgm_haru.fsb"),
+
+
 }
 GLOBAL.setmetatable(env, { __index = function(t, k) return GLOBAL.rawget(GLOBAL, k) end })
 
@@ -109,19 +118,15 @@ TUNING.ARCUEID_VIGOUR_HUGE = 240
 TUNING.ARCUEID_VIGOUR_MIDDLE = 120
 TUNING.ARCUEID_VIGOUR_SMALL = 60
 
-TUNING.ARCUEID_DAY_DAMAGEMULTIPLIER = -0.1
-TUNING.ARCUEID_DUSK_DAMAGEMULTIPLIER = 0.5
-TUNING.ARCUEID_NIGHT_DAMAGEMULTIPLIER = 1
-TUNING.ARCUEID_FULLMOON_DAMAGEMULTIPLIER = 2.5
+TUNING.ARCUEID_DAY_DAMAGEMULTIPLIER = 0.9 -- 0.9
+TUNING.ARCUEID_DUSK_DAMAGEMULTIPLIER = 1.5 -- 1.5
+TUNING.ARCUEID_NIGHT_DAMAGEMULTIPLIER = 2 -- 2
+TUNING.ARCUEID_FULLMOON_DAMAGEMULTIPLIER = 3.5 --3.5
 
-TUNING.ARCUEID_DAY_WALKSPEED = 4
-TUNING.ARCUEID_DAY_RUNSPEED = 6
-TUNING.ARCUEID_DUSK_WALKSPEED = 5
-TUNING.ARCUEID_DUSK_RUNSPEED = 7
-TUNING.ARCUEID_NIGHT_WALKSPEED = 6
-TUNING.ARCUEID_NIGHT_RUNSPEED = 8
-TUNING.ARCUEID_FULLMOON_WALKSPEED = 8
-TUNING.ARCUEID_FULLMOON_RUNSPEED = 10
+TUNING.ARCUEID_DAY_SPEEDMUL = 1
+TUNING.ARCUEID_DUSK_SPEEDMUL = 1.25
+TUNING.ARCUEID_NIGHT_SPEEDMUL = 1.5
+TUNING.ARCUEID_FULLMOON_SPEEDMUL = 2 
 TUNING.ARCUEID_SNEAKYMULTIPLIER = 0.45
 
 TUNING.ARCUEID_NEW_MOONFACTOR = -0.061
@@ -297,6 +302,7 @@ local letter = GLOBAL.require "widgets/letter_normal"
 local erosion = GLOBAL.require "widgets/erosionbadge"
 local buffpanel = GLOBAL.require "widgets/buffpanel"
 local gempanel = GLOBAL.require "widgets/arcueid_gemgeneratorpanel"
+local abilitypanel = GLOBAL.require "widgets/arcueid_vigourability"
 
 --活力值
 AddClassPostConstruct("widgets/statusdisplays", function(self)
@@ -434,6 +440,17 @@ AddClassPostConstruct("widgets/controls", function(self)
 	end
 end)
 
+--ability面板
+AddClassPostConstruct("widgets/controls", function(self)
+	local controls = self
+	if controls and GetPlayer().prefab == "arcueid" then
+		if controls.containerroot then
+			controls.abilitypanel = controls.containerroot:AddChild(abilitypanel(GetPlayer()))
+		end
+	else
+		return
+	end
+end)
 
 --注入条件让Mouse强制时刻监视到Arc
 AddComponentPostInit("playeractionpicker", function(PlayerActionPicker)
@@ -444,7 +461,7 @@ AddComponentPostInit("playeractionpicker", function(PlayerActionPicker)
 
 		--if true then return end
 		local target = TheInput:GetHUDEntityUnderMouse()
-		
+
 
 		if not target then
 			local ents = TheInput:GetAllEntitiesUnderMouse()
@@ -669,26 +686,21 @@ AddStategraphActionHandler("wilson", ActionHandler(READLETTER, "readletter"))
 AddStategraphActionHandler("wilson", ActionHandler(PLANT_PSIONIC, "give"))
 AddStategraphActionHandler("wilson", ActionHandler(ARCUEID_NORMAL, "normalaction"))
 -----------自定义动作
+-- local function ReplaceBGM()
+-- 	TheSim:UnloadSound("dontstarve/music/music_dawn.fsb")
+-- 	TheSim:LoadSound("mods/mymusicmod/music/my_custom_music.fsb")
+-- 	TheMixer:PushMix("music", "dontstarve/music/music_dawn.fsb")
+-- end
 
---监听键盘事件,shift切换潜行
-GLOBAL.TheInput:AddKeyHandler(function(key, down)
-	if GetPlayer() then
-		local player = GetPlayer()
-		if down and key == 304 and player.prefab == "arcueid" and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
-			and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_shadowcloak" then
-			if player.components.arcueidstate.careful == true then
-				player.components.arcueidstate.careful = false
-			else
-				player.components.arcueidstate.careful = true
-			end
-		end
-	end
-end)
+-- AddSimPostInit(ReplaceBGM)
 
---监听键盘事件,x释放冰冻技能/驱散暗影
+-- 监听键盘事件,x释放冰冻技能/驱散暗影
 GLOBAL.TheInput:AddKeyHandler(function(key, down)
 	local player = GetPlayer()
-	if down and key == 120 and player.prefab == "arcueid" then
+	if down and key == KEY_X and player.prefab == "arcueid" then
+
+		GetWorld().SoundEmitter:PlaySound("bgm_haru/BGM/bgm_haru")
+
 		--冰冻
 		if player.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY) ~= nil
 			and player.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY).prefab == "dress_ice" then
@@ -696,8 +708,9 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
 				player.sg:GoToState("iceskill")
 			end
 		end
+
 		--第一圣典
-		if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
+		if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
 			and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_firstcanon"
 			and player.components.vigour.currentvigour > 100
 		then
@@ -721,8 +734,79 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
 				end
 			end
 		end
+
+		--翡翠之刃
+		if player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+			and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_jadeblade"
+		then
+			local MouseCharacter = TheInput:GetWorldEntityUnderMouse()
+			if MouseCharacter and MouseCharacter.components.health and MouseCharacter.prefab ~= "arcueid" then
+				local x, y, z = player:GetPosition():Get()
+				local blade = SpawnPrefab("ef_blade")
+				blade.Transform:SetPosition(x, y, z)
+				blade.components.projectile:Throw(GetPlayer(),MouseCharacter,GetPlayer())
+			end
+		end
+
 	end
 end)
+
+-- shift潜行(长按进入)
+GLOBAL.TheInput:AddKeyDownHandler(KEY_LSHIFT, function()
+	local player = GetPlayer()
+	if player.prefab == "arcueid"
+		and player.components.arcueidstate.careful == false
+		and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
+		and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_shadowcloak"
+	then
+		-- 这里是进入长按逻辑
+		player.components.arcueidstate.careful = true
+	end
+end)
+
+-- shift潜行(长按退出)
+GLOBAL.TheInput:AddKeyUpHandler(KEY_LSHIFT, function()
+	local player = GetPlayer()
+	if player.prefab == "arcueid"
+		and player.components.arcueidstate.careful == true
+		and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
+		and player.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_shadowcloak"
+	then
+		-- 这里是退出长按逻辑
+		player.components.arcueidstate.careful = false
+	end
+end)
+
+-- 能力(长按进入)
+GLOBAL.TheInput:AddKeyDownHandler(KEY_G, function()
+	local player = GetPlayer()
+	if player.prefab == "arcueid" then
+		player.components.arcueidstate.abilityon = true
+	end
+end)
+
+-- 能力(退出)
+GLOBAL.TheInput:AddKeyUpHandler(KEY_G, function()
+	local player = GetPlayer()
+	if player.prefab == "arcueid" then
+		player.components.arcueidstate.abilityon = false
+		player.components.arcueidstate.abilityselected = 0
+	end
+end)
+
+-- 注入暗影裂缝生成机制
+AddPrefabPostInit("forest", function(inst)
+	if inst then
+		inst:AddComponent("riftspawner")
+	end
+end)
+
+AddPrefabPostInit("shipwrecked", function(inst)
+	if inst then
+		inst:AddComponent("riftspawner")
+	end
+end)
+
 
 --添加睡眠Add活力值机制
 --帐篷
@@ -902,6 +986,7 @@ AddComponentPostInit("crop", function(Crop)
 			return true
 		end
 	end
+
 	function Crop:ForceHarvest(harvester)
 		if self.matured or self.withered then
 			local product = nil
@@ -963,16 +1048,16 @@ AddComponentPostInit("crop", function(Crop)
 				-- 原本的逻辑
 				if self.grower then
 					if self.grower.components.grower then
-						self.grower.components.grower:RemoveCrop(self.inst)            
+						self.grower.components.grower:RemoveCrop(self.inst)
 					else
-					   self.inst:Remove()
+						self.inst:Remove()
 					end
 					self.grower = nil
-				else 
+				else
 					self.inst:Remove()
 				end
 			end
-			
+
 
 			return true
 		else
@@ -995,16 +1080,15 @@ AddComponentPostInit("crop", function(Crop)
 				-- 原本的逻辑
 				if self.grower then
 					if self.grower.components.grower then
-						self.grower.components.grower:RemoveCrop(self.inst)            
+						self.grower.components.grower:RemoveCrop(self.inst)
 					else
-					self.inst:Remove()
+						self.inst:Remove()
 					end
 					self.grower = nil
-				else 
+				else
 					self.inst:Remove()
 				end
 			end
-			
 		end
 	end
 end)
@@ -1013,6 +1097,7 @@ local clumdmage = 0
 -- 注入饰品和一些需要计算伤害的机制
 AddComponentPostInit("combat", function(Combat)
 	local old_caldamage = Combat.CalcDamage
+	-- CalcDamage后说明是必中伤害
 	function Combat:CalcDamage(target, weapon, multiplier)
 		--olddamage 伤害没有护甲补正
 		local olddamage = old_caldamage(self, target, weapon, multiplier)
@@ -1023,6 +1108,34 @@ AddComponentPostInit("combat", function(Combat)
 		--减枝优化
 		if self.inst.prefab == "arcueid"
 			or targ.prefab == "arcueid" then
+			
+			-- 增伤
+			if self.inst.prefab == "arcueid" then
+				damage = damage * self.inst.components.arcueidstate:GetDamageRate()
+			end
+
+			-- 暴击
+			-- 计划在被暴击生物上弹提示
+			if self.inst.prefab == "arcueid" then
+				if math.random() < self.inst.components.arcueidstate:GetCriticalRate() then
+					damage = damage * 2
+				end
+			end
+
+			-- 抵抗
+			if targ.prefab == "arcueid" then
+				damage = damage * targ.components.arcueidstate:GetResistance()
+			end
+
+			-- 吸血
+			if self.inst.prefab == "arcueid" then
+				local blood = damage * self.inst.components.arcueidstate:GetBloodRate()
+				if blood > 0 then
+					self.inst.components.health:DoDelta(blood) 
+				end
+			end
+
+		
 			--临时，影怪+侵蚀度
 			if self.inst.prefab == "arcueid"
 				and TUNING.SHADOWCREATURE[targ.prefab]
@@ -1032,22 +1145,6 @@ AddComponentPostInit("combat", function(Combat)
 				end
 			end
 
-			--先知之眼->.35概率暴击
-			if self.inst.prefab == "arcueid"
-				and self.inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
-				and self.inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye"
-				and math.random() < .35
-			then
-				damage = damage * 2
-			end
-
-			--翡翠之刃
-			if self.inst.prefab == "arcueid"
-				and self.inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
-				and self.inst.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_jadeblade"
-			then
-				damage = damage * 1.15
-			end
 
 			--第一圣典
 			if self.inst.prefab == "arcueid"
@@ -1138,424 +1235,276 @@ end)
 --实现月球科技
 AddComponentPostInit("builder", function(Builder)
 	Builder.moonmagic_bonus = 0
-	if GetPlayer() and GetPlayer().prefab == "arcueid" then
-		function Builder:EvaluateTechTrees()
-			local pos = self.inst:GetPosition()
+	local oldEvaluateTechTrees = Builder.EvaluateTechTrees
+	local oldKnowsRecipeWithoutJellyBrainHat = Builder.KnowsRecipeWithoutJellyBrainHat
+	function Builder:EvaluateTechTrees()
+		if not(GetPlayer() and GetPlayer().prefab == "arcueid") then
+			return oldEvaluateTechTrees(self)
+		end
+		
+		local pos = self.inst:GetPosition()
 
-			local ents = TheSim:FindEntities(pos.x, pos.y, pos.z, TUNING.RESEARCH_MACHINE_DIST, { "prototyper" },
-				{ "INTERIOR_LIMBO" })
+		local ents = TheSim:FindEntities(pos.x, pos.y, pos.z, TUNING.RESEARCH_MACHINE_DIST, { "prototyper" },
+			{ "INTERIOR_LIMBO" })
 
-			local interiorSpawner = GetWorld().components.interiorspawner
+		local interiorSpawner = GetWorld().components.interiorspawner
 
-			-- insert our home prototyper in the list since we don't carry it around (and potentially wouldn't hit the radius for FindEntities)
-			if interiorSpawner then
-				table.insert(ents, interiorSpawner.homeprototyper)
-			end
+		-- insert our home prototyper in the list since we don't carry it around (and potentially wouldn't hit the radius for FindEntities)
+		if interiorSpawner then
+			table.insert(ents, interiorSpawner.homeprototyper)
+		end
 
-			-- TheSim:FindEntities is failing to find the key in the backpack sometimes, for whatever reason...
-			local key_to_city = self.inst.components.inventory
-				and self.inst.components.inventory:FindItem(function(item) return item.prefab == "key_to_city" end)
+		-- TheSim:FindEntities is failing to find the key in the backpack sometimes, for whatever reason...
+		local key_to_city = self.inst.components.inventory
+			and self.inst.components.inventory:FindItem(function(item) return item.prefab == "key_to_city" end)
 
-			if key_to_city and not table.contains(ents, key_to_city) then
-				table.insert(ents, key_to_city)
-			end
+		if key_to_city and not table.contains(ents, key_to_city) then
+			table.insert(ents, key_to_city)
+		end
 
-			local old_accessible_tech_trees = deepcopy(self.accessible_tech_trees or TECH.NONE)
-			local old_prototyper = self.current_prototyper
-			local old_craftingstation = self.current_craftingstation
-			self.current_prototyper = nil
+		local old_accessible_tech_trees = deepcopy(self.accessible_tech_trees or TECH.NONE)
+		local old_prototyper = self.current_prototyper
+		local old_craftingstation = self.current_craftingstation
+		self.current_prototyper = nil
 
-			local prototyper_active = false
-			local craftingstation_active = false
-			local allprototypers = {}
+		local prototyper_active = false
+		local craftingstation_active = false
+		local allprototypers = {}
 
-			for k, v in pairs(ents) do
-				if v.components.prototyper and v.components.prototyper:CanCurrentlyPrototype() then
-					-- the nearest prototyper and the nearest crafting station
-					local enabled = false
-					if not v.components.prototyper:GetIsDisabled() then
-						if v.components.prototyper.craftingstation then
-							if not craftingstation_active then
-								craftingstation_active = true
-								enabled = true
-							end
-						else
-							if not prototyper_active then
-								prototyper_active = true
-								enabled = true
-							end
+		for k, v in pairs(ents) do
+			if v.components.prototyper and v.components.prototyper:CanCurrentlyPrototype() then
+				-- the nearest prototyper and the nearest crafting station
+				local enabled = false
+				if not v.components.prototyper:GetIsDisabled() then
+					if v.components.prototyper.craftingstation then
+						if not craftingstation_active then
+							craftingstation_active = true
+							enabled = true
+						end
+					else
+						if not prototyper_active then
+							prototyper_active = true
+							enabled = true
 						end
 					end
-					allprototypers[v] = enabled
 				end
+				allprototypers[v] = enabled
 			end
+		end
 
-			self.accessible_tech_trees = {}
-			--add any character specific bonuses to your current tech levels.
-			self.accessible_tech_trees.SCIENCE = self.science_bonus
-			self.accessible_tech_trees.MAGIC = self.magic_bonus
-			self.accessible_tech_trees.ANCIENT = self.ancient_bonus
-			self.accessible_tech_trees.OBSIDIAN = self.obsidian_bonus
-			self.accessible_tech_trees.HOME = self.home_bonus
-			self.accessible_tech_trees.CITY = self.city_bonus
-			self.accessible_tech_trees.LOST = 0
-			--改动了
-			self.accessible_tech_trees.MOONMAGIC = 0
+		self.accessible_tech_trees = {}
+		--add any character specific bonuses to your current tech levels.
+		self.accessible_tech_trees.SCIENCE = self.science_bonus
+		self.accessible_tech_trees.MAGIC = self.magic_bonus
+		self.accessible_tech_trees.ANCIENT = self.ancient_bonus
+		self.accessible_tech_trees.OBSIDIAN = self.obsidian_bonus
+		self.accessible_tech_trees.HOME = self.home_bonus
+		self.accessible_tech_trees.CITY = self.city_bonus
+		self.accessible_tech_trees.LOST = 0
+		--改动了
+		self.accessible_tech_trees.MOONMAGIC = 0
 
-			for entity, enabled in pairs(allprototypers) do
-				if enabled then
-					self:MergeAccessibleTechTrees(entity.components.prototyper:GetTechTrees())
-					if entity.components.prototyper.craftingstation then
-						self.current_craftingstation = entity
-					else
-						self.current_prototyper = entity
-					end
-					entity.components.prototyper:TurnOn()
+		for entity, enabled in pairs(allprototypers) do
+			if enabled then
+				self:MergeAccessibleTechTrees(entity.components.prototyper:GetTechTrees())
+				if entity.components.prototyper.craftingstation then
+					self.current_craftingstation = entity
 				else
-					entity.components.prototyper:TurnOff()
+					self.current_prototyper = entity
 				end
+				entity.components.prototyper:TurnOn()
+			else
+				entity.components.prototyper:TurnOff()
 			end
+		end
 
-			local trees_changed = false
+		local trees_changed = false
 
-			for k, v in pairs(old_accessible_tech_trees) do
-				if v ~= self.accessible_tech_trees[k] then
+		for k, v in pairs(old_accessible_tech_trees) do
+			if v ~= self.accessible_tech_trees[k] then
+				trees_changed = true
+				break
+			end
+		end
+		if not trees_changed then
+			for k, v in pairs(self.accessible_tech_trees) do
+				if v ~= old_accessible_tech_trees[k] then
 					trees_changed = true
 					break
 				end
 			end
-			if not trees_changed then
-				for k, v in pairs(self.accessible_tech_trees) do
-					if v ~= old_accessible_tech_trees[k] then
-						trees_changed = true
-						break
-					end
-				end
-			end
-
-			if old_prototyper and old_prototyper.components.prototyper and old_prototyper:IsValid() and old_prototyper ~= self.current_prototyper then
-				old_prototyper.components.prototyper:TurnOff()
-			end
-			if old_craftingstation and old_craftingstation.components.prototyper and old_craftingstation:IsValid() and old_craftingstation ~= self.current_craftingstation then
-				old_craftingstation.components.prototyper:TurnOff()
-			end
-
-			if trees_changed then
-				self.inst:PushEvent("techtreechange", { level = self.accessible_tech_trees })
-			end
 		end
 
-		function Builder:KnowsRecipeWithoutJellyBrainHat(recname)
-			local recipe = GetRecipe(recname)
-			--改动了:判断之前先注入recipe.level
-			if recipe and recipe.level.MOONMAGIC == nil then
-				recipe.level.MOONMAGIC = 0
-			end
+		if old_prototyper and old_prototyper.components.prototyper and old_prototyper:IsValid() and old_prototyper ~= self.current_prototyper then
+			old_prototyper.components.prototyper:TurnOff()
+		end
+		if old_craftingstation and old_craftingstation.components.prototyper and old_craftingstation:IsValid() and old_craftingstation ~= self.current_craftingstation then
+			old_craftingstation.components.prototyper:TurnOff()
+		end
 
-
-			if recipe
-				and recipe.level.ANCIENT <= self.ancient_bonus
-				and recipe.level.MAGIC <= self.magic_bonus
-				and recipe.level.SCIENCE <= self.science_bonus
-				and recipe.level.OBSIDIAN <= self.obsidian_bonus
-				and recipe.level.HOME <= self.home_bonus
-				and recipe.level.CITY <= self.city_bonus
-				and recipe.level.LOST <= self.lost_bonus
-				--添加了MOONMAGIC的判别
-				and recipe.level.MOONMAGIC <= self.moonmagic_bonus
-			then
-				return true
-			end
-
-			-- if the recipe is from a crafting station, but player is not at the crafting station, cut it out.
-			local crafting_station_pass = true
-			if recipe then
-				for i, level in pairs(recipe.level) do
-					if RECIPETABS[i] and RECIPETABS[i].crafting_station and level > 0 then
-						if self.accessible_tech_trees[i] == 0 then
-							crafting_station_pass = false
-						end
-					end
-				end
-			end
-
-			return self.freebuildmode or
-				(self:IsBuildBuffered(recname) or table.contains(self.recipes, recname) and crafting_station_pass)
+		if trees_changed then
+			self.inst:PushEvent("techtreechange", { level = self.accessible_tech_trees })
 		end
 	end
+
+	function Builder:KnowsRecipeWithoutJellyBrainHat(recname)
+		if not(GetPlayer() and GetPlayer().prefab == "arcueid") then
+			return oldKnowsRecipeWithoutJellyBrainHat(self,recname)
+		end
+		local recipe = GetRecipe(recname)
+		--改动了:判断之前先注入recipe.level
+		if recipe and recipe.level.MOONMAGIC == nil then
+			recipe.level.MOONMAGIC = 0
+		end
+
+		if recipe
+			and recipe.level.ANCIENT <= self.ancient_bonus
+			and recipe.level.MAGIC <= self.magic_bonus
+			and recipe.level.SCIENCE <= self.science_bonus
+			and recipe.level.OBSIDIAN <= self.obsidian_bonus
+			and recipe.level.HOME <= self.home_bonus
+			and recipe.level.CITY <= self.city_bonus
+			and recipe.level.LOST <= self.lost_bonus
+			--添加了MOONMAGIC的判别
+			and recipe.level.MOONMAGIC <= self.moonmagic_bonus
+		then
+			return true
+		end
+
+		-- if the recipe is from a crafting station, but player is not at the crafting station, cut it out.
+		local crafting_station_pass = true
+		if recipe then
+			for i, level in pairs(recipe.level) do
+				if RECIPETABS[i] and RECIPETABS[i].crafting_station and level > 0 then
+					if self.accessible_tech_trees[i] == 0 then
+						crafting_station_pass = false
+					end
+				end
+			end
+		end
+
+		return self.freebuildmode or
+			(self:IsBuildBuffered(recname) or table.contains(self.recipes, recname) and crafting_station_pass)
+	end
+
 end)
 
 --注入做饭失败的逻辑(.6)
 AddComponentPostInit("stewer", function(Stewer)
 	local cooking = require("cooking")
-	-- 做饭50%失败
-	if GetPlayer() and GetPlayer().prefab == "arcueid" then
-		function Stewer:StartCooking()
-			if not self.done and not self.cooking then
-				if self.inst.components.container then
-					self.done = nil
-					self.cooking = true
+	local oldStartCooking = Stewer.StartCooking
 
-					if self.onstartcooking then
-						self.onstartcooking(self.inst)
-					end
+	function Stewer:StartCooking()
+		if not(GetPlayer() and GetPlayer().prefab == "arcueid") then
+			return oldStartCooking(self)
+		end
 
-					local spoilage_total = 0
-					local spoilage_n = 0
-					local ings = {}
-					for k, v in pairs(self.inst.components.container.slots) do
-						table.insert(ings, v.prefab)
-						if v.components.perishable then
-							spoilage_n = spoilage_n + 1
-							spoilage_total = spoilage_total + v.components.perishable:GetPercent()
-						end
-					end
-					self.product_spoilage = 1
-					if spoilage_total > 0 then
-						self.product_spoilage = spoilage_total / spoilage_n
-						self.product_spoilage = 1 - (1 - self.product_spoilage) * .5
-					end
+		if not self.done and not self.cooking then
+			if self.inst.components.container then
+				self.done = nil
+				self.cooking = true
 
-					local foundthespecial = false
-					local cooktime = 1
-					if self.specialcookername then
-						-- check special first
-						if cooking.ValidRecipe(self.specialcookername, ings) then
-							self.product, cooktime = cooking.CalculateRecipe(self.specialcookername, ings)
-							self.productcooker = self.specialcookername
-							foundthespecial = true
-						end
-					end
-
-					if not foundthespecial then
-						-- fallback to regular cooking
-						local cooker = self.cookername or self.inst.prefab
-						self.product, cooktime = cooking.CalculateRecipe(cooker, ings)
-						self.productcooker = cooker
-					end
-
-					--改动了
-					local prob = math.random()
-					local trinket = GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
-					if prob < .6 and (trinket == nil or (trinket and trinket.prefab ~= "trinket_seasoningbottle")) then
-						self.product = "wetgoop"
-					elseif prob < .6 and trinket and trinket.prefab == "trinket_seasoningbottle" then
-						trinket.components.finiteuses:Use(2)
-					end
-
-
-					local grow_time = TUNING.BASE_COOK_TIME * cooktime
-					self.targettime = GetTime() + grow_time
-					self.task = self.inst:DoTaskInTime(grow_time, function(inst)
-						inst.components.stewer.task = nil
-						if inst.components.stewer.ondonecooking then
-							inst.components.stewer.ondonecooking(inst)
-						end
-						inst.components.stewer.done = true
-						inst.components.stewer.cooking = nil
-					end, "stew")
-
-					self.inst.components.container:Close()
-					self.inst.components.container:DestroyContents()
-					self.inst.components.container.canbeopened = false
+				if self.onstartcooking then
+					self.onstartcooking(self.inst)
 				end
+
+				local spoilage_total = 0
+				local spoilage_n = 0
+				local ings = {}
+				for k, v in pairs(self.inst.components.container.slots) do
+					table.insert(ings, v.prefab)
+					if v.components.perishable then
+						spoilage_n = spoilage_n + 1
+						spoilage_total = spoilage_total + v.components.perishable:GetPercent()
+					end
+				end
+				self.product_spoilage = 1
+				if spoilage_total > 0 then
+					self.product_spoilage = spoilage_total / spoilage_n
+					self.product_spoilage = 1 - (1 - self.product_spoilage) * .5
+				end
+
+				local foundthespecial = false
+				local cooktime = 1
+				if self.specialcookername then
+					-- check special first
+					if cooking.ValidRecipe(self.specialcookername, ings) then
+						self.product, cooktime = cooking.CalculateRecipe(self.specialcookername, ings)
+						self.productcooker = self.specialcookername
+						foundthespecial = true
+					end
+				end
+
+				if not foundthespecial then
+					-- fallback to regular cooking
+					local cooker = self.cookername or self.inst.prefab
+					self.product, cooktime = cooking.CalculateRecipe(cooker, ings)
+					self.productcooker = cooker
+				end
+
+				--改动了
+				local prob = math.random()
+				local trinket = GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+				if prob < .6 and (trinket == nil or (trinket and trinket.prefab ~= "trinket_seasoningbottle")) then
+					self.product = "wetgoop"
+				elseif prob < .6 and trinket and trinket.prefab == "trinket_seasoningbottle" then
+					trinket.components.finiteuses:Use(2)
+				end
+
+
+				local grow_time = TUNING.BASE_COOK_TIME * cooktime
+				self.targettime = GetTime() + grow_time
+				self.task = self.inst:DoTaskInTime(grow_time, function(inst)
+					inst.components.stewer.task = nil
+					if inst.components.stewer.ondonecooking then
+						inst.components.stewer.ondonecooking(inst)
+					end
+					inst.components.stewer.done = true
+					inst.components.stewer.cooking = nil
+				end, "stew")
+
+				self.inst.components.container:Close()
+				self.inst.components.container:DestroyContents()
+				self.inst.components.container.canbeopened = false
 			end
 		end
 	end
+
 end)
 
 --注入烤东西失败的逻辑 (.4)
 AddComponentPostInit("cooker", function(Cooker)
-	if GetPlayer().prefab == "arcueid" then
-		function Cooker:CookItem(item, chef)
-			if item and item.components.cookable then
-				local prob = math.random()
-				local trinket = GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
-				if prob < .4 and (trinket == nil or (trinket and trinket.prefab ~= "trinket_seasoningbottle")) then
-					item:Remove()
-					return SpawnPrefab("wetgoop")
-				elseif prob < .6 and trinket and trinket.prefab == "trinket_seasoningbottle" then
-					trinket.components.finiteuses:Use()
-				end
+	local oldCookItem = Cooker.CookItem
+	function Cooker:CookItem(item, chef)
+		if not(GetPlayer() and GetPlayer().prefab == "arcueid") then
+			return oldCookItem(self,item, chef)
+		end
 
-				local newitem = item.components.cookable:Cook(self.inst, chef)
-				ProfileStatsAdd("cooked_" .. item.prefab)
-
-				if self.oncookitem then
-					self.oncookitem(item, newitem)
-				end
-
-				if self.inst.SoundEmitter then
-					self.inst.SoundEmitter:PlaySound("dontstarve/wilson/cook")
-				end
-
+		if item and item.components.cookable then
+			local prob = math.random()
+			local trinket = GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
+			if prob < .4 and (trinket == nil or (trinket and trinket.prefab ~= "trinket_seasoningbottle")) then
 				item:Remove()
-				print(newitem.prefab)
-				return newitem
+				return SpawnPrefab("wetgoop")
+			elseif prob < .6 and trinket and trinket.prefab == "trinket_seasoningbottle" then
+				trinket.components.finiteuses:Use()
 			end
+
+			local newitem = item.components.cookable:Cook(self.inst, chef)
+			ProfileStatsAdd("cooked_" .. item.prefab)
+
+			if self.oncookitem then
+				self.oncookitem(item, newitem)
+			end
+
+			if self.inst.SoundEmitter then
+				self.inst.SoundEmitter:PlaySound("dontstarve/wilson/cook")
+			end
+
+			item:Remove()
+			print(newitem.prefab)
+			return newitem
 		end
 	end
 end)
 
-
---战斗机制改动
--- AddComponentPostInit("combat", function(Combat)
--- 	function Combat:DoAttack(target_override, weapon, projectile, stimuli, instancemult)
--- 		local targ = target_override or self.target
--- 		local weapon = weapon or self:GetWeapon()
--- 		if self:CanHitTarget(targ, weapon) then
--- 			--改动了：
--- 			if (self.inst.prefab == "crawlinghorror"
--- 					or self.inst.prefab == "terrorbeak"
--- 					or self.inst.prefab == "swimminghorror"
--- 					or self.inst.prefab == "crawlingnightmare"
--- 					or self.inst.prefab == "nightmarebeak")
--- 				and targ.prefab == "arcueid" then
--- 				--影怪.6致残
--- 				if math.random() < .6 then
--- 					targ.components.arcueidbuff:AddArcueidBuff("buff_disability")
--- 				end
-
--- 				--月亮吊坠抵消真伤	
--- 				if targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
--- 					and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_moonamulet" then
--- 					targ.components.health:DoDelta(-6, nil, "nightattack")
--- 					targ.components.vigour:DoDelta(-12, nil, "nightattack")
--- 				else
--- 					--被影怪击中固定真实伤害18点
--- 					targ.components.health:DoDelta(-18, nil, "nightattack")
--- 				end
--- 			end
--- 			--
--- 			self.inst:PushEvent("onattackother",
--- 				{ target = targ, weapon = weapon, projectile = projectile, stimuli = stimuli })
-
--- 			if weapon and weapon.components.projectile and not projectile then
--- 				local projectile = self.inst.components.inventory:DropItem(weapon, false, nil, nil, true)
--- 				if projectile then
--- 					projectile.components.projectile:Throw(self.inst, targ)
--- 				end
--- 			elseif weapon and weapon.components.complexprojectile and not projectile then
--- 				local projectile = self.inst.components.inventory:DropItem(weapon, false, nil, nil, true)
--- 				if projectile then
--- 					local targetPos = targ:GetPosition()
--- 					projectile.components.complexprojectile:Launch(targetPos)
--- 				end
--- 			elseif weapon and weapon.components.weapon:CanRangedAttack() and not projectile then
--- 				weapon.components.weapon:LaunchProjectile(self.inst, targ)
--- 			else
--- 				local mult = 1
--- 				if stimuli == "electric" or (weapon and weapon.components.weapon and weapon.components.weapon.stimuli == "electric") then
--- 					if not targ:HasTag("electricdamageimmune") and (not targ.components.inventory or (targ.components.inventory and not targ.components.inventory:IsInsulated())) then
--- 						mult = TUNING.ELECTRIC_DAMAGE_MULT
--- 						if targ.components.moisture then
--- 							mult = mult +
--- 								(TUNING.ELECTRIC_WET_DAMAGE_MULT * targ.components.moisture:GetMoisturePercent())
--- 						elseif targ.components.moisturelistener and targ.components.moisturelistener:IsWet() then
--- 							mult = mult + TUNING.ELECTRIC_WET_DAMAGE_MULT
--- 						elseif GetWorld() and GetWorld().components.moisturemanager and GetWorld().components.moisturemanager:IsEntityWet(targ) then
--- 							mult = mult + TUNING.ELECTRIC_WET_DAMAGE_MULT
--- 						end
--- 					end
--- 				end
--- 				local damage = self:CalcDamage(targ, weapon, mult)
-
--- 				--临时，影怪+侵蚀度
--- 				if targ.prefab == "swimminghorror"
--- 					or targ.prefab == "terrorbeak"
--- 					or targ.prefab == "crawlinghorror"
--- 				then
--- 					if targ.components.health.currenthealth < damage then
--- 						GetPlayer().components.arcueidstate:DoDeltaForErosion_TEMP(1.5)
--- 					end
--- 				end
-
--- 				--先知之眼->.35概率暴击
--- 				if self.inst.prefab == "arcueid"
--- 					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
--- 					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_propheteye"
--- 					and math.random() < .35
--- 				then
--- 					damage = damage * 2
--- 				end
-
--- 				--翡翠之刃
--- 				if self.inst.prefab == "arcueid"
--- 					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
--- 					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_jadeblade"
--- 				then
--- 					damage = damage * 1.15
--- 				end
-
--- 				--第一圣典
--- 				if self.inst.prefab == "arcueid"
--- 					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET)
--- 					and GetPlayer().components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_firstcanon"
--- 					and (targ.prefab == "crawlinghorror"
--- 						or targ.prefab == "terrorbeak"
--- 						or targ.prefab == "swimminghorror"
--- 						or targ.prefab == "crawlingnightmare"
--- 						or targ.prefab == "nightmarebeak"
--- 						or targ.prefab == "ghost") then
--- 					damage = damage * 1.5
--- 				end
-
--- 				--身缠冰河的数值
--- 				if targ.prefab == "arcueid"
--- 					and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY) ~= nil
--- 					and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY).prefab == "dress_ice"
--- 					and targ.components.vigour.currentvigour > 10 then
--- 					targ.components.vigour:DoDelta(-damage * .05, nil, "ice_defense")
--- 					damage = damage * .08
--- 				end
-
--- 				if instancemult then damage = damage * instancemult end
-
--- 				--赴死者勋
--- 				if targ.prefab == "arcueid"
--- 					and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET) ~= nil
--- 					and targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET).prefab == "trinket_martyrseal"
--- 					and targ.components.health.currenthealth < damage then
--- 					if targ.components.arcueidstate.martyrseal_cooldown <= 0 then
--- 						targ.components.arcueidstate.martyrseal_highlight = TUNING.MARTYRSEAL_HUGHLIGHT_TIME
--- 						targ.components.vigour:DoDelta(-damage)
--- 						damage = 0
--- 						targ.components.inventory:GetEquippedItem(EQUIPSLOTS.TRINKET):PushEvent("activeforcefield")
--- 					elseif targ.components.arcueidstate.martyrseal_highlight > 0 then
--- 						print(targ.components.arcueidstate.martyrseal_highlight)
--- 						damage = 0
--- 					end
--- 				end
-
--- 				if targ.components.combat then targ.components.combat:GetAttacked(self.inst, damage, weapon, stimuli) end
-
--- 				if METRICS_ENABLED and self.inst:HasTag("player") then
--- 					ProfileStatsAdd("hitson_" .. targ.prefab, math.floor(damage))
--- 					FightStat_Attack(targ, weapon, projectile, damage)
-
--- 					if self.inst.prefab == "crawlinghorror" then
--- 						target_override.components.health:DoDelta(-20, nil, "nightattack")
--- 					end
--- 				end
--- 				if METRICS_ENABLED and self.inst.components.follower
--- 					and self.inst.components.follower.leader == GetPlayer() then
--- 					FightStat_AttackByFollower(targ, weapon, projectile, damage)
--- 				end
-
--- 				if weapon then
--- 					weapon.components.weapon:OnAttack(self.inst, targ, projectile)
--- 				end
--- 				if self.areahitrange then
--- 					self:DoAreaAttack(targ, self.areahitrange, weapon, nil, stimuli)
--- 				end
--- 				self.lastdoattacktime = GetTime()
--- 			end
--- 		else
--- 			self.inst:PushEvent("onmissother", { target = targ, weapon = weapon })
--- 			if self.areahitrange then
--- 				local epicentre = projectile or self.inst
--- 				self:DoAreaAttack(epicentre, self.areahitrange, weapon, nil, stimuli)
--- 			end
--- 		end
--- 	end
--- end)

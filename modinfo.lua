@@ -1,5 +1,5 @@
 name = "Arcueid_dev"
-description = "Arc迷迷糊糊遇险中..."
+description = "Arc迷迷糊糊遇险中...(开发版)"
 author = "cztBlue"
 version = "0.510"
 forumthread = ""

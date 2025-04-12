@@ -216,8 +216,10 @@ function buff:recal()
     end
 
     local str = InsertStr(introduction[self.name], 10, "\n")
-    if self.lasttime ~= nil then
-        str = str .. "\n持续时间：" .. self.lasttime .. "秒"
+    local combuffinfo = self.parent.owner.components.arcueidbuff
+
+    if combuffinfo.allbuffinfo['TYPE'][self.name] == 'timer' then
+        str = str .. "\n剩余时间：" .. combuffinfo.buff_modifiers_add_timer[self.name] .. "秒"
     end
 
     self.introduction:SetString(str)

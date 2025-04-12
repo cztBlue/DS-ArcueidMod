@@ -11,6 +11,7 @@ local ArcueidBuff = Class(function(self, inst)
         ['lbuff_dehunger'] = false,
         ['lbuff_echou'] = false,
         ['lbuff_fillfull'] = false,
+        ['lbuff_bleed'] = false,
     }
     --记录buff的剩余时长，也用于检测身上有那些buff
     self.buff_modifiers_add_timer = { ['buff_bottlelight'] = 0 }
@@ -26,10 +27,11 @@ local ArcueidBuff = Class(function(self, inst)
 
             -- 这个逻辑写在arcueid的update里面
             -- 我改累了以后挑个时间再般过来，现在只把数值打在UI上
-            local d = self.inst.components.arcueidstate.displaymultiplier["damage"] 
+            local d = self.inst.components.arcueidstate.displaymultiplier["damage"]
             local s = self.inst.components.arcueidstate.displaymultiplier["walkspeed"]
             if d and s then
-                self.allbuffinfo['INTRODUCTION']['lbuff_seleniclife'] = "【月球生物】：增幅与时段/活力有关; 攻击加成：*"..d.."; 移速加成:"..s
+                self.allbuffinfo['INTRODUCTION']['lbuff_seleniclife'] = "【月球生物】：增幅与时段/活力有关; 攻击加成：*" .. d .. "; 移速加成:" ..
+                    s
             end
         end,
 
@@ -104,6 +106,8 @@ local ArcueidBuff = Class(function(self, inst)
                         self.inst.components.combat.DoAttack = self.staticvar['lbuff_forsasoul']['doattackfn']
                     end
                 end
+                self.inst.components.arcueidstate.damagerate_mul["LIVESOUL"] = 1
+                self.inst.components.arcueidstate.damagerate_mul["MONSTERSOUL"] = 1 
                 return
             end
 
@@ -115,12 +119,13 @@ local ArcueidBuff = Class(function(self, inst)
             local oldattack = self.staticvar['lbuff_forsasoul']['doattackfn']
             self.inst.components.combat.DoAttack = function(self_, target_override, weapon, projectile, stimuli,
                                                             instancemult)
-                if target_override:HasTag("monster") then
-                    self.inst.components.combat:AddDamageModifier("live_soul", 0)
-                    self.inst.components.combat:AddDamageModifier("monster_soul", -0.2)
+
+                if target_override and target_override:HasTag("monster") then
+                    self.inst.components.arcueidstate.damagerate_mul["LIVESOUL"] = 1
+                    self.inst.components.arcueidstate.damagerate_mul["MONSTERSOUL"] = 0.8 
                 else
-                    self.inst.components.combat:AddDamageModifier("live_soul", -0.5)
-                    self.inst.components.combat:AddDamageModifier("monster_soul", 0)
+                    self.inst.components.arcueidstate.damagerate_mul["LIVESOUL"] = 0.5
+                    self.inst.components.arcueidstate.damagerate_mul["MONSTERSOUL"] = 1 
                 end
 
                 return oldattack(self_, target_override, weapon, projectile, stimuli, instancemult)
@@ -134,7 +139,7 @@ local ArcueidBuff = Class(function(self, inst)
             end
             -- 逻辑写在arcueidstate
             self.allbuffinfo['INTRODUCTION']['lbuff_bleed'] = "【流血】：出血速率:0.417/s" ..
-            ",余出血量:" .. self.inst.components.arcueidstate.bleedhealth
+                ",余出血量:" .. self.inst.components.arcueidstate.bleedhealth
         end,
 
         --【衰败的肉体】：不能通过食物快速回速率：80/480s（回血栈上限100点），
@@ -196,6 +201,7 @@ local ArcueidBuff = Class(function(self, inst)
         --公主病：不能吃生食，非烹制食物效果 * 0.6
         ['lbuff_prinsynd'] = function(self, willclose)
             -- 退出buff逻辑
+            -- 退出公主病本应该去掉食物*.6的buff，要不然退出才会生效，这个工作以后再做
             if (willclose ~= nil) and willclose == true then
                 self.inst.components.eater:SetCanEatTestFn(nil)
                 return
@@ -213,8 +219,9 @@ local ArcueidBuff = Class(function(self, inst)
                             return false
                         else
                             -- 效果减半
+
                             if (food:HasTag("preparedfood") == false or
-                                    food.components.edible.foodstate == "PREPARED") and
+                                    food.components.edible.foodstate ~= "PREPARED") and
                                 food.foodbesetvalue == nil then
                                 food.foodbesetvalue = true
                                 food.components.edible.healthvalue = food.components.edible.healthvalue * 0.6
@@ -280,7 +287,6 @@ local ArcueidBuff = Class(function(self, inst)
                 return
             end
             self.inst.components.vigour:DoDelta(TUNING.ARCUEID_BUFFTINY)
-            self.inst.components.vigour:DoDelta(TUNING.ARCUEID_BUFFTINY)
         end,
         --清醒
         ['lbuff_awakening'] = function(self, willclose)
@@ -289,6 +295,73 @@ local ArcueidBuff = Class(function(self, inst)
             end
             self.inst.components.arcueidstate:DoDeltaForErosion_TEMP(-TUNING.ARCUEID_BUFFTINY)
         end,
+        --生命回归 1:2
+        ['lbuff_vigoursacrifice1'] = function(self, willclose)
+            if (willclose ~= nil) and willclose == true then
+                self.inst.components.vigour.vigourtr = 0
+                inst.DynamicShadow:Enable(true)
+                inst.AnimState:OverrideSymbol("face", "arcueid", "face")
+                inst.AnimState:OverrideSymbol("foot", "arcueid", "foot")
+                inst.shadow1:Hide()
+                inst.sg:GoToState("idle")
+                return
+            end
+
+            if inst.sg.currentstate.name ~= "sg_locked" then
+                inst.DynamicShadow:Enable(false)
+                inst.AnimState:OverrideSymbol("face", "arcueid_action_normal", "face")
+                inst.AnimState:OverrideSymbol("foot", "arcueid_action_normal", "foot")
+                inst.shadow1:Show()
+                inst.sg:GoToState("sg_locked") -- no move
+            end
+            self.inst.components.vigour.vigourtr = -1
+            self.inst.components.health:DoDelta(2)
+        end,
+        --理智回归 1:3
+        ['lbuff_vigoursacrifice2'] = function(self, willclose)
+            if (willclose ~= nil) and willclose == true then
+                self.inst.components.vigour.vigourtr = 0
+                inst.DynamicShadow:Enable(true)
+                inst.AnimState:OverrideSymbol("face", "arcueid", "face")
+                inst.AnimState:OverrideSymbol("foot", "arcueid", "foot")
+                inst.shadow1:Hide()
+                inst.sg:GoToState("idle")
+                return
+            end
+
+            if inst.sg.currentstate.name ~= "sg_locked" then
+                inst.DynamicShadow:Enable(false)
+                inst.AnimState:OverrideSymbol("face", "arcueid_action_normal", "face")
+                inst.AnimState:OverrideSymbol("foot", "arcueid_action_normal", "foot")
+                inst.shadow1:Show()
+                inst.sg:GoToState("sg_locked") -- no move
+            end
+            self.inst.components.vigour.vigourtr = -1
+            self.inst.components.sanity:DoDelta(3)
+        end,
+        --回归体力 1:0.1
+        ['lbuff_vigoursacrifice3'] = function(self, willclose)
+            if (willclose ~= nil) and willclose == true then
+                self.inst.components.vigour.vigourtr = 0
+                inst.DynamicShadow:Enable(true)
+                inst.AnimState:OverrideSymbol("face", "arcueid", "face")
+                inst.AnimState:OverrideSymbol("foot", "arcueid", "foot")
+                inst.shadow1:Hide()
+                inst.sg:GoToState("idle")
+                return
+            end
+
+            if inst.sg.currentstate.name ~= "sg_locked" then
+                inst.DynamicShadow:Enable(false)
+                inst.AnimState:OverrideSymbol("face", "arcueid_action_normal", "face")
+                inst.AnimState:OverrideSymbol("foot", "arcueid_action_normal", "foot")
+                inst.shadow1:Show()
+                inst.sg:GoToState("sg_locked") -- no move
+            end
+            self.inst.components.vigour.vigourtr = 0.3
+            self.inst.components.hunger:DoDelta(-3)
+        end,
+
 
         --时限性buff
         --恢复->回血
@@ -337,14 +410,12 @@ local ArcueidBuff = Class(function(self, inst)
         ['buff_rest'] = function(self)
             self.inst.components.vigour:DoDelta(TUNING.ARCUEID_BUFFLARGE)
         end,
-
         --舒适->同时回复三维
         ['buff_restore'] = function(self)
             self.inst.components.health:DoDelta(TUNING.ARCUEID_BUFFMIDDLE)
             self.inst.components.hunger:DoDelta(TUNING.ARCUEID_BUFFMIDDLE)
             self.inst.components.sanity:DoDelta(TUNING.ARCUEID_BUFFMIDDLE)
         end,
-
         --夜视->全屏不黑(60s)
         ['buff_nightVision'] = function(self)
             if GetClock() and GetWorld() and GetWorld().components.colourcubemanager then
@@ -389,6 +460,45 @@ local ArcueidBuff = Class(function(self, inst)
                 self.buff_modifiers_add_timer['buff_blindness'] = 0
             end
         end,
+        --抵抗
+        ['buff_resistance'] = function(self)
+            --退出buff逻辑
+            if self.buff_modifiers_add_timer['buff_resistance'] == 0 then
+                self.inst:DoTaskInTime(0, function()
+                    self.inst.components.arcueidstate.resistance_mul["POTION_RESILIENCE"] = 1
+                end)
+                return
+            end
+
+            --buff逻辑
+            self.inst.components.arcueidstate.resistance_mul["POTION_RESILIENCE"] = 0.7
+        end,
+        --暴击
+        ['buff_critical'] = function(self)
+            --退出buff逻辑
+            if self.buff_modifiers_add_timer['buff_critical'] == 0 then
+                self.inst:DoTaskInTime(0, function()
+                    self.inst.components.arcueidstate.critical_add["POTION_CRITICAL"] = 0
+                end)
+                return
+            end
+
+            --buff逻辑
+            self.inst.components.arcueidstate.critical_add["POTION_CRITICAL"] = 0.4
+        end,
+        --汲血
+        ['buff_bloodthirst'] = function(self)
+            --退出buff逻辑
+            if self.buff_modifiers_add_timer['buff_bloodthirst'] == 0 then
+                self.inst:DoTaskInTime(0, function()
+                    self.inst.components.arcueidstate.bloodthirst_add["POTION_BLOODTHIRST"] = 0
+                end)
+                return
+            end
+
+            --buff逻辑
+            self.inst.components.arcueidstate.bloodthirst_add["POTION_BLOODTHIRST"] = 0.08
+        end,
     }
 
     self.allbuffinfo = {
@@ -405,6 +515,9 @@ local ArcueidBuff = Class(function(self, inst)
             ['lbuff_forsasoul'] = "last",
             ['lbuff_awkheart'] = "last",
             ['lbuff_seleniclife'] = "last",
+            ['lbuff_vigoursacrifice1'] = "last",
+            ['lbuff_vigoursacrifice2'] = "last",
+            ['lbuff_vigoursacrifice3'] = "last",
 
             ['buff_recover'] = "timer",
             ['buff_pieInTheSky'] = "timer",
@@ -418,6 +531,9 @@ local ArcueidBuff = Class(function(self, inst)
             ['buff_disability'] = "timer",
             ['buff_hatred'] = "timer",
             ['buff_blindness'] = "timer",
+            ['buff_resistance'] = "timer",
+            ['buff_critical'] = "timer",
+            ['buff_bloodthirst'] = "timer",
         },
 
         -- buff介绍
@@ -432,9 +548,12 @@ local ArcueidBuff = Class(function(self, inst)
             ['lbuff_prinsynd'] = "【公主病】：抗拒生食，非烹制食物效果 * 0.6",
             ['lbuff_blightedbody'] = "【衰败的肉体】：回血抑制(回复栈上限100);受重伤(>40/次)造成流血;徒手攻击消耗3;饥饿速率*1.25",
             ['lbuff_bleed'] = "【流血】：出血速率--,预出血量--",
-            ['lbuff_forsasoul'] = "【哀戚的魂灵】：对中立生物伤害 *0.5,对敌对生物伤害*0.8",
+            ['lbuff_forsasoul'] = "【哀戚的魂灵】：中立生物伤害系数：0.5,敌对生物伤害系数：0.8",
             ['lbuff_awkheart'] = "【笨拙的心】：很难解锁配方；不佩戴调料瓶做食物概率会糊",
-            ['lbuff_seleniclife'] = "【月球生物】：增幅与时段/月相有关;",
+            ['lbuff_seleniclife'] = "【月球生物】：增幅与时段/月相有关",
+            ['lbuff_vigoursacrifice1'] = "【生命回归】：消耗活力值回复生命",
+            ['lbuff_vigoursacrifice2'] = "【理智回归】：消耗活力值回复理智",
+            ['lbuff_vigoursacrifice3'] = "【回归体力】：消耗饥饿值回复活力",
 
             --buff
             ['buff_recover'] = "【恢复】：持续恢复生命",
@@ -445,6 +564,9 @@ local ArcueidBuff = Class(function(self, inst)
             ['buff_rest'] = "【休憩】：恢复活力值",
             ['buff_restore'] = "【舒适】：小幅度恢复三维",
             ['buff_nightVision'] = "【夜视】：提供视野",
+            ['buff_resistance'] = "【抵抗】：获得0.7的抗性系数",
+            ['buff_critical'] = "【集中】：获得40%的暴击（伤害*2）概率",
+            ['buff_bloodthirst'] = "【汲血】：每次攻击获得8%的吸血效果",
             --debuff
             ['buff_disability'] = "【残疾】：临时扣除血量上限",
             ['buff_hatred'] = "【敌视】：被标记为怪物",
@@ -462,6 +584,9 @@ local ArcueidBuff = Class(function(self, inst)
             ['buff_rest'] = 300,
             ['buff_restore'] = 220,
             ['buff_nightVision'] = 400,
+            ['buff_resistance'] = 240,
+            ['buff_critical'] = 240,
+            ['buff_bloodthirst'] = 240,
             --debuff
             ['buff_disability'] = 13,
             ['buff_hatred'] = 200,
@@ -494,16 +619,19 @@ local ArcueidBuff = Class(function(self, inst)
             ["lbuff_awkheart"] = true,
             ["lbuff_prinsynd"] = true,
             ["lbuff_forsasoul"] = true,
+            ["lbuff_fillfull"] = true,
+            ["lbuff_vigoursacrifice1"] = true,
+            ["lbuff_vigoursacrifice2"] = true,
+            ["lbuff_vigoursacrifice3"] = true,
         },
 
-        -- buff激活的效果
+        -- buff激活的效果(不用填)
         ['BUFF_MODIFIERS_ADD'] = self.buff_modifiers_add,
 
         -- 持续性buff是否被激活(不用填)
         ['ISLASTBUFFACTIVE'] = self.islastbuffactive,
 
     }
-    self:Starbuff()
 end)
 
 --ARC对之身BUFF状态的自检逻辑
@@ -522,12 +650,6 @@ function ArcueidBuff:BuffSelfTest()
         self:SetArcueidLastBuff('lbuff_awakening', false)
     end
 
-    --【公主病】逻辑
-    self:SetArcueidLastBuff('lbuff_prinsynd', true)
-
-    --【衰败的肉体】逻辑
-    self:SetArcueidLastBuff('lbuff_blightedbody', true)
-
     --【流血】逻辑
     if self.inst.components.arcueidstate.bleedhealth
         and (self.inst.components.arcueidstate.bleedhealth > 0) then
@@ -536,14 +658,72 @@ function ArcueidBuff:BuffSelfTest()
         self:SetArcueidLastBuff('lbuff_bleed', false)
     end
 
-    --【哀戚的魂灵】逻辑
-    self:SetArcueidLastBuff('lbuff_forsasoul', true)
-
-    --【笨拙的心】逻辑
-    self:SetArcueidLastBuff('lbuff_awkheart', true)
-
     --【月球生物】逻辑
     self:SetArcueidLastBuff('lbuff_seleniclife', true)
+
+    --【公主病】逻辑
+    if (self.inst.components.arcueidstate.ldebuffstate['lbuff_prinsynd'] == nil)
+        or (self.inst.components.arcueidstate.ldebuffstate['lbuff_prinsynd'] and
+            self.inst.components.arcueidstate.ldebuffstate['lbuff_prinsynd'] == true)
+    then
+        self:SetArcueidLastBuff('lbuff_prinsynd', true)
+    else
+        self:SetArcueidLastBuff('lbuff_prinsynd', false)
+    end
+
+    --【衰败的肉体】逻辑
+    if (self.inst.components.arcueidstate.ldebuffstate['lbuff_blightedbody'] == nil)
+        or (self.inst.components.arcueidstate.ldebuffstate['lbuff_blightedbody'] and
+            self.inst.components.arcueidstate.ldebuffstate['lbuff_blightedbody'] == true)
+    then
+        self:SetArcueidLastBuff('lbuff_blightedbody', true)
+    else
+        self:SetArcueidLastBuff('lbuff_blightedbody', false)
+    end
+
+    --【哀戚的魂灵】逻辑
+    if (self.inst.components.arcueidstate.ldebuffstate['lbuff_forsasoul'] == nil)
+        or (self.inst.components.arcueidstate.ldebuffstate['lbuff_forsasoul'] and
+            self.inst.components.arcueidstate.ldebuffstate['lbuff_forsasoul'] == true)
+    then
+        self:SetArcueidLastBuff('lbuff_forsasoul', true)
+    else
+        self:SetArcueidLastBuff('lbuff_forsasoul', false)
+    end
+
+    --【笨拙的心】逻辑
+    if (self.inst.components.arcueidstate.ldebuffstate['lbuff_awkheart'] == nil)
+        or (self.inst.components.arcueidstate.ldebuffstate['lbuff_awkheart'] and
+            self.inst.components.arcueidstate.ldebuffstate['lbuff_awkheart'] == true)
+    then
+        self:SetArcueidLastBuff('lbuff_awkheart', true)
+    else
+        self:SetArcueidLastBuff('lbuff_awkheart', false)
+    end
+
+    -- 【生命回归】
+    if (self.inst.components.arcueidstate.abilityon == true)
+        and self.inst.components.arcueidstate.abilityselected == 1 then
+        self:SetArcueidLastBuff('lbuff_vigoursacrifice1', true)
+    else
+        self:SetArcueidLastBuff('lbuff_vigoursacrifice1', false)
+    end
+
+    -- 【理智回归】
+    if (self.inst.components.arcueidstate.abilityon == true)
+        and self.inst.components.arcueidstate.abilityselected == 2 then
+        self:SetArcueidLastBuff('lbuff_vigoursacrifice2', true)
+    else
+        self:SetArcueidLastBuff('lbuff_vigoursacrifice2', false)
+    end
+
+    -- 【体力回归】
+    if (self.inst.components.arcueidstate.abilityon == true)
+        and self.inst.components.arcueidstate.abilityselected == 3 then
+        self:SetArcueidLastBuff('lbuff_vigoursacrifice3', true)
+    else
+        self:SetArcueidLastBuff('lbuff_vigoursacrifice3', false)
+    end
 end
 
 --给arc设置一个持续性buff,control传入true or false控制开关
@@ -555,10 +735,13 @@ function ArcueidBuff:SetArcueidLastBuff(key, control)
     if key then
         -- 触发激活退出逻辑
         if (control ~= nil) and (control == false) then
+            if (self.islastbuffactive[key] == true) then
+                self.buff_modifiers_add[key](self, true)
+            end
             self.islastbuffactive[key] = false
-            self.buff_modifiers_add[key](self, true)
             return
         end
+
         self.islastbuffactive[key] = true
     end
 end
@@ -596,6 +779,7 @@ function ArcueidBuff:TaskBufffn()
     for k, v in pairs(self.buff_modifiers_add_timer) do
         if self.buff_modifiers_add_timer[k] and self.buff_modifiers_add_timer[k] > 0 then
             self.buff_modifiers_add_timer[k] = self.buff_modifiers_add_timer[k] - self.interval
+            
             if self.buff_modifiers_add[k] ~= nil then self.buff_modifiers_add[k](self) end
         end
     end
